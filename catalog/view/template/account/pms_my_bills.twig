@@ -1,0 +1,417 @@
+{{ header }}
+
+<style>
+    .summary-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .summary-item {
+        text-align: center;
+        padding: 10px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .summary-item:last-child {
+        border-right: none;
+    }
+    .summary-number {
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .summary-number.due { color: #EF4444; }
+    .summary-number.paid { color: #22C55E; }
+    .summary-number.count { color: #0B3C5D; }
+    .summary-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .bill-card {
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .bill-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .bill-header {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .bill-month {
+        font-weight: 700;
+        font-size: 16px;
+        color: #0B3C5D;
+    }
+    .bill-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .bill-status.paid {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .bill-status.unpaid {
+        background: #ffebee;
+        color: #c62828;
+    }
+    .bill-body {
+        padding: 15px 20px;
+    }
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .bill-item:last-child {
+        border-bottom: none;
+    }
+    .bill-type {
+        font-size: 14px;
+        color: #555;
+    }
+    .bill-amount {
+        font-size: 15px;
+        font-weight: 600;
+    }
+    .bill-amount.unpaid { color: #EF4444; }
+    .bill-amount.paid { color: #22C55E; }
+    .bill-footer {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .bill-total {
+        font-weight: 700;
+        font-size: 16px;
+    }
+    .btn-pay {
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-pay:hover {
+        background: #166d3e;
+    }
+    .btn-pay-disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    .apartment-badge {
+        background: #e8f0fe;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        color: #0B3C5D;
+    }
+    .payment-modal .modal-dialog {
+        max-width: 500px;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ payment_history_url }}" class="btn btn-info">
+                        <i class="fas fa-regular fa-clock-rotate-left"></i> Payment History
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Apartment Info -->
+            <div class="summary-card">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5 class="mb-2">My Apartments</h5>
+                        {% for apartment in apartments %}
+                            <span class="apartment-badge me-2 mb-2">
+                                <i class="fas fa-regular fa-building"></i> {{ apartment.apartment_number }} (Floor {{ apartment.floor_number }})
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bill Summary -->
+            <div class="summary-card">
+                <div class="row">
+                    <div class="col-md-4 summary-item">
+                        <div class="summary-number due">৳ {{ bill_summary.total_unpaid|number_format(2) }}</div>
+                        <div class="summary-label">Total Due</div>
+                    </div>
+                    <div class="col-md-4 summary-item">
+                        <div class="summary-number paid">৳ {{ bill_summary.total_paid|number_format(2) }}</div>
+                        <div class="summary-label">Total Paid</div>
+                    </div>
+                    <div class="col-md-4 summary-item">
+                        <div class="summary-number count">{{ bill_summary.unpaid_count }}</div>
+                        <div class="summary-label">Unpaid Bills</div>
+                    </div>
+                </div>
+                {% if bill_summary.unpaid_months %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-regular fa-clock"></i>
+                        <strong>Pending Payments:</strong>
+                        {% for month in bill_summary.unpaid_months %}
+                            <span class="badge bg-warning ms-1">{{ month.month_name }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select name="filter_year" class="form-select">
+                            <option value="">All Years</option>
+                            {% for year in available_years %}
+                                <option value="{{ year.year }}" {{ filter_year == year.year ? 'selected' : '' }}>{{ year.year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="filter_status" class="form-select">
+                            {% for status_value, status_name in status_options %}
+                                <option value="{{ status_value }}" {{ filter_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="button-filter" class="btn btn-primary w-100">
+                            <i class="fas fa-solid fa-search"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bills List -->
+            {% if bills %}
+                {% set current_month = '' %}
+                {% for bill in bills %}
+                    {% set month_key = bill.bill_month|date('F Y') %}
+                    {% if current_month != month_key %}
+                        {% if current_month != '' %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="bill-card">
+                            <div class="bill-header">
+                                <span class="bill-month">
+                                    <i class="fas fa-regular fa-calendar"></i> {{ month_key }}
+                                </span>
+                                <span class="bill-status {{ bill.is_paid ? 'paid' : 'unpaid' }}">
+                                    {{ bill.is_paid ? 'PAID' : 'UNPAID' }}
+                                </span>
+                            </div>
+                            <div class="bill-body">
+                        {% set current_month = month_key %}
+                    {% endif %}
+                    
+                    <div class="bill-item">
+                        <div class="bill-type">{{ bill.bill_type_name }}</div>
+                        <div class="bill-amount {{ bill.is_paid ? 'paid' : 'unpaid' }}">
+                            ৳ {{ bill.amount|number_format(2) }}
+                        </div>
+                    </div>
+                    
+                    {% if loop.last %}
+                            </div>
+                            <div class="bill-footer">
+                                <span class="bill-total">Total for {{ month_key }}</span>
+                                <div>
+                                    {% set month_total = 0 %}
+                                    {% set month_unpaid = false %}
+                                    {% for b in bills %}
+                                        {% if b.bill_month|date('F Y') == month_key %}
+                                            {% set month_total = month_total + b.amount %}
+                                            {% if not b.is_paid %}
+                                                {% set month_unpaid = true %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="bill-total text-danger">৳ {{ month_total|number_format(2) }}</span>
+                                    {% if month_unpaid %}
+                                        <button class="btn-pay ms-3" onclick="payBill({{ bill.bill_id }}, {{ month_total }}, '{{ month_key }}')">
+                                            <i class="fas fa-regular fa-credit-card"></i> Pay This Month
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-regular fa-file-invoice fa-3x mb-3 d-block"></i>
+                    <h5>No bills found</h5>
+                    <p>You have no bills for the selected filters.</p>
+                </div>
+            {% endif %}
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog payment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-regular fa-credit-card"></i> Make Payment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>Bill Month:</strong> <span id="modal-bill-month"></span><br>
+                    <strong>Total Amount:</strong> <span id="modal-amount" class="text-danger fw-bold"></span>
+                </div>
+                
+                <form id="payment-form">
+                    <input type="hidden" name="bill_id" id="modal-bill-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment_method" class="form-select" required>
+                            <option value="">-- Select Payment Method --</option>
+                            {% for method_key, method_name in payment_methods %}
+                                <option value="{{ method_key }}">{{ method_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reference Number (Optional)</label>
+                        <input type="text" name="reference_number" class="form-control" placeholder="Transaction ID / bKash Ref / Cheque No">
+                        <small class="text-muted">Enter reference number for tracking</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-pay" onclick="submitPayment()">
+                    <i class="fas fa-regular fa-circle-check"></i> Confirm Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_my_bills&language={{ language }}&customer_token={{ customer_token }}';
+    
+    var filter_year = $('select[name="filter_year"]').val();
+    if (filter_year) url += '&filter_year=' + filter_year;
+    
+    var filter_status = $('select[name="filter_status"]').val();
+    if (filter_status) url += '&filter_status=' + filter_status;
+    
+    location = url;
+});
+
+$('select').on('change', function() {
+    //$('#button-filter').click();
+});
+
+// Pay Bill Modal
+function payBill(billId, amount, month) {
+    $('#modal-bill-id').val(billId);
+    $('#modal-amount').text('৳ ' + amount.toFixed(2));
+    $('#modal-bill-month').text(month);
+    $('#paymentModal').modal('show');
+}
+
+// Submit Payment
+function submitPayment() {
+    var billId = $('#modal-bill-id').val();
+    var paymentMethod = $('select[name="payment_method"]').val();
+    var referenceNumber = $('input[name="reference_number"]').val();
+    
+    if (!paymentMethod) {
+        alert('Please select a payment method');
+        return;
+    }
+    
+    if (confirm('Confirm payment of ' + $('#modal-amount').text() + '?')) {
+        $.ajax({
+            url: '{{ pay_url }}',
+            type: 'POST',
+            data: {
+                bill_id: billId,
+                payment_method: paymentMethod,
+                reference_number: referenceNumber,
+                user_token: '{{ user_token }}'
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    $('#paymentModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + '\n' + xhr.responseText);
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}

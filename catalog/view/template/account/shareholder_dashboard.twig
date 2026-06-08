@@ -1,0 +1,227 @@
+{{ header }}
+{# ==================== MAIN CONTAINER ==================== #}
+<div id="account-account" class="container-fluid">
+    {# Breadcrumbs #}
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item">
+                <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+            </li>
+        {% endfor %}
+    </ul>#}
+    
+    {# Success Alert #}
+    {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fas fa-solid fa-circle-check"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    {# Main Row #}
+    <div class="row">
+        
+        {# Left Column - Sidebar (Already styled by OpenCart) #}
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        {# Main Content Area #}
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            {# ==================== WELCOME HERO SECTION ==================== #}
+            <div class="pms-welcome-hero">
+                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                    <div>
+                        <h2>Welcome back, {{ customer_name|default('Shareholder') }}!</h2>
+                        <p>Here's what's happening with your investment today.</p>
+                        <div class="mt-2">
+                            <span class="pms-badge">
+                                <i class="fas fa-regular fa-building"></i> {{ apartment_number|default('Apt 5A') }}
+                            </span>
+                            <span class="pms-badge ms-2">
+                                <i class="fas fa-regular fa-chart-pie"></i> {{ ownership_percentage|default('5.00') }}% Ownership
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2 mt-sm-0">
+                        <small class="opacity-75">Member since {{ member_since|default('2024') }}</small>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== STAT CARDS ROW ==================== #}
+            <div class="row g-4 mb-4">
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon danger-bg">
+                            <i class="fas fa-regular fa-clock"></i>
+                        </div>
+                        <div class="pms-stat-label">Current Due</div>
+                        <div class="pms-stat-value">৳ {{ current_due|default('0.00') }}</div>
+                        <div class="pms-stat-sub">Total unpaid amount</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon success-bg">
+                            <i class="fas fa-regular fa-credit-card"></i>
+                        </div>
+                        <div class="pms-stat-label">Credit Balance</div>
+                        <div class="pms-stat-value">৳ {{ credit_balance|default('0.00') }}</div>
+                        <div class="pms-stat-sub">Available for next bill</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon warning-bg">
+                            <i class="fas fa-regular fa-file-invoice"></i>
+                        </div>
+                        <div class="pms-stat-label">Unpaid Bills</div>
+                        <div class="pms-stat-value">৳ {{ total_unpaid_bills|number_format(2) }}</div>
+                        <div class="pms-stat-sub">{{ unpaid_bills_count }} bill(s) pending</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Unpaid Bills Breakdown -->
+            {% if unpaid_bills_summary.by_type %}
+            <div class="pms-card mt-3">
+                <div class="pms-section-header">
+                    <h4 class="pms-section-title">
+                        <i class="fa-regular fa-clock"></i> Unpaid Bills Breakdown
+                    </h4>
+                    <a href="{{ bills_link }}" class="pms-view-all">
+                        View All Bills <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Bill Type</th>
+                                <th>Pending Bills</th>
+                                <th>Total Amount</th>
+                                <th>Oldest Month</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in unpaid_bills_summary.by_type %}
+                                <tr>
+                                    <td>{{ bill.bill_type }}</a></td>
+                                    <td>{{ bill.bill_count }} bill(s)</a></td>
+                                    <td class="text-danger">৳ {{ bill.total_amount|number_format(2) }}</a></td>
+                                    <td>{{ bill.oldest_month|date('M Y') }}</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2" class="text-end">Total Unpaid:</th>
+                                <th class="text-danger">৳ {{ total_unpaid_bills|number_format(2) }}</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                {% if unpaid_bills_summary.earliest_due_date != 'No due date' %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fa-regular fa-calendar"></i>
+                        <strong>Earliest Due Date:</strong> {{ unpaid_bills_summary.earliest_due_date }}
+                    </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {# ==================== RECENT TRANSACTIONS ==================== #}
+            <div class="pms-card">
+                <div class="pms-section-header">
+                    <h4 class="pms-section-title">
+                        <i class="fas fa-regular fa-clock-rotate-left"></i> Recent Transactions
+                    </h4>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_transactions is defined and recent_transactions|length > 0 %}
+                                {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.transaction_date }}</td>
+                                        <td>{{ transaction.description }}</td>
+                                        <td class="{% if transaction.type == 'debit' %}text-danger{% else %}text-success{% endif %}">
+                                            {% if transaction.type == 'debit' %}-{% else %}+{% endif %} ৳ {{ transaction.amount }}
+                                        </td>
+                                        <td>
+                                            <span class="pms-status 
+                                                {% if transaction.status == 'paid' %}pms-status-paid
+                                                {% elseif transaction.status == 'pending' %}pms-status-pending
+                                                {% elseif transaction.status == 'overdue' %}pms-status-overdue
+                                                {% endif %}">
+                                                {{ transaction.status|capitalize }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
+                                        No transactions found
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {# ==================== QUICK ACTIONS ==================== #}
+            <div class="pms-section-header mt-3">
+                <h4 class="pms-section-title">
+                    <i class="fas fa-regular fa-bolt"></i> Quick Actions
+                </h4>
+            </div>
+            
+            <div class="pms-quick-actions mb-4">
+                <a href="{{ payment_link|default('#') }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-credit-card"></i>
+                    <span>Make Payment</span>
+                </a>
+                <a href="{{ ledger_link|default('#') }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-book"></i>
+                    <span>View Ledger</span>
+                </a>
+                <a href="{{ bills_link|default('#') }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-file-invoice"></i>
+                    <span>Monthly Bills</span>
+                </a>
+                <a href="{{ unpaid_dues_link|default('#') }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-circle-exclamation"></i>
+                    <span>Unpaid Dues</span>
+                </a>
+                <a href="{{ apartment_link|default('#') }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-building"></i>
+                    <span>My Apartment</span>
+                </a>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {# Right Column #}
+        {{ column_right }}
+        
+    </div>
+</div>
+
+{{ footer }}

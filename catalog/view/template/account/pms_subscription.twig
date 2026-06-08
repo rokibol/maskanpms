@@ -1,0 +1,216 @@
+{{ header }}
+
+<style>
+    .plan-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+        position: relative;
+    }
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .plan-card.popular {
+        border-top: 4px solid #1F8A4D;
+    }
+    .plan-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0B3C5D;
+        margin-bottom: 10px;
+    }
+    .plan-price {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1F8A4D;
+        margin: 15px 0;
+    }
+    .plan-price small {
+        font-size: 14px;
+        color: #666;
+    }
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0;
+    }
+    .plan-features li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .plan-features li i {
+        color: #1F8A4D;
+        margin-right: 10px;
+    }
+    .current-plan {
+        background: #e8f5e9;
+        border-color: #1F8A4D;
+    }
+    .current-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #1F8A4D;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+    .expiry-alert {
+        background: #fff3e0;
+        border-left: 4px solid #F59E0B;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <!-- Current Subscription Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-chart-line"></i> Current Subscription
+                </div>
+                <div class="card-body">
+                    {% if subscription %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Plan:</strong> {{ subscription.plan_name }}<br>
+                                <strong>Status:</strong> 
+                                {% if is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Expired</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Start Date:</strong> {{ subscription.start_date|date('d M Y') }}<br>
+                                <strong>End Date:</strong> {{ subscription.end_date|date('d M Y') }}
+                            </div>
+                        </div>
+                        
+                        {% if expiry_days > 0 and expiry_days <= 15 %}
+                            <div class="expiry-alert mt-3">
+                                <i class="fas fa-regular fa-clock"></i>
+                                <strong>Your subscription will expire in {{ expiry_days }} days!</strong>
+                                Please upgrade to continue using the service.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-regular fa-circle-exclamation"></i>
+                            No active subscription found. Please select a plan below.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Available Plans -->
+            <h3 class="mb-3">Available Plans</h3>
+            <div class="row">
+                {% for plan in plans %}
+                    <div class="col-md-4">
+                        <div class="plan-card {% if plan.slug == 'professional' %}popular{% endif %} {% if subscription and subscription.plan_id == plan.plan_id %}current-plan{% endif %}">
+                            {% if subscription and subscription.plan_id == plan.plan_id %}
+                                <span class="current-badge">Current Plan</span>
+                            {% endif %}
+                            <div class="plan-name">{{ plan.name }}</div>
+                            <div class="plan-price">
+                                ৳ {{ plan.price_monthly|number_format(0) }}
+                                <small>/month</small>
+                            </div>
+                            <div class="plan-price" style="font-size: 18px;">
+                                or ৳ {{ plan.price_yearly|number_format(0) }} <small>/year</small>
+                            </div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_projects }} Project(s)</li>
+                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_shareholders }} Shareholders</li>
+                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_apartments }} Apartments</li>
+                            </ul>
+                            
+                            {% if not subscription or subscription.plan_id != plan.plan_id %}
+                                <button class="btn btn-primary w-100" onclick="upgradePlan({{ plan.plan_id }})">
+                                    <i class="fas fa-solid fa-arrow-up"></i> Upgrade
+                                </button>
+                            {% else %}
+                                <button class="btn btn-secondary w-100" disabled>
+                                    <i class="fas fa-regular fa-circle-check"></i> Current Plan
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-solid fa-arrow-up"></i> Upgrade Subscription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-upgrade" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Selected Plan:</strong> <span id="modal-plan-name"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Billing Type</label>
+                        <select name="billing_type" class="form-select" required>
+                            <option value="monthly">Monthly Billing</option>
+                            <option value="yearly">Yearly Billing (Save 15%)</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="plan_id" id="modal-plan-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm Upgrade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function upgradePlan(planId, planName) {
+    $('#modal-plan-id').val(planId);
+    $('#modal-plan-name').text(planName);
+    $('#upgradeModal').modal('show');
+}
+</script>
+
+{{ footer }}

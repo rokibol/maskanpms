@@ -1,0 +1,388 @@
+{{ header }}
+
+<style>
+    /* Professional Logout Page Styles */
+    :root {
+        --pms-primary-dark: #0B3C5D;
+        --pms-primary-green: #1F8A4D;
+        --pms-secondary-blue: #2F80ED;
+        --pms-bg-white: #FFFFFF;
+        --pms-bg-light: #F5F7FA;
+        --pms-border: #D1D5DB;
+        --pms-text-dark: #374151;
+        --pms-text-muted: #6B7280;
+        --pms-success: #22C55E;
+        --pms-shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logout-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, var(--pms-bg-light) 0%, #E8EDF2 100%);
+    }
+    
+    .logout-card {
+        max-width: 520px;
+        width: 100%;
+        background: var(--pms-bg-white);
+        border-radius: 24px;
+        box-shadow: var(--pms-shadow-lg);
+        overflow: hidden;
+        text-align: center;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Header Section */
+    .logout-header {
+        background: linear-gradient(135deg, var(--pms-primary-dark) 0%, var(--pms-primary-green) 100%);
+        padding: 45px 20px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .logout-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 250px;
+        height: 250px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+    
+    .logout-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -15%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+    }
+    
+    .logout-icon-wrapper {
+        background: rgba(255, 255, 255, 0.2);
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(4px);
+        animation: pulse 0.8s ease-out;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .logout-icon {
+        font-size: 50px;
+        color: white;
+    }
+    
+    .logout-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+    
+    .logout-subtitle {
+        font-size: 14px;
+        opacity: 0.85;
+    }
+    
+    /* Body Section */
+    .logout-body {
+        padding: 35px 30px 25px;
+    }
+    
+    .logout-message {
+        font-size: 16px;
+        color: var(--pms-text-dark);
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+    
+    .logout-message i {
+        color: var(--pms-primary-green);
+        margin-right: 8px;
+    }
+    
+    /* Timer Section */
+    .timer-card {
+        background: var(--pms-bg-light);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid var(--pms-border);
+    }
+    
+    .timer-label {
+        font-size: 13px;
+        color: var(--pms-text-muted);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .timer-number {
+        font-size: 42px;
+        font-weight: 800;
+        color: var(--pms-primary-dark);
+        font-family: monospace;
+        line-height: 1;
+    }
+    
+    .timer-unit {
+        font-size: 14px;
+        color: var(--pms-text-muted);
+        margin-left: 5px;
+    }
+    
+    /* Progress Bar */
+    .progress-bar-container {
+        width: 100%;
+        height: 4px;
+        background: #E5E7EB;
+        border-radius: 4px;
+        margin-top: 15px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--pms-primary-dark), var(--pms-primary-green));
+        border-radius: 4px;
+        animation: progress 15s linear forwards;
+    }
+    
+    @keyframes progress {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
+    }
+    
+    /* Buttons */
+    .logout-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    
+    .btn-primary-custom {
+        background: var(--pms-primary-green);
+        color: white;
+        padding: 12px 32px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary-custom:hover {
+        background: #166d3e;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(31, 138, 77, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-custom {
+        background: white;
+        color: var(--pms-primary-dark);
+        padding: 12px 32px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--pms-border);
+    }
+    
+    .btn-secondary-custom:hover {
+        background: var(--pms-bg-light);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: var(--pms-primary-dark);
+    }
+    
+    /* Footer */
+    .logout-footer {
+        background: var(--pms-bg-light);
+        padding: 20px;
+        font-size: 12px;
+        color: var(--pms-text-muted);
+        border-top: 1px solid var(--pms-border);
+    }
+    
+    .security-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 576px) {
+        .logout-card {
+            margin: 20px;
+        }
+        
+        .logout-header {
+            padding: 35px 20px;
+        }
+        
+        .logout-icon-wrapper {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .logout-icon {
+            font-size: 40px;
+        }
+        
+        .logout-title {
+            font-size: 24px;
+        }
+        
+        .logout-body {
+            padding: 25px 20px;
+        }
+        
+        .timer-number {
+            font-size: 36px;
+        }
+        
+        .logout-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="logout-header">
+            <div class="logout-icon-wrapper">
+                <div class="logout-icon">
+                    <i class="fas fa-regular fa-circle-check"></i>
+                </div>
+            </div>
+            <div class="logout-title">{{ text_logout }}</div>
+            <div class="logout-subtitle">You have been signed out</div>
+        </div>
+        
+        <div class="logout-body">
+            <div class="logout-message">
+                <i class="fas fa-regular fa-face-smile"></i>
+                Thank you for using Maskan PMS. You have been successfully logged out.
+            </div>
+            
+            <div class="timer-card">
+                <div class="timer-label">
+                    <i class="fas fa-regular fa-hourglass-half"></i>
+                    Redirecting to login page
+                </div>
+                <div class="timer-number">
+                    <span id="countdown">15</span>
+                    <span class="timer-unit">seconds</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="logout-buttons">
+                <a href="{{ login }}" class="btn-primary-custom">
+                    <i class="fas fa-solid fa-right-to-bracket"></i> Login Again
+                </a>
+                <a href="{{ home }}" class="btn-secondary-custom">
+                    <i class="fas fa-solid fa-house"></i> Go to Homepage
+                </a>
+            </div>
+        </div>
+        
+        <div class="logout-footer">
+            <div class="security-note">
+                <i class="fas fa-regular fa-shield-haltered"></i>
+                <span>For security reasons, please close your browser if you're on a shared device.</span>
+            </div>
+            <div>
+                <i class="fas fa-regular fa-copyright"></i> {{ "now"|date("Y") }} Maskan PMS. All rights reserved.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto redirect countdown
+let seconds = 15;
+const countdownElement = document.getElementById('countdown');
+const redirectUrl = '{{ login }}';
+
+const interval = setInterval(function() {
+    seconds--;
+    if (countdownElement) {
+        countdownElement.textContent = seconds;
+    }
+    
+    if (seconds <= 0) {
+        clearInterval(interval);
+        window.location.href = redirectUrl;
+    }
+}, 1000);
+</script>
+
+{{ footer }}

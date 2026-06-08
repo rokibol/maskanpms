@@ -1,0 +1,176 @@
+{{ header }}
+{# ==================== MAIN LOGIN CONTAINER ==================== #}
+<div id="account-login" class="pms-login-container">
+    
+    <div class="pms-login-wrapper">
+        <div class="row g-0">
+            
+            {# LEFT SIDE - HERO SECTION #}
+            <div class="col-md-6">
+                <div class="pms-login-hero">
+                    <div class="pms-logo">
+                        Maskan <span>PMS</span>
+                    </div>
+                    <div class="pms-hero-title">
+                        Welcome to Your<br>Property Management Portal
+                    </div>
+                    <div class="pms-hero-text">
+                        Access your investment dashboard, track expenses, view bills, and manage your property portfolio all in one place.
+                    </div>
+                    <ul class="pms-feature-list">
+                        <li>
+                            <i class="fas fa-solid fa-chart-line"></i>
+                            <span>Real-time expense tracking</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-solid fa-credit-card"></i>
+                            <span>Easy payment management</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-solid fa-file-invoice"></i>
+                            <span>Monthly bills & statements</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-solid fa-chart-pie"></i>
+                            <span>Shareholder ownership tracking</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {# RIGHT SIDE - LOGIN FORM #}
+            <div class="col-md-6">
+                <div class="pms-login-form-area">
+                    
+                    {# Success Alert #}
+                    {% if success %}
+                        <div class="pms-alert pms-alert-success">
+                            <i class="fas fa-solid fa-circle-check"></i>
+                            {{ success }}
+                        </div>
+                    {% endif %}
+                    
+                    {# Error Alert #}
+                    {% if error_warning %}
+                        <div class="pms-alert pms-alert-danger">
+                            <i class="fas fa-solid fa-circle-exclamation"></i>
+                            {{ error_warning }}
+                        </div>
+                    {% endif %}
+                    
+                    {# Login Tabs #}
+                    <div class="pms-login-tabs">
+                        <button class="pms-login-tab active" data-tab="login">
+                            <i class="fas fa-solid fa-key me-2"></i> Sign In
+                        </button>
+                    </div>
+                    
+                    {# LOGIN FORM #}
+                    <div id="login-form" class="pms-login-form">
+                        <form id="form-login" action="{{ login }}" method="post" data-oc-toggle="ajax">
+                            
+                            <div class="pms-form-group">
+                                <label class="pms-form-label" for="input-email">
+                                    <i class="fas fa-regular fa-envelope"></i> Email Address
+                                </label>
+                                <input type="email" 
+                                       name="email" 
+                                       value="{{ email }}" 
+                                       placeholder="your@email.com" 
+                                       id="input-email" 
+                                       class="pms-form-control"
+                                       autocomplete="email"
+                                       required>
+                            </div>
+                            
+                            <div class="pms-form-group">
+                                <label class="pms-form-label" for="input-password">
+                                    <i class="fas fa-regular fa-lock"></i> Password
+                                </label>
+                                <input type="password" 
+                                       name="password" 
+                                       value="{{ password }}" 
+                                       placeholder="••••••••" 
+                                       id="input-password" 
+                                       class="pms-form-control"
+                                       autocomplete="current-password"
+                                       required>
+                                <div class="text-end">
+                                    <a href="{{ forgotten }}" class="pms-forgot-link">
+                                        <i class="fas fa-regular fa-question-circle"></i> Forgot Password?
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            {% if redirect %}
+                                <input type="hidden" name="redirect" value="{{ redirect }}">
+                            {% endif %}
+                            
+                            <button type="submit" class="pms-btn-login">
+                                <i class="fas fa-solid fa-right-to-bracket me-2"></i> Sign In
+                            </button>
+                            
+                        </form>
+                    </div>
+                    
+                    {# REGISTER FORM #}
+                    <div id="register-form" class="pms-login-form hidden">
+                        <div class="pms-register-section">
+                            <div class="pms-register-title">
+                                <i class="fas fa-regular fa-building"></i> New to Sky View PMS?
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--pms-text-muted); margin-bottom: 1rem;">
+                                Register as a new user to access your property management dashboard.
+                                Shareholders will be verified by the building manager.
+                            </p>
+                            <a href="{{ register }}" class="pms-btn-register">
+                                <i class="fas fa-solid fa-user-plus me-2"></i> Create New Account
+                            </a>
+                        </div>
+                        
+                        {# Info Box #}
+                        <div style="margin-top: 1.5rem; padding: 1rem; background: var(--pms-bg-light); border-radius: 0.5rem;">
+                            <small style="color: var(--pms-text-muted); display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-regular fa-circle-info"></i>
+                                After registration, your account will be linked to your project by the manager.
+                                You will receive an email confirmation once approved.
+                            </small>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+</div>
+
+{{ footer }}
+
+{# ==================== JAVASCRIPT FOR TAB SWITCHING ==================== #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.pms-login-tab');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show/hide forms based on tab
+            if (this.dataset.tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            }
+        });
+    });
+});
+</script>

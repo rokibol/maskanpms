@@ -1,0 +1,216 @@
+{{ header }}
+
+<style>
+    .info-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-size: 16px;
+        color: #333;
+    }
+    .allocation-table {
+        background: white;
+    }
+    .paid-badge {
+        background: #22C55E;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+    .unpaid-badge {
+        background: #EF4444;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <div>
+                    {% if edit %}
+                    <a href="{{ edit }}" class="btn btn-primary">
+                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
+                    </a>
+                    {% endif %}
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Expense Details -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-receipt"></i> Expense Details
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Invoice / Bill Number</div>
+                                <div class="info-value"><strong>{{ expense.invoice_number }}</strong></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Expense Date</div>
+                                <div class="info-value">{{ expense.expense_date }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Category</div>
+                                <div class="info-value">{{ expense.category_name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Total Amount</div>
+                                <div class="info-value text-danger fw-bold fs-4">৳ {{ expense.total_amount }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="info-card">
+                                <div class="info-label">Description</div>
+                                <div class="info-value">{{ expense.description|raw }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Created By</div>
+                                <div class="info-value">{{ expense.created_by }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-label">Created At</div>
+                                <div class="info-value">{{ expense.created_at }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if expense.updated_at != '-' %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="info-card">
+                                <div class="info-label">Last Updated</div>
+                                <div class="info-value">{{ expense.updated_at }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if expense.has_document %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="info-card">
+                                <div class="info-label">Supporting Document</div>
+                                <div class="info-value">
+                                    <a href="{{ download }}" class="btn btn-info btn-sm">
+                                        <i class="fas fa-regular fa-download"></i> Download Document
+                                    </a>
+                                    <a href="{{ expense.document_url }}" class="btn btn-secondary btn-sm" target="_blank">
+                                        <i class="fas fa-regular fa-eye"></i> View Document
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Allocation Details -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-chart-pie"></i> Shareholder Allocation
+                </div>
+                <div class="card-body">
+                    {% if allocations %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered allocation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Shareholder</th>
+                                        <th>Code</th>
+                                        <th>Due Amount</th>
+                                        <th>Payment Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for allocation in allocations %}
+                                        <tr>
+                                            <td>{{ allocation.shareholder_name }}</td>
+                                            <td>{{ allocation.shareholder_code }}</td>
+                                            <td class="text-danger">৳ {{ allocation.due_amount|number_format(2) }}</td>
+                                            <td>
+                                                {% if allocation.is_paid %}
+                                                    <span class="paid-badge"><i class="fas fa-regular fa-circle-check"></i> Paid</span>
+                                                {% else %}
+                                                    <span class="unpaid-badge"><i class="fas fa-regular fa-clock"></i> Unpaid</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="2" class="text-end">Total Allocated:</th>
+                                        <th class="text-danger">৳ {{ expense.total_amount }}</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-regular fa-chart-pie fa-2x mb-2 d-block"></i>
+                            No allocation data available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

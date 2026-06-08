@@ -1,0 +1,306 @@
+{{ header }}
+
+<style>
+    .allocation-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .allocation-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 20px;
+        color: white;
+    }
+    .allocation-body {
+        padding: 25px;
+    }
+    .method-tab {
+        cursor: pointer;
+        padding: 12px 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+    .method-tab:hover {
+        border-color: #1F8A4D;
+        background: #f8f9fa;
+    }
+    .method-tab.active {
+        border-color: #1F8A4D;
+        background: #e8f5e9;
+    }
+    .summary-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .summary-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #0B3C5D;
+    }
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .preview-table th {
+        background: #f8f9fa;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    .preview-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_bulk_allocation }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Shareholders
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Allocation Summary -->
+            <div class="allocation-card">
+                <div class="allocation-header">
+                    <h3 class="mb-1" style="color: #FFFFFF;"><i class="fa-solid fa-chart-pie"></i> Allocation Summary</h3>
+                    <p class="mb-0 opacity-75">Overview of all payment allocations for {{ project_name }}</p>
+                </div>
+                <div class="allocation-body">
+                    <div class="row">
+                        <div class="col-md-4 summary-box">
+                            <div class="summary-number">৳ {{ allocation_summary.total_allocated|number_format(2) }}</div>
+                            <div class="text-muted">Total Allocated Amount</div>
+                        </div>
+                        <div class="col-md-4 summary-box">
+                            <div class="summary-number">{{ allocation_summary.total_shareholders }}</div>
+                            <div class="text-muted">Active Shareholders</div>
+                        </div>
+                        <div class="col-md-4 summary-box">
+                            <div class="summary-number">{{ allocation_summary.last_allocation }}</div>
+                            <div class="text-muted">Last Allocation</div>
+                        </div>
+                    </div>
+                    
+                    {% if allocation_summary.allocations_by_phase %}
+                        <div class="mt-3">
+                            <strong>Allocations by Phase:</strong>
+                            <div class="row mt-2">
+                                {% for phase in allocation_summary.allocations_by_phase %}
+                                    <div class="col-md-3">
+                                        <span class="badge bg-info">{{ phase.phase_name }}</span>
+                                        ৳ {{ phase.total|number_format(2) }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Allocation Method Tabs -->
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                    <a href="#tab-equal" data-bs-toggle="tab" class="nav-link active">
+                        <i class="fa-solid fa-equals"></i> Equal Distribution
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#tab-percentage" data-bs-toggle="tab" class="nav-link">
+                        <i class="fa-solid fa-chart-pie"></i> Percentage Based (Ownership)
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                
+                <!-- Tab 1: Equal Distribution -->
+                <div class="tab-pane active" id="tab-equal">
+                    <div class="allocation-card">
+                        <div class="allocation-body">
+                            <div class="alert alert-info">
+                                <i class="fa-solid fa-info-circle"></i>
+                                <strong>Equal Distribution:</strong> The total amount will be divided equally among all {{ shareholder_count }} active shareholders.
+                            </div>
+                            
+                            <form id="form-equal-allocation" action="{{ action_equal }}" method="post" data-oc-toggle="ajax">
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-3 col-form-label">Select Payment Phase</label>
+                                    <div class="col-sm-9">
+                                        <select name="payment_phase_id" class="form-select" required>
+                                            <option value="">-- Select Phase --</option>
+                                            {% for phase in payment_phases %}
+                                                <option value="{{ phase.phase_id }}">{{ phase.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-3 col-form-label">Total Amount (BDT)</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" name="allocated_amount" id="equal-total-amount" class="form-control" step="0.01" min="0.01" required>
+                                        <small class="text-muted">Enter the total amount to be allocated</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Notes (Optional)</label>
+                                    <div class="col-sm-9">
+                                        <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes about this allocation..."></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-secondary" id="equal-preview">
+                                    <i class="fa-solid fa-calculator"></i>
+                                    <strong>Preview:</strong>
+                                    <span id="equal-preview-text">Enter amount to see per shareholder allocation</span>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fa-solid fa-layer-group"></i> Allocate to All Shareholders
+                                    </button>
+                                </div>
+                                
+                                <input type="hidden" name="user_token" value="{{ user_token }}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 2: Percentage Based -->
+                <div class="tab-pane" id="tab-percentage">
+                    <div class="allocation-card">
+                        <div class="allocation-body">
+                            <div class="alert alert-info">
+                                <i class="fa-solid fa-info-circle"></i>
+                                <strong>Percentage Based Distribution:</strong> The total amount will be distributed according to each shareholder's ownership percentage.
+                            </div>
+                            
+                            <form id="form-percentage-allocation" action="{{ action_percentage }}" method="post" data-oc-toggle="ajax">
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-3 col-form-label">Select Payment Phase</label>
+                                    <div class="col-sm-9">
+                                        <select name="payment_phase_id" class="form-select" required>
+                                            <option value="">-- Select Phase --</option>
+                                            {% for phase in payment_phases %}
+                                                <option value="{{ phase.phase_id }}">{{ phase.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-3 col-form-label">Total Amount (BDT)</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" name="total_amount" id="percentage-total-amount" class="form-control" step="0.01" min="0.01" required>
+                                        <small class="text-muted">Enter the total amount to be distributed</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Notes (Optional)</label>
+                                    <div class="col-sm-9">
+                                        <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes about this allocation..."></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-secondary" id="percentage-preview">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                    <strong>Distribution Preview:</strong>
+                                    <div id="percentage-preview-text">Enter amount to see distribution by ownership percentage</div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fa-solid fa-layer-group"></i> Allocate to All Shareholders
+                                    </button>
+                                </div>
+                                
+                                <input type="hidden" name="user_token" value="{{ user_token }}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+// Equal Distribution Preview
+$('#equal-total-amount').on('input', function() {
+    var totalAmount = parseFloat($(this).val()) || 0;
+    var shareholderCount = {{ shareholder_count }};
+    
+    if (totalAmount > 0 && shareholderCount > 0) {
+        var perShareholder = totalAmount / shareholderCount;
+        $('#equal-preview-text').html(
+            'Total Amount: ৳ ' + totalAmount.toFixed(2) + '<br>' +
+            'Number of Shareholders: ' + shareholderCount + '<br>' +
+            '<strong>Each shareholder will receive: ৳ ' + perShareholder.toFixed(2) + '</strong>'
+        );
+    } else {
+        $('#equal-preview-text').html('Enter amount to see per shareholder allocation');
+    }
+});
+
+// Percentage Distribution Preview
+$('#percentage-total-amount').on('input', function() {
+    var totalAmount = parseFloat($(this).val()) || 0;
+    
+    if (totalAmount > 0) {
+        // Get shareholder data via AJAX
+        $.ajax({
+            url: 'index.php?route=account/pms_shareholders.getShareholdersPreview&language={{ language }}&user_token={{ user_token }}',
+            type: 'GET',
+            data: { total_amount: totalAmount },
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    var html = '<table class="preview-table">';
+                    html += '<thead><tr><th>Shareholder</th><th>Ownership %</th><th>Amount</th></tr></thead>';
+                    html += '<tbody>';
+                    for (var i in data.shareholders) {
+                        html += '<tr>';
+                        html += '<td>' + data.shareholders[i].name + '</td>';
+                        html += '<td>' + data.shareholders[i].percentage + '%</td>';
+                        html += '<td>৳ ' + data.shareholders[i].amount.toFixed(2) + '</td>';
+                        html += '</tr>';
+                    }
+                    html += '<tfoot><tr><th colspan="2">Total:</th><th>৳ ' + totalAmount.toFixed(2) + '</th></tr></tfoot>';
+                    html += '</tbody></table>';
+                    $('#percentage-preview-text').html(html);
+                }
+            }
+        });
+    } else {
+        $('#percentage-preview-text').html('Enter amount to see distribution by ownership percentage');
+    }
+});
+</script>
+
+{{ footer }}

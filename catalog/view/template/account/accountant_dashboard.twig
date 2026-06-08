@@ -1,0 +1,291 @@
+{{ header }}
+{# ==================== MAIN CONTAINER ==================== #}
+<div id="account-account" class="container-fluid">
+    
+    {# Breadcrumbs #}
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item">
+                <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+            </li>
+        {% endfor %}
+    </ul>#}
+    
+    {# Success/Error Alerts #}
+    {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fas fa-solid fa-circle-check"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fas fa-solid fa-circle-exclamation"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    <div class="row">
+        
+        {# Left Column - Sidebar #}
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        {# Main Content Area #}
+        <div id="content" class="col-lg-9 col-md-8">
+            {{ content_top }}
+            
+            {# ==================== WELCOME HERO SECTION ==================== #}
+            <div class="pms-welcome-hero">
+                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                    <div>
+                        <h2>Welcome back, {{ accountant_name }}!</h2>
+                        <p>Manage expenses, track payments, and oversee financial records.</p>
+                        <div class="mt-2">
+                            <span class="pms-badge">
+                                <i class="fas fa-regular fa-building"></i> {{ project_name }}
+                            </span>
+                            <span class="pms-badge ms-2">
+                                <i class="fas fa-regular fa-calendar"></i> {{ current_month }} {{ current_year }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2 mt-sm-0">
+                        <small class="opacity-75">Last login: {{ last_login|default('Today') }}</small>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== KEY METRICS ROW ==================== #}
+            <div class="row g-4 mb-4">
+                <div class="col-md-6 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon primary-bg">
+                            <i class="fas fa-regular fa-receipt"></i>
+                        </div>
+                        <div class="pms-stat-label">Total Expenses (MTD)</div>
+                        <div class="pms-stat-value">৳ {{ monthly_expenses|default('0') }}</div>
+                        <div class="pms-stat-sub">{{ expense_count|default('0') }} transactions this month</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon green-bg">
+                            <i class="fas fa-regular fa-credit-card"></i>
+                        </div>
+                        <div class="pms-stat-label">Total Collections (MTD)</div>
+                        <div class="pms-stat-value">৳ {{ monthly_collections|default('0') }}</div>
+                        <div class="pms-stat-sub">{{ payment_count|default('0') }} payments received</div>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== PENDING & RECENT ACTIVITIES ==================== #}
+            {#<div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-clock"></i> Pending Tasks
+                            </h4>
+                        </div>
+                        {% if pending_tasks|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="pms-table">
+                                    <tbody>
+                                        {% for task in pending_tasks %}
+                                            <tr>
+                                                <td>
+                                                    <i class="fas fa-regular {{ task.icon }} me-2" style="color: var(--pms-warning);"></i>
+                                                    {{ task.description }}
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{{ task.link }}" class="pms-action-icon">
+                                                        <i class="fas fa-solid fa-arrow-right"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3 mb-0">
+                                <i class="fas fa-regular fa-check-circle fa-2x mb-2 d-block"></i>
+                                No pending tasks. Great job!
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-bell"></i> Recent Alerts
+                            </h4>
+                        </div>
+                        {% if recent_alerts|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="pms-table">
+                                    <tbody>
+                                        {% for alert in recent_alerts %}
+                                            <tr>
+                                                <td>
+                                                    <i class="fas fa-regular {{ alert.icon }} me-2" style="color: {{ alert.color }};"></i>
+                                                    {{ alert.message }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3 mb-0">
+                                <i class="fas fa-regular fa-bell-slash fa-2x mb-2 d-block"></i>
+                                No new alerts
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>#}
+            
+            {# ==================== RECENT EXPENSES ==================== #}
+            <div class="pms-card">
+                <div class="pms-section-header">
+                    <h4 class="pms-section-title">
+                        <i class="fas fa-regular fa-receipt"></i> Recent Expenses
+                    </h4>
+                    <a href="{{ all_expenses_link }}" class="pms-view-all">
+                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Invoice #</th>
+                                <th>Supplier</th>
+                                <th>Payment Count</th>
+                                <th>Paid Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in recent_expenses %}
+                                <tr>
+                                    <td>{{ expense.invoice_date }}</td>
+                                    <td>{{ expense.invoice_number }}</td>
+                                    <td>{{ expense.supplier_name }}</td>
+                                    <td>{{ expense.payment_count }}</td>
+                                    <td class="text-danger">৳ {{ expense.paid_amount }}</td>
+                                    <td>
+                                        <span class="pms-status pms-status-paid">{{ expense.payment_status }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ expense.edit_link }}" class="pms-action-icon" title="Edit">
+                                            <i class="fas fa-regular fa-pen"></i>
+                                        </a>
+                                        <a href="{{ expense.view_link }}" class="pms-action-icon" title="View">
+                                            <i class="fas fa-regular fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
+                                        No expenses recorded yet
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {# ==================== RECENT PAYMENTS ==================== #}
+            <div class="pms-card">
+                <div class="pms-section-header">
+                    <h4 class="pms-section-title">
+                        <i class="fas fa-regular fa-credit-card"></i> Recent Payments
+                    </h4>
+                    <a href="{{ all_payments_link }}" class="pms-view-all">
+                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Shareholder</th>
+                                <th>Phase</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in recent_payments %}
+                                <tr>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>{{ payment.shareholder_name }}</td>
+                                    <td>{{ payment.phase_name }}</td>
+                                    <td class="text-success">+ ৳ {{ payment.amount }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">No payments recorded yet</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {# ==================== QUICK ACTIONS ==================== #}
+            {#<div class="pms-section-header mt-3">
+                <h4 class="pms-section-title">
+                    <i class="fas fa-regular fa-bolt"></i> Quick Actions
+                </h4>
+            </div>
+            
+            <div class="pms-quick-actions mb-4">
+                <a href="{{ add_expense_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-plus-circle"></i>
+                    <span>Add Expense</span>
+                </a>
+                <a href="{{ record_payment_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-credit-card"></i>
+                    <span>Record Payment</span>
+                </a>
+                <a href="{{ generate_bills_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-file-invoice"></i>
+                    <span>Generate Bills</span>
+                </a>
+                <a href="{{ create_utility_bill_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-bolt"></i>
+                    <span>Utility Bill</span>
+                </a>
+                <a href="{{ expense_report_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-chart-line"></i>
+                    <span>Expense Report</span>
+                </a>
+                <a href="{{ collection_report_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-chart-pie"></i>
+                    <span>Collection Report</span>
+                </a>
+            </div>#}
+            
+            {{ content_bottom }}
+        </div>
+        
+    </div>
+</div>
+
+{{ footer }}

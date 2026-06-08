@@ -1,0 +1,224 @@
+{{ header }}
+
+<style>
+    .summary-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .summary-item {
+        text-align: center;
+        padding: 10px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .summary-item:last-child {
+        border-right: none;
+    }
+    .summary-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #22C55E;
+    }
+    .summary-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .payment-history-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .payment-item {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 15px 20px;
+        transition: background 0.2s;
+    }
+    .payment-item:hover {
+        background: #f8f9fa;
+    }
+    .payment-amount {
+        font-size: 16px;
+        font-weight: 700;
+        color: #22C55E;
+    }
+    .payment-method {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #e8f0fe;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #0B3C5D;
+    }
+    .reference-number {
+        font-family: monospace;
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_payment_history }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back to Bills
+                </a>
+            </div>
+            
+            <!-- Payment Summary -->
+            <div class="summary-card">
+                <div class="row">
+                    <div class="col-md-3 summary-item">
+                        <div class="summary-number">৳ {{ payment_summary.total_paid|number_format(2) }}</div>
+                        <div class="summary-label">Total Paid</div>
+                    </div>
+                    <div class="col-md-3 summary-item">
+                        <div class="summary-number text-danger">৳ {{ payment_summary.total_due|number_format(2) }}</div>
+                        <div class="summary-label">Total Due</div>
+                    </div>
+                    <div class="col-md-3 summary-item">
+                        <div class="summary-number">{{ payment_summary.total_payments }}</div>
+                        <div class="summary-label">Total Transactions</div>
+                    </div>
+                    <div class="col-md-3 summary-item">
+                        <div class="summary-number">{{ payment_summary.last_payment_date }}</div>
+                        <div class="summary-label">Last Payment</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase Breakdown -->
+            {% if payment_summary.payment_by_phase %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-chart-pie"></i> Payment by Phase
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for phase in payment_summary.payment_by_phase %}
+                                <div class="col-md-3 mb-2">
+                                    <strong>{{ phase.phase_name }}:</strong> ৳ {{ phase.total|number_format(2) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select name="filter_year" class="form-select">
+                            <option value="">All Years</option>
+                            {% for year in available_years %}
+                                <option value="{{ year.year }}" {{ filter_year == year.year ? 'selected' : '' }}>{{ year.year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="filter_month" class="form-select">
+                            <option value="">All Months</option>
+                            {% for month_num, month_name in months %}
+                                <option value="{{ month_num }}" {{ filter_month == month_num ? 'selected' : '' }}>{{ month_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="button-filter" class="btn btn-primary w-100">
+                            <i class="fas fa-solid fa-search"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History Table -->
+            <div class="payment-history-card">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Payment Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Reference No</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                    <tr>
+                                        <td>{{ payment.payment_date|date('d M Y') }}</td>
+                                        <td>{{ payment.phase_name }} Payment</td>
+                                        <td class="text-success">+ ৳ {{ payment.amount|number_format(2) }}</td>
+                                        <td><span class="payment-method">{{ payment.payment_method|capitalize }}</span></td>
+                                        <td class="reference-number">{{ payment.reference_number ?: '-' }}</td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2" class="text-end">Total:</th>
+                                    <th class="text-success">৳ {{ payment_summary.total_paid|number_format(2) }}</th>
+                                    <th colspan="3"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-regular fa-credit-card fa-3x mb-3 d-block"></i>
+                        <h5>No payment history found</h5>
+                        <p>You haven't made any payments yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_payment_history&language={{ language }}';
+    
+    var filter_year = $('select[name="filter_year"]').val();
+    if (filter_year) url += '&filter_year=' + filter_year;
+    
+    var filter_month = $('select[name="filter_month"]').val();
+    if (filter_month) url += '&filter_month=' + filter_month;
+    
+    location = url;
+});
+</script>
+
+{{ footer }}

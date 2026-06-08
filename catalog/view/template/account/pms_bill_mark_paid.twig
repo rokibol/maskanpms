@@ -1,0 +1,105 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_mark_paid }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-credit-card"></i> Mark Bill as Paid
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Bill Summary -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Bill Month:</strong> {{ bill.bill_month }}<br>
+                                <strong>Bill Type:</strong> {{ bill.bill_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Apartment:</strong> {{ bill.apartment_number }}<br>
+                                <strong>Shareholder:</strong> {{ bill.shareholder_name }} ({{ bill.shareholder_code }})
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <strong>Amount Due:</strong> <span class="text-danger fs-4">৳ {{ bill.amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="form-mark-paid" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                        <input type="hidden" name="bill_id" value="{{ bill.bill_id }}">
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Payment Amount</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="amount" value="{{ bill.amount|replace({',': ''}) }}" class="form-control" step="0.01" required readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Payment Date</label>
+                            <div class="col-sm-9">
+                                <input type="date" name="payment_date" value="{{ "now"|date("Y-m-d") }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Payment Method</label>
+                            <div class="col-sm-9">
+                                <select name="payment_method" class="form-select" required>
+                                    <option value="">-- Select Payment Method --</option>
+                                    {% for method_key, method_name in payment_methods %}
+                                        <option value="{{ method_key }}">{{ method_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Reference Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="reference_number" class="form-control" placeholder="Transaction ID / Cheque No / bKash Ref">
+                                <small class="text-muted">Optional: Enter reference number from payment gateway or bank</small>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-regular fa-circle-check"></i> Confirm Payment
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" name="user_token" value="{{ user_token }}">
+                    </form>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

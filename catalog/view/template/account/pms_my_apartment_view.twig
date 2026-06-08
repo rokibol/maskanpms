@@ -1,0 +1,218 @@
+{{ header }}
+
+<style>
+    .apartment-detail-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    .apartment-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 25px;
+        color: white;
+    }
+    .apartment-header h2 {
+        margin: 0;
+        font-size: 28px;
+    }
+    .apartment-header p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+    .info-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .info-card-header {
+        background: #f8f9fa;
+        padding: 12px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .info-card-header i {
+        margin-right: 8px;
+        color: #1F8A4D;
+    }
+    .info-card-body {
+        padding: 20px;
+    }
+    .info-row {
+        display: flex;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        width: 40%;
+        font-weight: 600;
+        color: #555;
+    }
+    .info-value {
+        width: 60%;
+        color: #333;
+    }
+    .other-apartment-item {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .other-apartment-item:last-child {
+        margin-bottom: 0;
+    }
+    .other-apartment-number {
+        font-weight: 600;
+        color: #0B3C5D;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> 
+                        {% if has_multiple %}Back to Apartments{% else %}Back to Dashboard{% endif %}
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Apartment Detail Card -->
+            <div class="apartment-detail-card">
+                <div class="apartment-header">
+                    <h2 class="text-white"><i class="fa-regular fa-building"></i> Apartment {{ apartment.apartment_number }}</h2>
+                    <p>Floor {{ apartment.floor_number }} | {{ shareholder_name }} ({{ shareholder_code }})</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Basic Information -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-info-circle"></i> Basic Information
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-row">
+                                <div class="info-label">Apartment Number</div>
+                                <div class="info-value"><strong>{{ apartment.apartment_number }}</strong></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Floor Number</div>
+                                <div class="info-value">{{ apartment.floor_number }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Area</div>
+                                <div class="info-value">{{ apartment.area_sqft }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Fixed Maintenance Fee</div>
+                                <div class="info-value text-success fw-bold">৳ {{ apartment.fixed_maintenance_fee }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Room Details -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-bed"></i> Room Details
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-row">
+                                <div class="info-label">Bedrooms</div>
+                                <div class="info-value">{{ apartment.bedrooms }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Bathrooms</div>
+                                <div class="info-value">{{ apartment.bathrooms }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Balcony</div>
+                                <div class="info-value">{{ apartment.balcony }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Parking Slot</div>
+                                <div class="info-value">{{ apartment.parking_slot }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <!-- Additional Information -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-note-sticky"></i> Additional Information
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-row">
+                                <div class="info-label">Created Date</div>
+                                <div class="info-value">{{ apartment.created_at }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Last Updated</div>
+                                <div class="info-value">{{ apartment.updated_at }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Notes</div>
+                                <div class="info-value">{{ apartment.notes|raw }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Other Apartments (if multiple) -->
+                    {% if has_multiple and other_apartments %}
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <i class="fa-solid fa-building"></i> Your Other Apartments
+                            </div>
+                            <div class="info-card-body">
+                                {% for apt in other_apartments %}
+                                    <div class="other-apartment-item">
+                                        <span class="other-apartment-number">
+                                            <i class="fa-regular fa-building"></i> Apartment {{ apt.apartment_number }}
+                                        </span>
+                                        <a href="{{ apt.link }}" class="btn btn-sm btn-outline-primary">
+                                            View Details <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

@@ -1,0 +1,101 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ text_form }}</h1>
+                <div>
+                    <button type="submit" form="form-customer" class="btn btn-primary">
+                        <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
+                    </button>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-reply"></i> {{ button_back }}
+                    </a>
+                </div>
+            </div>
+            
+            <form id="form-customer" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-user"></i> Accountant Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">First Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="firstname" value="{{ firstname }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Last Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="lastname" value="{{ lastname }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Email Address</label>
+                            <div class="col-sm-9">
+                                <input type="email" name="email" value="{{ email }}" class="form-control" required>
+                                <small class="text-muted">This will be used for login</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Phone Number</label>
+                            <div class="col-sm-9">
+                                <input type="tel" name="telephone" value="{{ telephone }}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 {% if not customer_id %}required{% endif %}">
+                            <label class="col-sm-3 col-form-label">Password</label>
+                            <div class="col-sm-9">
+                                <input type="password" name="password" value="{{ password }}" class="form-control" {% if not customer_id %}required{% endif %}>
+                                {% if customer_id %}
+                                    <small class="text-muted">Leave empty to keep current password</small>
+                                {% else %}
+                                    <small class="text-muted">Minimum 4 characters</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 {% if not customer_id %}required{% endif %}">
+                            <label class="col-sm-3 col-form-label">Confirm Password</label>
+                            <div class="col-sm-9">
+                                <input type="password" name="confirm" value="{{ confirm }}" class="form-control" {% if not customer_id %}required{% endif %}>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-solid fa-info-circle"></i>
+                            This accountant will be assigned to the project: <strong>{{ project_name }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

@@ -1,0 +1,155 @@
+{{ header }}
+
+<style>
+    .apartment-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .apartment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .apartment-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .apartment-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0B3C5D;
+    }
+    .apartment-badge {
+        background: #1F8A4D;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+    .apartment-body {
+        padding: 20px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .info-item {
+        text-align: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    .info-label {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+    .btn-view {
+        background: #0B3C5D;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+    }
+    .btn-view:hover {
+        background: #1F8A4D;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Shareholder Info -->
+            <div class="alert alert-info mb-4">
+                <i class="fa-regular fa-user"></i>
+                <strong>{{ shareholder_name }}</strong> ({{ shareholder_code }}) - You own <strong>{{ apartments|length }}</strong> apartment(s)
+            </div>
+            
+            <!-- Apartments Grid -->
+            <div class="row">
+                {% for apartment in apartments %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="apartment-card">
+                            <div class="apartment-header">
+                                <span class="apartment-number">
+                                    <i class="fa-regular fa-building"></i> {{ apartment.apartment_number }}
+                                </span>
+                                <span class="apartment-badge">Floor {{ apartment.floor_number }}</span>
+                            </div>
+                            <div class="apartment-body">
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">Area</div>
+                                        <div class="info-value">{{ apartment.area_sqft|number_format(0) }} sqft</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Bedrooms</div>
+                                        <div class="info-value">{{ apartment.bedrooms }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Bathrooms</div>
+                                        <div class="info-value">{{ apartment.bathrooms }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Maintenance</div>
+                                        <div class="info-value text-success">৳ {{ apartment.fixed_maintenance_fee|number_format(2) }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Balcony</div>
+                                        <div class="info-value">{{ apartment.balcony }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Parking</div>
+                                        <div class="info-value">{{ apartment.parking_slot }}</div>
+                                    </div>
+                                </div>
+                                <a href="{{ apartment.view_link }}" class="btn-view">
+                                    <i class="fa-regular fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

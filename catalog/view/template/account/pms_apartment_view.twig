@@ -1,0 +1,120 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <div>
+                    <a href="{{ edit }}" class="btn btn-primary">
+                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-building"></i> Apartment Details
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%;">Apartment Number</th>
+                                    <td>{{ apartment.apartment_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Floor Number</th>
+                                    <td>{{ apartment.floor_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Area (sq ft)</th>
+                                    <td>{{ apartment.area_sqft|number_format(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Bedrooms</th>
+                                    <td>{{ apartment.bedrooms }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Bathrooms</th>
+                                    <td>{{ apartment.bathrooms }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Balcony</th>
+                                    <td>{{ apartment.balcony }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Parking Slot</th>
+                                    <td>{{ apartment.parking_slot }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%;">Maintenance Fee</th>
+                                    <td class="text-success">৳ {{ apartment.fixed_maintenance_fee }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Shareholder</th>
+                                    <td>{{ apartment.shareholder_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Shareholder Code</th>
+                                    <td>{{ apartment.shareholder_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ apartment.status_badge|raw }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Active Status</th>
+                                    <td>{{ apartment.is_active_badge|raw }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created Date</th>
+                                    <td>{{ apartment.created_at }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ apartment.updated_at }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if apartment.notes and apartment.notes != '-' %}
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h6>Notes:</h6>
+                                <div class="p-3 bg-light rounded">{{ apartment.notes|raw }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

@@ -1,0 +1,212 @@
+{{ header }}
+
+<style>
+    .invoice-header { background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%); padding: 20px; color: white; border-radius: 8px; margin-bottom: 20px; }
+    .info-card { background: white; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px; overflow: hidden; }
+    .info-card-header { background: #f8f9fa; padding: 12px 20px; border-bottom: 1px solid #e0e0e0; font-weight: 600; }
+    .info-row { display: flex; padding: 10px 20px; border-bottom: 1px solid #f0f0f0; }
+    .info-label { width: 30%; font-weight: 600; color: #555; }
+    .info-value { width: 70%; color: #333; }
+    .payment-item { padding: 10px 20px; border-bottom: 1px solid #e0e0e0; }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <div>
+                    {% if invoice.invoice_document %}
+                        <a href="{{ download_document }}" class="btn btn-info">
+                            <i class="fas fa-regular fa-download"></i> Download Document
+                        </a>
+                    {% endif %}
+                    {% if edit %}
+                    <a href="{{ edit }}" class="btn btn-primary">
+                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
+                    </a>
+                    {% endif %}
+                    <button type="button" class="btn btn-success" onclick="addPayment()">
+                        <i class="fa-solid fa-credit-card"></i> Record Payment
+                    </button>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+
+                </div>
+            </div>
+            
+            <div class="invoice-header">
+                <h2 class="mb-1 text-white">INVOICE #{{ invoice.invoice_number }}</h2>
+                <p class="mb-0">{{ invoice.supplier_name }} | {{ invoice.invoice_date }}</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="info-card-header">Invoice Information</div>
+                        <div class="info-row"><div class="info-label">Invoice Number</div><div class="info-value">{{ invoice.invoice_number }}</div></div>
+                        <div class="info-row"><div class="info-label">Invoice Date</div><div class="info-value">{{ invoice.invoice_date }}</div></div>
+                        <div class="info-row"><div class="info-label">Due Date</div><div class="info-value">{{ invoice.due_date }}</div></div>
+                        <div class="info-row"><div class="info-label">Supplier</div><div class="info-value">{{ invoice.supplier_name }} ({{ invoice.supplier_code }})</div></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="info-card-header">Payment Status</div>
+                        <div class="info-row"><div class="info-label">Status</div><div class="info-value">{{ invoice.status_badge|raw }}</div></div>
+                        <div class="info-row"><div class="info-label">Total Amount</div><div class="info-value text-danger fw-bold">৳ {{ invoice.total_amount }}</div></div>
+                        <div class="info-row"><div class="info-label">Paid Amount</div><div class="info-value text-success fw-bold">৳ {{ invoice.paid_amount }}</div></div>
+                        <div class="info-row"><div class="info-label">Due Amount</div><div class="info-value text-danger fw-bold">৳ {{ invoice.due_amount }}</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if invoice.invoice_document %}
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fas fa-regular fa-file-pdf"></i> Attached Document
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Document</div>
+                    <div class="info-value">
+                        <a href="{{ download_document }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-regular fa-download"></i> Download Invoice Document
+                        </a>
+                        <span class="text-muted ms-2">{{ invoice.invoice_document|split('/')|last }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="info-card">
+                <div class="info-card-header">Invoice Items</div>
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr><th>Category</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                                <tr>
+                                    <td>{{ item.category_name }}</td>
+                                    <td>{{ item.item_description }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>৳ {{ item.unit_price|number_format(2) }}</td>
+                                    <td>৳ {{ item.total_price|number_format(2) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr><td colspan="4" class="text-end fw-bold">Sub Total:</td><td>৳ {{ invoice.sub_total }}</td></tr>
+                            <tr><td colspan="4" class="text-end">Tax:</td><td>৳ {{ invoice.tax_amount }}</td></tr>
+                            <tr><td colspan="4" class="text-end">Discount:</td><td>৳ {{ invoice.discount_amount }}</td></tr>
+                            <tr><td colspan="4" class="text-end fw-bold fs-5">Total:</td><td class="text-danger fw-bold fs-5">৳ {{ invoice.total_amount }}</td></tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Add Payment History Section after Invoice Items -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Payment History
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Notes</th>
+                                <th>Recorded By</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if payments %}
+                                {% for payment in payments %}
+                                    <tr>
+                                        <td>{{ payment.payment_date|date('d M Y') }}</td>
+                                        <td class="text-success">+ ৳ {{ payment.amount|number_format(2) }}</td>
+                                        <td>{{ payment.payment_method|capitalize }}</td>
+                                        <td>{{ payment.reference_number ?: '-' }}</td>
+                                        <td>{{ payment.notes ?: '-' }}</td>
+                                        <td>{{ payment.recorded_by_name }}</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="deletePayment({{ payment.payment_id }})">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="7" class="text-center text-muted">No payments recorded yet</td></tr>
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="1" class="text-end">Total Paid:</th>
+                                <th class="text-success">৳ {{ total_paid|number_format(2) }}</th>
+                                <th colspan="5"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            {% if invoice.notes %}
+            <div class="info-card">
+                <div class="info-card-header">Notes</div>
+                <div class="info-row"><div class="info-value">{{ invoice.notes|raw }}</div></div>
+            </div>
+            {% endif %}
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+<script>
+function addPayment() {
+    $.ajax({
+        url: 'index.php?route=account/pms_expense_invoices.addPaymentForm&language={{ language }}&invoice_id={{ invoice.invoice_id }}&customer_token={{ customer_token }}',
+        type: 'GET',
+        success: function(html) {
+            $('body').append('<div id="payment-modal" class="modal fade">' + html + '</div>');
+            $('#payment-modal').modal('show');
+            $('#payment-modal').on('hidden.bs.modal', function() {
+                $('#payment-modal').remove();
+                location.reload();
+            });
+        }
+    });
+}
+
+function deletePayment(paymentId) {
+    if (confirm('Are you sure you want to delete this payment?')) {
+        $.ajax({
+            url: 'index.php?route=account/pms_expense_invoices.deletePayment&language={{ language }}&payment_id=' + paymentId + '&customer_token={{ customer_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            }
+        });
+    }
+}
+</script>
+{{ footer }}

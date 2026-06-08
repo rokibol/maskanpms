@@ -1,0 +1,62 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title"><i class="fa-solid fa-user-plus"></i> {{ text_add_customer }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <form id="form-add-customer">
+                <input type="hidden" name="project_id" value="{{ project_id }}">
+                <div class="mb-3">
+                    <label class="form-label">Select Customer</label>
+                    <select name="customer_id" class="form-select" required>
+                        <option value="">-- Select Customer --</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.customer_id }}">
+                                {{ customer.name }} ({{ customer.email }}) - {{ customer.customer_group }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Only customers not already assigned to this project are shown.</small>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btn-add-customer">Add Customer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+$('#btn-add-customer').on('click', function() {
+    var customer_id = $('select[name="customer_id"]').val();
+    var project_id = $('input[name="project_id"]').val();
+    
+    if (!customer_id) {
+        alert('Please select a customer');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=pms/project_customers.addCustomer&user_token={{ user_token }}',
+        type: 'POST',
+        data: {
+            customer_id: customer_id,
+            project_id: project_id
+        },
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('#modal-add-customer').modal('hide');
+                loadCustomerList();
+            } else {
+                alert(json.error);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + '\r\n' + xhr.statusText + '\r\n' + xhr.responseText);
+        }
+    });
+});
+</script>

@@ -1,0 +1,222 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ text_form }}</h1>
+                <div>
+                    <button type="submit" form="form-expense" class="btn btn-primary">
+                        <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
+                    </button>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-reply"></i> {{ button_back }}
+                    </a>
+                </div>
+            </div>
+            
+            <form id="form-expense" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-receipt"></i> Expense Information
+                    </div>
+                    <div class="card-body">
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Invoice / Bill Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="invoice_number" value="{{ invoice_number }}" class="form-control" required>
+                                <small class="text-muted">Enter the invoice or bill reference number</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Expense Date</label>
+                            <div class="col-sm-9">
+                                <input type="date" name="expense_date" value="{{ expense_date }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Expense Category</label>
+                            <div class="col-sm-9">
+                                <select name="category_id" class="form-select" required>
+                                    <option value="">-- Select Category --</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {{ category_id == category.id ? 'selected' : '' }}>
+                                            {{ category.path|raw }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Total Amount (BDT)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="total_amount" value="{{ total_amount }}" class="form-control" step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Description</label>
+                            <div class="col-sm-9">
+                                <textarea name="description" rows="4" class="form-control" placeholder="Enter details about this expense...">{{ description }}</textarea>
+                            </div>
+                        </div>
+                        
+                        {#<div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Supporting Document</label>
+                            <div class="col-sm-9">
+                                <input type="file" name="document" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">Allowed: PDF, JPG, PNG, DOC (Max: 5MB)</small>
+                            </div>
+                        </div>#}
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Supporting Document</label>
+                            <div class="col-sm-9">
+                                <div id="document-upload-area">
+                                    <input type="file" name="document" id="document-file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                    <small class="text-muted">Allowed: PDF, JPG, PNG, DOC (Max: 5MB)</small>
+                                    
+                                    <div id="document-preview" style="display: none; margin-top: 10px;">
+                                        <div class="alert alert-info">
+                                            <i class="fa-regular fa-file-pdf"></i>
+                                            <span id="document-filename"></span>
+                                            <button type="button" id="remove-document" class="btn btn-danger btn-sm float-end">
+                                                <i class="fa-regular fa-trash-can"></i> Remove
+                                            </button>
+                                        </div>
+                                        <input type="hidden" name="document_path" id="document-path" value="">
+                                        <input type="hidden" name="existing_document" id="existing-document" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-solid fa-info-circle"></i>
+                    <strong>Note:</strong> This expense will be automatically allocated to all shareholders based on their ownership percentage.
+                </div>
+                
+                <input type="hidden" name="customer_token" value="{{ customer_token }}">
+                <input type="hidden" name="expense_id" value="{{ expense_id }}" />
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+<script>
+// Document upload handling for OpenCart 4.0.1.3
+$(document).ready(function() {
+    // If there's an existing document, show it
+    var existingDocument = '{{ document_path }}';
+    if (existingDocument) {
+        $('#document-preview').show();
+        var filename = existingDocument.split('/').pop();
+        $('#document-filename').text(filename);
+        $('#document-path').val(existingDocument);
+        $('#existing-document').val(existingDocument);
+    }
+    
+    // Handle file upload
+    $('#document-file').on('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        
+        // Validate file size
+        if (file.size > 5242880) {
+            alert('File size too large. Maximum 5MB allowed.');
+            $(this).val('');
+            return;
+        }
+        
+        // Validate file type
+        var allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+        var fileExt = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.includes(fileExt)) {
+            alert('Invalid file type. Allowed: PDF, JPG, PNG, DOC, DOCX');
+            $(this).val('');
+            return;
+        }
+        
+        // Upload via AJAX
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('user_token', '{{ user_token }}');
+        
+        $.ajax({
+            url: 'index.php?route=account/pms_expenses.uploadDocument&language={{ language }}',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            contentType: false,
+            processData: false,
+            beforeSend: function() {
+                $('#document-file').prop('disabled', true);
+                $('#document-file').after('<div class="spinner-border spinner-border-sm ms-2" id="upload-spinner"></div>');
+            },
+            success: function(json) {
+                if (json.success) {
+                    $('#document-preview').show();
+                    $('#document-filename').text(json.filename);
+                    $('#document-path').val(json.file_path);
+                    $('#existing-document').val('');
+                    $('#document-file').val('');
+                } else {
+                    alert(json.error);
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert('Upload failed: ' + thrownError);
+            },
+            complete: function() {
+                $('#document-file').prop('disabled', false);
+                $('#upload-spinner').remove();
+            }
+        });
+    });
+    
+    // Remove document
+    $('#remove-document').on('click', function() {
+        var filePath = $('#document-path').val();
+        
+        if (filePath && confirm('Are you sure you want to remove this document?')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_expenses.deleteDocument&language={{ language }}&file_path=' + encodeURIComponent(filePath) + '&user_token={{ user_token }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        $('#document-preview').hide();
+                        $('#document-path').val('');
+                        $('#existing-document').val('');
+                        $('#document-file').val('');
+                    } else {
+                        alert(json.error);
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{{ footer }}

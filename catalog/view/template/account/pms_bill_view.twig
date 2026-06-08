@@ -1,0 +1,192 @@
+{{ header }}
+
+<style>
+    .bill-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .bill-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 20px;
+        color: white;
+    }
+    .bill-body {
+        padding: 25px;
+    }
+    .info-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .info-label {
+        width: 40%;
+        font-weight: 600;
+        color: #555;
+    }
+    .info-value {
+        width: 60%;
+        color: #333;
+    }
+    .status-paid {
+        background: #22C55E;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .status-unpaid {
+        background: #EF4444;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back to Bills
+                </a>
+            </div>
+            
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1" style="color:#FFFFFF;">Bill Details</h3>
+                            <p class="mb-0 opacity-75">Bill ID: #{{ bill.bill_id }}</p>
+                        </div>
+                        <div>
+                            {% if bill.is_paid %}
+                                <span class="status-paid"><i class="fas fa-regular fa-circle-check"></i> PAID</span>
+                            {% else %}
+                                <span class="status-unpaid"><i class="fas fa-regular fa-clock"></i> UNPAID</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bill-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Bill Information</h5>
+                            <div class="info-row">
+                                <div class="info-label">Bill Month</div>
+                                <div class="info-value">{{ bill.bill_month }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Bill Type</div>
+                                <div class="info-value">{{ bill.bill_type }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Amount</div>
+                                <div class="info-value text-danger fw-bold">৳ {{ bill.amount }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Due Date</div>
+                                <div class="info-value">{{ bill.due_date }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Payment Date</div>
+                                <div class="info-value">{{ bill.paid_date }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Apartment Information</h5>
+                            <div class="info-row">
+                                <div class="info-label">Apartment Number</div>
+                                <div class="info-value">{{ bill.apartment_number }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Floor</div>
+                                <div class="info-value">{{ bill.floor_number }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Area</div>
+                                <div class="info-value">{{ bill.area_sqft|number_format(0) }} sq ft</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5 class="mb-3">Shareholder Information</h5>
+                            <div class="info-row">
+                                <div class="info-label">Shareholder Name</div>
+                                <div class="info-value">{{ bill.shareholder_name }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Shareholder Code</div>
+                                <div class="info-value">{{ bill.shareholder_code }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">{{ bill.shareholder_email }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value">{{ bill.shareholder_phone }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if bill.is_paid %}
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h5 class="mb-3">Payment Information</h5>
+                                <div class="info-row">
+                                    <div class="info-label">Payment Method</div>
+                                    <div class="info-value">{{ bill.payment_method }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Reference Number</div>
+                                    <div class="info-value">{{ bill.payment_reference }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Payment Date</div>
+                                    <div class="info-value">{{ bill.payment_date }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if bill.notes and bill.notes != '-' %}
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h5 class="mb-3">Notes</h5>
+                                <div class="info-row">
+                                    <div class="info-value">{{ bill.notes|raw }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

@@ -1,0 +1,436 @@
+{{ header }}
+
+<style>
+    .filter-bar {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .stats-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-box {
+        text-align: center;
+        padding: 10px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .stat-box:last-child {
+        border-right: none;
+    }
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #0B3C5D;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    /* ========== FIX DROPDOWN OVERFLOW ========== */
+    .table-responsive {
+        overflow-x: auto;
+        overflow-y: visible !important;
+    }
+    
+    .table {
+        overflow: visible !important;
+    }
+    
+    .table tbody,
+    .table tr,
+    .table td {
+        overflow: visible !important;
+    }
+    
+    .dropdown {
+        position: static !important;
+    }
+    
+    .dropdown-menu {
+        position: absolute !important;
+        z-index: 9999 !important;
+        inset: auto auto 0 auto !important;
+        min-width: 180px;
+    }
+    
+    /* For the action column - make it position relative */
+    .table td:last-child {
+        position: relative;
+        overflow: visible !important;
+    }
+    
+    /* Ensure parent containers don't clip */
+    #content,
+    .card-body,
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    /* Fix for the dropdown button container */
+    .action-dropdown {
+        position: relative !important;
+        display: inline-block !important;
+    }
+    
+    .action-dropdown .dropdown-menu {
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        left: auto !important;
+        bottom: auto !important;
+        margin-top: 5px !important;
+        transform: translateY(0) !important;
+    }
+    
+    /* Ensure dropdown appears above modal backdrop if any */
+    .dropdown-menu.show {
+        display: block;
+        z-index: 1060;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ add }}" class="btn btn-primary">
+                        <i class="fas fa-solid fa-plus"></i> {{ button_add }}
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.total }}</div>
+                        <div class="stat-label">Total Apartments</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.assigned }}</div>
+                        <div class="stat-label">Assigned</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.available }}</div>
+                        <div class="stat-label">Available</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.monthly_maintenance|number_format(0) }} ৳</div>
+                        <div class="stat-label">Monthly Maintenance</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <input type="text" name="filter_apartment" value="{{ filter_apartment }}" class="form-control" placeholder="Apartment No">
+                    </div>
+                    <div class="col-md-1">
+                        <select name="filter_floor" class="form-select">
+                            <option value="">All Floors</option>
+                            {% for floor in floors %}
+                                <option value="{{ floor.floor_number }}" {{ filter_floor == floor.floor_number ? 'selected' : '' }}>Floor {{ floor.floor_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_status" class="form-select">
+                            {% for status_value, status_name in status_options %}
+                                <option value="{{ status_value }}" {{ filter_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_bedrooms" class="form-select">
+                            <option value="">All Bedrooms</option>
+                            {% for bedroom in bedroom_options %}
+                                <option value="{{ bedroom }}" {{ filter_bedrooms == bedroom ? 'selected' : '' }}>{{ bedroom }} Bedroom</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_is_active" class="form-select">
+                            {% for active_value, active_name in active_options %}
+                                <option value="{{ active_value }}" {{ filter_is_active == active_value ? 'selected' : '' }}>{{ active_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="filter_shareholder" value="{{ filter_shareholder }}" class="form-control" placeholder="Shareholder Name">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="button" id="button-filter" class="btn btn-primary">
+                            <i class="fas fa-solid fa-search"></i> Filter
+                        </button>
+                        <button type="button" id="button-clear" class="btn btn-secondary">
+                            <i class="fas fa-solid fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Apartments Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th><a href="{{ sort_apartment }}">Apartment No</a></th>
+                            <th><a href="{{ sort_floor }}">Floor</a></th>
+                            <th><a href="{{ sort_area }}">Area (sqft)</a></th>
+                            <th><a href="{{ sort_bedrooms }}">Beds</th>
+                            <th><a href="{{ sort_fee }}">Maint. Fee (৳)</a></th>
+                            <th>Shareholder</th>
+                            <th><a href="{{ sort_status }}">Status</a></th>
+                            <th><a href="{{ sort_active }}">Active</a></th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if apartments %}
+                            {% for apartment in apartments %}
+                                <tr>
+                                    <td>{{ apartment.apartment_number }}</td>
+                                    <td>Floor {{ apartment.floor_number }}</td>
+                                    <td>{{ apartment.area_sqft|number_format(0) }}</td>
+                                    <td>{{ apartment.bedrooms }}</td>
+                                    <td>{{ apartment.fixed_maintenance_fee|number_format(2) }}</td>
+                                    <td>{{ apartment.shareholder_name }}</td>
+                                    <td>{{ apartment.status_badge|raw }}</td>
+                                    <td>{{ apartment.active_badge|raw }}</td>
+                                    <td class="text-end" style="position: relative; overflow: visible;">
+                                        <div class="dropdown action-dropdown">
+                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-solid fa-gear"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{{ apartment.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                                <li><a class="dropdown-item" href="{{ apartment.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0);" onclick="assignModal({{ apartment.apartment_id }}, '{{ apartment.apartment_number }}', {{ apartment.shareholder_id|default('null') }})">
+                                                        <i class="fas fa-solid fa-user-check"></i> Assign/Unassign
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteApartment({{ apartment.apartment_id }})">
+                                                        <i class="fas fa-regular fa-trash-can"></i> Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-regular fa-building fa-2x mb-2 d-block"></i>
+                                    No apartments found.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="modal-assign" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-solid fa-user-check"></i> Assign/Unassign Apartment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-assign" action="{{ assign_url }}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="apartment_id" id="assign_apartment_id">
+                    <div class="mb-3">
+                        <label class="form-label">Apartment Number</label>
+                        <input type="text" id="assign_apartment_number" class="form-control" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Shareholder</label>
+                        <select name="shareholder_id" id="assign_shareholder_id" class="form-select">
+                            <option value="0">-- Unassign --</option>
+                            {% for shareholder in shareholders %}
+                                <option value="{{ shareholder.id }}">{{ shareholder.firstname }} {{ shareholder.lastname }} ({{ shareholder.shareholder_code }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Select a shareholder to assign, or select "Unassign" to remove assignment.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentShareholderId = null;
+
+function assignModal(apartmentId, apartmentNumber, shareholderId) {
+    $('#assign_apartment_id').val(apartmentId);
+    $('#assign_apartment_number').val(apartmentNumber);
+    $('#assign_shareholder_id').val(shareholderId || 0);
+    $('#modal-assign').modal('show');
+}
+
+$('#form-assign').on('submit', function(e) {
+    e.preventDefault();
+    
+    $.ajax({
+        url: 'index.php?route=account/pms_apartments.assign&language={{ language }}&customer_token={{ customer_token }}',
+        type: 'POST',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('#modal-assign').modal('hide');
+                location.reload();
+            } else {
+                alert(json.error);
+            }
+        }
+    });
+});
+
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_apartments&language={{ language }}&customer_token={{ customer_token }}';
+    
+    var filter_apartment = $('input[name="filter_apartment"]').val();
+    if (filter_apartment) url += '&filter_apartment=' + encodeURIComponent(filter_apartment);
+    
+    var filter_floor = $('select[name="filter_floor"]').val();
+    if (filter_floor) url += '&filter_floor=' + filter_floor;
+    
+    var filter_status = $('select[name="filter_status"]').val();
+    if (filter_status) url += '&filter_status=' + filter_status;
+    
+    var filter_bedrooms = $('select[name="filter_bedrooms"]').val();
+    if (filter_bedrooms) url += '&filter_bedrooms=' + filter_bedrooms;
+    
+    var filter_is_active = $('select[name="filter_is_active"]').val();
+    if (filter_is_active !== '') url += '&filter_is_active=' + filter_is_active;
+    
+    var filter_shareholder = $('input[name="filter_shareholder"]').val();
+    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+    
+    location = url;
+});
+
+$('#button-clear').on('click', function() {
+    location = 'index.php?route=account/pms_apartments&language={{ language }}&customer_token={{ customer_token }}';
+});
+
+$('input').keydown(function(e) {
+    if (e.keyCode == 13) {
+        $('#button-filter').click();
+    }
+});
+
+function deleteApartment(apartmentId) {
+    if (confirm('Are you sure you want to delete this apartment? This action cannot be undone.')) {
+        $.ajax({
+            url: 'index.php?route=account/pms_apartments.delete&language={{ language }}&apartment_id=' + apartmentId + '&customer_token={{ customer_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            }
+        });
+    }
+}
+
+// Fix dropdown positioning - ensure dropdowns appear above table
+$(document).ready(function() {
+    // Reinitialize dropdowns to ensure proper positioning
+    $('.dropdown-toggle').on('show.bs.dropdown', function() {
+        var $dropdown = $(this).closest('.dropdown');
+        var $menu = $dropdown.find('.dropdown-menu');
+        var $button = $(this);
+        var buttonOffset = $button.offset();
+        var buttonHeight = $button.outerHeight();
+        var menuHeight = $menu.outerHeight();
+        var viewportBottom = $(window).scrollTop() + $(window).height();
+        var buttonBottom = buttonOffset.top + buttonHeight;
+        
+        // Remove any existing inline styles
+        $menu.removeAttr('style');
+        
+        // Check if dropdown would go outside viewport
+        if (buttonBottom + menuHeight > viewportBottom) {
+            // Show above the button
+            $menu.css({
+                'top': 'auto',
+                'bottom': '100%',
+                'right': '0',
+                'left': 'auto',
+                'margin-bottom': '5px'
+            });
+        } else {
+            // Show below the button
+            $menu.css({
+                'top': '100%',
+                'bottom': 'auto',
+                'right': '0',
+                'left': 'auto',
+                'margin-top': '5px'
+            });
+        }
+    });
+    
+    // Reset dropdown styles when hidden
+    $('.dropdown').on('hidden.bs.dropdown', function() {
+        $(this).find('.dropdown-menu').removeAttr('style');
+    });
+});
+</script>
+
+{{ footer }}

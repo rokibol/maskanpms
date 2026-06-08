@@ -1,0 +1,183 @@
+{{ header }}
+
+<style>
+    .bill-input-group {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #1F8A4D;
+    }
+    .info-box {
+        background: #e8f0fe;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #0B3C5D;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_generate }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="stat-number">{{ apartment_stats.total }}</div>
+                        <div class="text-muted">Total Apartments</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="stat-number">{{ apartment_stats.assigned }}</div>
+                        <div class="text-muted">Active Apartments</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="stat-number">৳ {{ apartment_stats.monthly_maintenance|number_format(2) }}</div>
+                        <div class="text-muted">Monthly Maintenance Revenue</div>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-solid fa-info-circle"></i>
+                    <strong>How it works:</strong> Enter the total bill amount for each category. The system will automatically divide equally among all active apartments with assigned shareholders.
+                </div>
+            </div>
+            
+            <form id="form-generate-bills" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-calendar"></i> Bill Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Bill Month</label>
+                            <div class="col-sm-9">
+                                <input type="month" name="bill_month" value="{{ bill_month }}" class="form-control" required>
+                                <small class="text-muted">Select the month for which bills are being generated</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-receipt"></i> Bill Amounts by Category
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Enter the total bill amount for each category. These will be divided equally among {{ apartment_stats.assigned }} active apartments.</p>
+                        
+                        {% for bill_type in bill_types %}
+                            <div class="bill-input-group">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">{{ bill_type.name }}</label>
+                                        <small class="text-muted d-block">{{ bill_type.description ?: 'Monthly ' ~ bill_type.name|lower }}</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group">
+                                            <span class="input-group-text">৳</span>
+                                            <input type="number" name="bill_types[{{ bill_type.bill_type_id }}]" class="form-control bill-amount" step="1" min="0" placeholder="0.00" data-id="{{ bill_type.bill_type_id }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">
+                                            Per Apartment: <span class="per-apartment-amount" id="per_apt_{{ bill_type.bill_type_id }}">0.00</span> ৳
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-solid fa-calculator"></i>
+                            <strong>Calculation:</strong> Each apartment will be charged an equal share of the total bill amount.
+                        </div>
+                    </div>
+                </div>
+                
+                {% if last_month_bills %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-history"></i> Last Month's Bills (Reference)
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Bill Type</th>
+                                        <th>Total Amount</th>
+                                        <th>Per Apartment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in last_month_bills %}
+                                        <tr>
+                                            <td>{{ bill.bill_type_name }}</td>
+                                            <td>৳ {{ bill.total_amount|number_format(2) }}</td>
+                                            <td>৳ {{ bill.equal_share|number_format(2) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="alert alert-success">
+                    <i class="fas fa-regular fa-lightbulb"></i>
+                    <strong>Flexible Payment Option:</strong> Shareholders can pay their bills individually at their own pace. Each apartment owner will see their share and can pay when ready.
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-solid fa-file-invoice"></i> Generate Bills
+                    </button>
+                </div>
+                
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var totalApartments = {{ apartment_stats.assigned }};
+    
+    $('.bill-amount').on('input', function() {
+        var amount = parseFloat($(this).val()) || 0;
+        var perApartment = amount / totalApartments;
+        var id = $(this).data('id');
+        $('#per_apt_' + id).text(perApartment.toFixed(2));
+    });
+});
+</script>
+
+{{ footer }}

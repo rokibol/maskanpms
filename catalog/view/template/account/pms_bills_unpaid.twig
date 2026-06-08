@@ -1,0 +1,301 @@
+{{ header }}
+
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-box {
+        text-align: center;
+        padding: 10px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .stat-box:last-child {
+        border-right: none;
+    }
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .stat-number.amount { color: #EF4444; }
+    .stat-number.count { color: #F59E0B; }
+    .stat-number.percentage { color: #22C55E; }
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    .filter-bar {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .badge-unpaid {
+        background: #EF4444;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        display: inline-block;
+    }
+    .bulk-action-bar {
+        background: #fff;
+        padding: 10px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_unpaid }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back to Bills
+                </a>
+            </div>
+            
+            <!-- Payment Statistics -->
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number amount">৳ {{ payment_stats.total_bills|number_format(2) }}</div>
+                        <div class="stat-label">Total Bills</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number amount">৳ {{ payment_stats.paid_amount|number_format(2) }}</div>
+                        <div class="stat-label">Collected</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number amount" style="color: #EF4444;">৳ {{ payment_stats.unpaid_amount|number_format(2) }}</div>
+                        <div class="stat-label">Unpaid</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number percentage">{{ payment_stats.paid_percentage }}%</div>
+                        <div class="stat-label">Collection Rate</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" name="filter_shareholder" value="{{ filter_shareholder }}" class="form-control" placeholder="Shareholder Name">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_month" class="form-select">
+                            <option value="">All Months</option>
+                            {% for month in available_months %}
+                                <option value="{{ month.month }}" {{ filter_month == month.month ? 'selected' : '' }}>{{ month.month_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_bill_type" class="form-select">
+                            <option value="">All Bill Types</option>
+                            {% for type in bill_types %}
+                                <option value="{{ type.bill_type_id }}" {{ filter_bill_type == type.bill_type_id ? 'selected' : '' }}>{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" name="filter_apartment" value="{{ filter_apartment }}" class="form-control" placeholder="Apartment No">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" id="button-filter" class="btn btn-primary w-100">
+                            <i class="fas fa-solid fa-search"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Unpaid Bills Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th width="30"><input type="checkbox" id="select-all"></th>
+                            <th>Bill Month</th>
+                            <th>Apartment</th>
+                            <th>Bill Type</th>
+                            <th>Shareholder</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if unpaid_bills %}
+                            {% for bill in unpaid_bills %}
+                                <tr>
+                                    <td><input type="checkbox" name="selected_bills[]" value="{{ bill.bill_id }}" class="bill-selector"></td>
+                                    <td>{{ bill.bill_month|date('M Y') }}</td>
+                                    <td>{{ bill.apartment_number }} (Floor {{ bill.floor_number }})</td>
+                                    <td>{{ bill.bill_type_name }}</td>
+                                    <td>
+                                        {{ bill.shareholder_name }}<br>
+                                        <small class="text-muted">{{ bill.shareholder_code }}</small>
+                                    </td>
+                                    <td class="text-danger">৳ {{ bill.amount|number_format(2) }}</td>
+                                    <td>{{ bill.due_date|date('d M Y') }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ mark_paid_url }}&bill_id={{ bill.bill_id }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-regular fa-circle-check"></i> Mark Paid
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-regular fa-circle-check fa-2x mb-2 d-block"></i>
+                                    No unpaid bills found. All bills are paid!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8f9fa;">
+                            <td colspan="5" class="text-end fw-bold">Total Unpaid:</td>
+                            <td class="text-danger fw-bold">৳ {{ total_unpaid_amount|number_format(2) }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <!-- Bulk Action Bar -->
+            <div class="bulk-action-bar">
+                <span class="text-muted small">Selected: <span id="selected-count">0</span> bills</span>
+                <select id="bulk-payment-method" class="form-select w-auto">
+                    <option value="">Select Payment Method</option>
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="cash">Cash</option>
+                </select>
+                <input type="date" id="bulk-payment-date" class="form-control w-auto" placeholder="Payment Date">
+                <input type="text" id="bulk-reference" class="form-control w-auto" placeholder="Reference No (Optional)">
+                <button type="button" id="bulk-mark-paid" class="btn btn-primary">Mark Selected as Paid</button>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+// Select All functionality
+$('#select-all').on('change', function() {
+    $('.bill-selector').prop('checked', $(this).prop('checked'));
+    updateSelectedCount();
+});
+
+$('.bill-selector').on('change', function() {
+    updateSelectedCount();
+});
+
+function updateSelectedCount() {
+    var count = $('.bill-selector:checked').length;
+    $('#selected-count').text(count);
+}
+
+// Bulk Mark Paid
+$('#bulk-mark-paid').on('click', function() {
+    var selected = [];
+    $('.bill-selector:checked').each(function() {
+        selected.push($(this).val());
+    });
+    
+    if (selected.length === 0) {
+        alert('Please select at least one bill');
+        return;
+    }
+    
+    var paymentMethod = $('#bulk-payment-method').val();
+    if (!paymentMethod) {
+        alert('Please select a payment method');
+        return;
+    }
+    
+    var paymentDate = $('#bulk-payment-date').val();
+    if (!paymentDate) {
+        alert('Please select payment date');
+        return;
+    }
+    
+    if (confirm('Mark ' + selected.length + ' bill(s) as paid?')) {
+        $.ajax({
+            url: '{{ bulk_mark_paid_url }}',
+            type: 'POST',
+            data: {
+                bill_ids: selected,
+                payment_method: paymentMethod,
+                payment_date: paymentDate,
+                reference_number: $('#bulk-reference').val(),
+                user_token: '{{ user_token }}'
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            }
+        });
+    }
+});
+
+// Filter
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_bills.unpaid&language={{ language }}&customer_token={{ customer_token }}';
+    
+    var filter_shareholder = $('input[name="filter_shareholder"]').val();
+    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+    
+    var filter_month = $('select[name="filter_month"]').val();
+    if (filter_month) url += '&filter_month=' + filter_month;
+    
+    var filter_bill_type = $('select[name="filter_bill_type"]').val();
+    if (filter_bill_type) url += '&filter_bill_type=' + filter_bill_type;
+    
+    var filter_apartment = $('input[name="filter_apartment"]').val();
+    if (filter_apartment) url += '&filter_apartment=' + encodeURIComponent(filter_apartment);
+    
+    location = url;
+});
+
+$('input, select').keydown(function(e) {
+    if (e.keyCode == 13) {
+        $('#button-filter').click();
+    }
+});
+</script>
+
+{{ footer }}

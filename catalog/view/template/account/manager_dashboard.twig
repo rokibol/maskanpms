@@ -1,0 +1,364 @@
+{{ header }}
+{# ==================== MAIN CONTAINER ==================== #}
+<div id="account-account" class="container-fluid">
+    
+    {# Breadcrumbs #}
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item">
+                <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+            </li>
+        {% endfor %}
+    </ul>#}
+    
+    {# Success/Error Alerts #}
+    {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fas fa-solid fa-circle-check"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fas fa-solid fa-circle-exclamation"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    <div class="row">
+        
+        {# Left Column - Sidebar #}
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        {# Main Content Area #}
+        <div id="content" class="col-lg-9 col-md-8">
+            {{ content_top }}
+            
+            {# ==================== WELCOME HERO SECTION ==================== #}
+            <div class="pms-welcome-hero">
+                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                    <div>
+                        <h2>Welcome back, {{ manager_name }}!</h2>
+                        <p>Here's your project overview and key metrics.</p>
+                        <div class="mt-2">
+                            <span class="pms-badge">
+                                <i class="fas fa-regular fa-building"></i> {{ project_name }}
+                            </span>
+                            <span class="pms-badge ms-2">
+                                <i class="fas fa-regular fa-users"></i> {{ total_shareholders }} Shareholders
+                            </span>
+                            <span class="pms-badge ms-2">
+                                <i class="fas fa-regular fa-chart-pie"></i> {{ total_shares }} Total Shares
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2 mt-sm-0">
+                        <small class="opacity-75">Project Status: 
+                            <strong>{{ project_status|capitalize }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== KEY METRICS ROW ==================== #}
+            <div class="row g-4 mb-4">
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon primary-bg">
+                            <i class="fas fa-regular fa-building"></i>
+                        </div>
+                        <div class="pms-stat-label">Total Apartments</div>
+                        <div class="pms-stat-value">{{ total_apartments|default('0') }}</div>
+                        <div class="pms-stat-sub">{{ occupied_apartments|default('0') }} occupied</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon blue-bg">
+                            <i class="fas fa-regular fa-credit-card"></i>
+                        </div>
+                        <div class="pms-stat-label">Total Collections</div>
+                        <div class="pms-stat-value">৳ {{ total_collections|default('0') }}</div>
+                        <div class="pms-stat-sub">From {{ paying_shareholders|default('0') }} shareholders</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon green-bg">
+                            <i class="fas fa-regular fa-chart-line"></i>
+                        </div>
+                        <div class="pms-stat-label">Total Expenses</div>
+                        <div class="pms-stat-value">৳ {{ total_expenses|default('0') }}</div>
+                        <div class="pms-stat-sub">Construction phase</div>
+                    </div>
+                </div>
+                {#<div class="col-md-3 col-sm-6">
+                    <div class="pms-stat-card">
+                        <div class="pms-stat-icon warning-bg">
+                            <i class="fas fa-regular fa-clock"></i>
+                        </div>
+                        <div class="pms-stat-label">Outstanding Dues</div>
+                        <div class="pms-stat-value">৳ {{ outstanding_dues|default('0') }}</div>
+                        <div class="pms-stat-sub">{{ overdue_count|default('0') }} overdue</div>
+                    </div>
+                </div>#}
+            </div>
+            
+            {# ==================== COLLECTION PROGRESS & QUICK STATS ==================== #}
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-chart-simple"></i> Collection Progress
+                            </h4>
+                        </div>
+                        <div class="text-center mb-3">
+                            <div class="pms-progress-ring" style="position: relative; display: inline-block;">
+                                <svg width="120" height="120">
+                                    <circle class="pms-progress-ring-bg" cx="60" cy="60" r="54" fill="none" stroke="#F5F7FA" stroke-width="12"/>
+                                    <circle class="pms-progress-ring-circle" cx="60" cy="60" r="54" fill="none" stroke="#1F8A4D" stroke-width="12" 
+                                            stroke-dasharray="{{ collection_percentage * 3.39 }}, 339" stroke-dashoffset="0"/>
+                                </svg>
+                                <div class="pms-progress-ring-text">{{ collection_percentage|default('0') }}%</div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <p class="mb-0"><strong>৳ {{ total_collections|default('0') }}</strong> collected of <strong>৳ {{ total_due|default('0') }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-chart-pie"></i> Expense Breakdown
+                            </h4>
+                        </div>
+                        <div class="mt-2">
+                            {% for category in expense_categories %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="small">{{ category.category_name }}</span>
+                                        <span class="small fw-bold">৳ {{ category.total_amount }}</span>
+                                    </div>
+                                    <div class="pms-progress">
+                                        <div class="pms-progress-bar" style="width: {{ category.percentage }}%"></div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No expense data available</p>
+                            {% endfor %}
+                        </div>
+                        <div class="text-end mt-2">
+                            <a href="{{ expense_report_link }}" class="pms-view-all">View Details <i class="fas fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== RECENT EXPENSES ==================== #}
+            <div class="pms-card">
+                <div class="pms-section-header">
+                    <h4 class="pms-section-title">
+                        <i class="fas fa-regular fa-receipt"></i> Recent Expenses
+                    </h4>
+                    <a href="{{ all_expenses_link }}" class="pms-view-all">
+                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Invoice #</th>
+                                <th>Supplier</th>
+                                <th>Payment Count</th>
+                                <th>Paid Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in recent_expenses %}
+                                <tr>
+                                    <td>{{ expense.invoice_date }}</td>
+                                    <td>{{ expense.invoice_number }}</td>
+                                    <td>{{ expense.supplier_name }}</td>
+                                    <td>{{ expense.payment_count }}</td>
+                                    <td class="text-danger">৳ {{ expense.paid_amount }}</td>
+                                    <td>
+                                        <span class="pms-status pms-status-paid">{{ expense.payment_status }}</span>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
+                                        No expenses recorded yet
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {# ==================== TOP SHAREHOLDERS & RECENT PAYMENTS ==================== #}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            {#<h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-trophy"></i> Top Shareholders (by Ownership)
+                            </h4>#}
+                            <h5 class="mb-0 pms-section-title">Top Shareholders</h5>
+                            <select id="top-shareholder-criteria" class="form-select w-auto">
+                                <option value="ownership">By Ownership %</option>
+                                <option value="paid">By Total Paid</option>
+                                <option value="due">By Outstanding Due</option>
+                            </select>
+                        </div>
+                        <div id="top-shareholders-container">
+                            <div class="table-responsive">
+                                <table class="pms-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Shareholder</th>
+                                            <th>Code</th>
+                                            <th>Ownership %</th>
+                                            <th>Units</th>
+                                            <th>Total Paid</th>
+                                            <th>Outstanding</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if top_shareholders %}
+                                        {% for shareholder in top_shareholders %}
+                                            <tr>
+                                                <td>{{ shareholder.name }}</a></a>
+                                                <td>{{ shareholder.shareholder_code }}</a></a>
+                                                <td class="fw-bold">{{ shareholder.percentage|round(2) }}%</a></a>
+                                                <td>{{ shareholder.ownership_units }} units</a></a>
+                                                <td class="text-success">৳ {{ shareholder.total_paid|number_format(2) }}</a></a>
+                                                <td class="text-danger">৳ {{ shareholder.total_due|number_format(2) }}</a></a>
+                                            </tr>
+                                        {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-3">No shareholder data available</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-clock-rotate-left"></i> Recent Payments
+                            </h4>
+                            <a href="{{ all_payments_link }}" class="pms-view-all">
+                                View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="pms-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Shareholder</th>
+                                        <th>Phase</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in recent_payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date }}</td>
+                                            <td>{{ payment.shareholder_name }}</td>
+                                            <td>{{ payment.phase_name }}</td>
+                                            <td class="text-success">+ ৳ {{ payment.amount }}</td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">No payments recorded yet</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {# ==================== QUICK ACTIONS ==================== #}
+            {#<div class="pms-section-header mt-3">
+                <h4 class="pms-section-title">
+                    <i class="fas fa-regular fa-bolt"></i> Quick Actions
+                </h4>
+            </div>
+            
+            <div class="pms-quick-actions mb-4">
+                <a href="{{ add_expense_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-plus-circle"></i>
+                    <span>Add Expense</span>
+                </a>
+                <a href="{{ record_payment_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-credit-card"></i>
+                    <span>Record Payment</span>
+                </a>
+                <a href="{{ add_shareholder_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-user-plus"></i>
+                    <span>Add Shareholder</span>
+                </a>
+                <a href="{{ transfer_shares_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-arrow-right-arrow-left"></i>
+                    <span>Transfer Shares</span>
+                </a>
+                <a href="{{ generate_bills_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-file-invoice"></i>
+                    <span>Generate Bills</span>
+                </a>
+                <a href="{{ financial_report_link }}" class="pms-quick-btn">
+                    <i class="fas fa-regular fa-chart-line"></i>
+                    <span>Financial Report</span>
+                </a>
+            </div>#}
+            
+            {{ content_bottom }}
+        </div>
+        
+    </div>
+</div>
+<script>
+// Dynamic top shareholders switching
+$('#top-shareholder-criteria').on('change', function() {
+    var criteria = $(this).val();
+    
+    $.ajax({
+        url: 'index.php?route=account/manager.getTopShareholders&language={{ language }}&criteria=' + criteria + '&customer_token={{ customer_token }}',
+        type: 'GET',
+        dataType: 'html',
+        beforeSend: function() {
+            $('#top-shareholders-container').html('<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
+        },
+        success: function(html) {
+            $('#top-shareholders-container').html(html);
+        },
+        error: function() {
+            $('#top-shareholders-container').html('<div class="alert alert-danger">Error loading data</div>');
+        }
+    });
+});
+</script>
+{{ footer }}

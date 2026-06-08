@@ -1,0 +1,246 @@
+{{ header }}
+
+<style>
+    .allocation-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .allocation-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 20px;
+        color: white;
+    }
+    .allocation-body {
+        padding: 25px;
+    }
+    .formula-box {
+        background: #e8f0fe;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .formula-text {
+        font-family: monospace;
+        font-size: 16px;
+        color: #0B3C5D;
+        font-weight: bold;
+    }
+    .example-box {
+        background: #f0fdf4;
+        border-left: 4px solid #1F8A4D;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .preview-table th {
+        background: #f8f9fa;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    .preview-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .total-row {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid">
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_bulk_allocation_rate }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Shareholders
+                    </a>
+                </div>
+            </div>
+            
+            <div class="allocation-card">
+                <div class="allocation-header">
+                    <h3 class="mb-1" style="color: #FFFFFF;"><i class="fa-solid fa-calculator"></i> Per-Share / Per-Percentage Allocation</h3>
+                    <p class="mb-0 opacity-75">Enter amount per 1% share or per 1 unit, system calculates for all shareholders</p>
+                </div>
+                <div class="allocation-body">
+                    
+                    <div class="example-box">
+                        <i class="fa-regular fa-lightbulb"></i>
+                        <strong>Example:</strong><br>
+                        If you enter <strong>1,000 BDT</strong> and select <strong>"Per 1% Share"</strong>:<br>
+                        • Shareholder with 50% gets: 1,000 × 50 = 50,000 BDT<br>
+                        • Shareholder with 30% gets: 1,000 × 30 = 30,000 BDT<br>
+                        • Shareholder with 20% gets: 1,000 × 20 = 20,000 BDT
+                    </div>
+                    
+                    <form id="form-bulk-allocation" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Select Payment Phase</label>
+                            <div class="col-sm-9">
+                                <select name="payment_phase_id" id="payment-phase" class="form-select" required>
+                                    <option value="">-- Select Phase --</option>
+                                    {% for phase in payment_phases %}
+                                        <option value="{{ phase.phase_id }}">{{ phase.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Calculation Type</label>
+                            <div class="col-sm-9">
+                                <select name="calculation_type" id="calculation-type" class="form-select" required>
+                                    <option value="percentage">Per 1% Share (Based on ownership percentage)</option>
+                                    <option value="units">Per 1 Unit Share (Based on share units)</option>
+                                </select>
+                                <small class="text-muted">Choose how you want to calculate the allocation</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label" id="rate-label">Amount per 1% Share (BDT)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="rate_per_unit" id="rate-per-unit" class="form-control" step="0.01" min="0.01" placeholder="Enter amount" required>
+                                <small class="text-muted" id="rate-help">Enter the amount for each 1% ownership</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Notes (Optional)</label>
+                            <div class="col-sm-9">
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes about this allocation..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Section -->
+                        <div class="alert alert-secondary" id="preview-section" style="display: none;">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <strong>Allocation Preview:</strong>
+                            <div id="preview-content"></div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="submit-btn" disabled>
+                                <i class="fa-solid fa-layer-group"></i> Allocate to All Shareholders
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" name="user_token" value="{{ user_token }}">
+                    </form>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var calculationType = $('#calculation-type');
+    var ratePerUnit = $('#rate-per-unit');
+    var paymentPhase = $('#payment-phase');
+    var previewSection = $('#preview-section');
+    var submitBtn = $('#submit-btn');
+    var rateLabel = $('#rate-label');
+    var rateHelp = $('#rate-help');
+    
+    // Update label based on calculation type
+    calculationType.on('change', function() {
+        var type = $(this).val();
+        if (type === 'percentage') {
+            rateLabel.text('Amount per 1% Share (BDT)');
+            rateHelp.text('Enter the amount for each 1% ownership (Example: 1000)');
+        } else {
+            rateLabel.text('Amount per 1 Unit Share (BDT)');
+            rateHelp.text('Enter the amount for each single share unit (Example: 5000)');
+        }
+        calculatePreview();
+    });
+    
+    function calculatePreview() {
+        var type = calculationType.val();
+        var rate = ratePerUnit.val();
+        var phase = paymentPhase.val();
+        
+        if (type && rate && rate > 0 && phase) {
+            $.ajax({
+                url: 'index.php?route=account/pms_shareholders.getRateAllocationPreview&language={{ language }}&user_token={{ user_token }}',
+                type: 'GET',
+                data: { 
+                    calculation_type: type,
+                    rate_per_unit: rate
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        var html = '<div class="alert alert-info mt-2">';
+                        html += '<strong>Rate: ' + data.rate_per_unit.toFixed(2) + ' BDT per ' + (data.calculation_type === 'percentage' ? '1% share' : '1 unit') + '</strong><br>';
+                        html += 'Total Allocation Amount: <strong>৳ ' + data.total_amount.toFixed(2) + '</strong>';
+                        html += '</div>';
+                        
+                        html += '<table class="preview-table">';
+                        html += '<thead><tr><th>Shareholder</th><th>' + (data.calculation_type === 'percentage' ? 'Ownership %' : 'Share Units') + '</th><th>Allocation Amount</th></tr></thead>';
+                        html += '<tbody>';
+                        
+                        for (var i in data.shareholders) {
+                            html += '<tr>';
+                            html += '<td>' + data.shareholders[i].name + '</td>';
+                            html += '<td>' + data.shareholders[i].value + ' ' + data.shareholders[i].value_type + '</td>';
+                            html += '<td>৳ ' + data.shareholders[i].amount.toFixed(2) + '</td>';
+                            html += '</tr>';
+                        }
+                        
+                        html += '<tfoot class="total-row">';
+                        html += '<tr><th colspan="2">Total:</th><th>৳ ' + data.total_amount.toFixed(2) + '</th></tr>';
+                        html += '</tfoot>';
+                        html += '</tbody></table>';
+                        
+                        $('#preview-content').html(html);
+                        previewSection.show();
+                        submitBtn.prop('disabled', false);
+                    } else {
+                        previewSection.hide();
+                        submitBtn.prop('disabled', true);
+                    }
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                    previewSection.hide();
+                    submitBtn.prop('disabled', true);
+                }
+            });
+        } else {
+            previewSection.hide();
+            submitBtn.prop('disabled', true);
+        }
+    }
+    
+    calculationType.on('change', calculatePreview);
+    ratePerUnit.on('input', calculatePreview);
+    paymentPhase.on('change', calculatePreview);
+});
+</script>
+
+{{ footer }}

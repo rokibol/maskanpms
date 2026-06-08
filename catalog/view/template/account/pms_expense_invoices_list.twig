@@ -1,0 +1,193 @@
+{{ header }}
+
+<style>
+    .filter-bar { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .stats-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-box { text-align: center; padding: 10px; border-right: 1px solid #e0e0e0; }
+    .stat-box:last-child { border-right: none; }
+    .stat-number { font-size: 24px; font-weight: bold; }
+    .stat-number.total { color: #0B3C5D; }
+    .stat-number.paid { color: #22C55E; }
+    .stat-number.unpaid { color: #EF4444; }
+    .stat-label { font-size: 12px; color: #6c757d; }
+    .status-paid { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+    .status-partial { background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+    .status-unpaid { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+    .status-overdue { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+</style>
+
+<div class="container-fluid">
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    {% if is_accountant %}
+                    <a href="{{ add }}" class="btn btn-primary">
+                        <i class="fas fa-solid fa-plus"></i> {{ button_add }}
+                    </a>
+                    {% endif %}
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number total">৳ {{ stats.total_amount|number_format(2) }}</div>
+                        <div class="stat-label">Total Invoices</div>
+                    </div>
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number paid">৳ {{ stats.paid_amount|number_format(2) }}</div>
+                        <div class="stat-label">Paid Amount</div>
+                    </div>
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number unpaid">৳ {{ stats.unpaid_amount|number_format(2) }}</div>
+                        <div class="stat-label">Unpaid Amount</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <input type="text" name="filter_invoice_no" class="form-control" placeholder="Invoice No" value="{{ filter_invoice_no }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="filter_supplier" class="form-select">
+                            <option value="">All Suppliers</option>
+                            {% for supplier in suppliers %}
+                                <option value="{{ supplier.supplier_id }}" {{ filter_supplier == supplier.supplier_id ? 'selected' : '' }}>{{ supplier.supplier_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_payment_status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for status_key, status_name in payment_statuses %}
+                                <option value="{{ status_key }}" {{ filter_payment_status == status_key ? 'selected' : '' }}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="filter_date_from" class="form-control" placeholder="Date From" value="{{ filter_date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="filter_date_to" class="form-control" placeholder="Date To" value="{{ filter_date_to }}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" id="button-filter" class="btn btn-primary w-100">
+                            <i class="fas fa-solid fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Invoices Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Date</th>
+                            <th>Supplier</th>
+                            <th>Sub Total</th>
+                            <th>Tax</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if invoices %}
+                            {% for invoice in invoices %}
+                                <tr>
+                                    <td>{{ invoice.invoice_number }}</td>
+                                    <td>{{ invoice.invoice_date }}</td>
+                                    <td>{{ invoice.supplier_name }}</td>
+                                    <td>৳ {{ invoice.sub_total|number_format(2) }}</td>
+                                    <td>৳ {{ invoice.tax_amount|number_format(2) }}</td>
+                                    <td class="text-danger">৳ {{ invoice.total_amount|number_format(2) }}</td>
+                                    <td class="text-success">৳ {{ invoice.paid_amount|number_format(2) }}</td>
+                                    <td class="text-danger">৳ {{ invoice.due_amount|number_format(2) }}</td>
+                                    <td>{{ invoice.status_badge|raw }}</td>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                                <i class="fas fa-solid fa-gear"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{{ invoice.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                                {% if invoice.edit %}<li><a class="dropdown-item" href="{{ invoice.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>{% endif %}
+                                                {% if invoice.has_document %}
+                                                    <li><a class="dropdown-item" href="{{ invoice.download }}"><i class="fas fa-regular fa-download"></i> Download Document</a></li>
+                                                {% endif %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                {% if invoice.edit %}<li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteInvoice({{ invoice.invoice_id }})"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>{% endif %}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="10" class="text-center text-muted py-4">No invoices found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_expense_invoices&language={{ language }}';
+    var filter_invoice_no = $('input[name="filter_invoice_no"]').val();
+    var filter_supplier = $('select[name="filter_supplier"]').val();
+    var filter_payment_status = $('select[name="filter_payment_status"]').val();
+    var filter_date_from = $('input[name="filter_date_from"]').val();
+    var filter_date_to = $('input[name="filter_date_to"]').val();
+    if (filter_invoice_no) url += '&filter_invoice_no=' + encodeURIComponent(filter_invoice_no);
+    if (filter_supplier) url += '&filter_supplier=' + filter_supplier;
+    if (filter_payment_status) url += '&filter_payment_status=' + filter_payment_status;
+    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
+    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
+    location = url;
+});
+
+function deleteInvoice(invoiceId) {
+    if (confirm('Are you sure? This will also delete all associated expenses.')) {
+        $.ajax({
+            url: 'index.php?route=account/pms_expense_invoices.delete&language={{ language }}&invoice_id=' + invoiceId,
+            type: 'GET',
+            success: function(json) {
+                if (json.success) location.reload();
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}

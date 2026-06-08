@@ -1,0 +1,182 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ text_form }}</h1>
+                <div>
+                    <button type="submit" form="form-shareholder" class="btn btn-primary">
+                        <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
+                    </button>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-reply"></i> {{ button_back }}
+                    </a>
+                </div>
+            </div>
+            
+            <form id="form-shareholder" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-user"></i> Personal Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">First Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="firstname" value="{{ firstname }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Last Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="lastname" value="{{ lastname }}" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Email Address</label>
+                            <div class="col-sm-9">
+                                <input type="email" name="email" value="{{ email }}" class="form-control" required>
+                                <small class="text-muted">This will be used for login</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Phone Number</label>
+                            <div class="col-sm-9">
+                                <input type="tel" name="phone" value="{{ phone }}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 {% if not shareholder_id %}required{% endif %}">
+                            <label class="col-sm-3 col-form-label">Password</label>
+                            <div class="col-sm-9">
+                                <input type="password" name="password" value="{{ password }}" class="form-control" {% if not shareholder_id %}required{% endif %}>
+                                {% if shareholder_id %}
+                                    <small class="text-muted">Leave empty to keep current password</small>
+                                {% else %}
+                                    <small class="text-muted">Minimum 4 characters</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-chart-pie"></i> Ownership Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Ownership Units</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="ownership_units" value="{{ ownership_units }}" class="form-control" min="1" required>
+                                <small class="text-muted">Total shares available: {{ total_shares }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Address</label>
+                            <div class="col-sm-9">
+                                <textarea name="address" rows="3" class="form-control">{{ address }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-users"></i> Nominee Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Nominee Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="nominee_name" value="{{ nominee_name }}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Nominee Relation</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="nominee_relation" value="{{ nominee_relation }}" class="form-control" placeholder="e.g., Spouse, Son, Daughter">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Nominee Phone</label>
+                            <div class="col-sm-9">
+                                <input type="tel" name="nominee_phone" value="{{ nominee_phone }}" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-building-columns"></i> Banking Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Bank Account No</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="bank_account_no" value="{{ bank_account_no }}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Bank Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="bank_name" value="{{ bank_name }}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">TIN Number</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="tin_number" value="{{ tin_number }}" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-note-sticky"></i> Additional Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Notes</label>
+                            <div class="col-sm-9">
+                                <textarea name="notes" rows="4" class="form-control" placeholder="Any additional notes about this shareholder...">{{ notes }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="project_id" value="{{ project_id }}">
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

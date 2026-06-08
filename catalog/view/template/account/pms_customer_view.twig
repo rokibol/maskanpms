@@ -1,0 +1,77 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <div>
+                    <a href="{{ edit }}" class="btn btn-primary">
+                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-user"></i> Accountant Details
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 30%;">Full Name</th>
+                            <td>{{ customer.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email Address</th>
+                            <td>{{ customer.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone Number</th>
+                            <td>{{ customer.telephone ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Customer Group</th>
+                            <td>{{ customer.customer_group }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>{{ customer.status_badge|raw }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Registered</th>
+                            <td>{{ customer.date_added }}</td>
+                        </tr>
+                        {% if customer.ip %}
+                            <tr>
+                                <th>IP Address</th>
+                                <td>{{ customer.ip }}</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

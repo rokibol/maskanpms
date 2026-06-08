@@ -1,0 +1,312 @@
+{{ header }}
+
+<style>
+    .transfer-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .preview-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 15px;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        background: #f5f5f5;
+        padding: 10px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .data-table td {
+        padding: 10px;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+    .text-danger { color: #dc3545; }
+    .text-success { color: #28a745; }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <!-- Transfer Form -->
+            <div class="transfer-card">
+                <div class="section-title">New Share Transfer</div>
+                <form id="form-transfer" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                    <div class="row mb-3 required">
+                        <label class="col-sm-3 col-form-label">Transfer From</label>
+                        <div class="col-sm-9">
+                            <select name="from_shareholder_id" id="from-shareholder" class="form-select" required>
+                                <option value="">-- Select Shareholder --</option>
+                                {% for shareholder in shareholders %}
+                                    <option value="{{ shareholder.id }}">
+                                        {{ shareholder.name }} ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_units }} units
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3 required">
+                        <label class="col-sm-3 col-form-label">Transfer To</label>
+                        <div class="col-sm-9">
+                            <select name="to_shareholder_id" id="to-shareholder" class="form-select" required>
+                                <option value="">-- Select Shareholder --</option>
+                                {% for shareholder in shareholders %}
+                                    <option value="{{ shareholder.id }}">
+                                        {{ shareholder.name }} ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_units }} units
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3 required">
+                        <label class="col-sm-3 col-form-label">Units to Transfer</label>
+                        <div class="col-sm-9">
+                            <input type="number" name="units_to_transfer" id="units-to-transfer" class="form-control" step="1" min="1" required>
+                            <small class="text-muted">Enter the number of share units to transfer</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3 required">
+                        <label class="col-sm-3 col-form-label">Transfer Date</label>
+                        <div class="col-sm-9">
+                            <input type="date" name="transfer_date" value="{{ "now"|date("Y-m-d") }}" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Reference Number</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="reference_number" class="form-control" placeholder="Agreement No / Document Ref">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Notes</label>
+                        <div class="col-sm-9">
+                            <textarea name="notes" rows="3" class="form-control" placeholder="Additional notes about this transfer..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Section -->
+                    <div id="preview-section" style="display: none;">
+                        <div class="preview-box">
+                            <div class="info-row">
+                                <span>From Shareholder:</span>
+                                <span id="preview-from-name" class="fw-bold"></span>
+                            </div>
+                            <div class="info-row">
+                                <span>Current Units:</span>
+                                <span id="preview-from-units"></span>
+                            </div>
+                            <div class="info-row">
+                                <span>After Transfer:</span>
+                                <span id="preview-from-after" class="text-danger"></span>
+                            </div>
+                            <hr>
+                            <div class="info-row">
+                                <span>To Shareholder:</span>
+                                <span id="preview-to-name" class="fw-bold"></span>
+                            </div>
+                            <div class="info-row">
+                                <span>Current Units:</span>
+                                <span id="preview-to-units"></span>
+                            </div>
+                            <div class="info-row">
+                                <span>After Transfer:</span>
+                                <span id="preview-to-after" class="text-success"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer Shares
+                        </button>
+                    </div>
+                    
+                    <input type="hidden" name="user_token" value="{{ user_token }}">
+                </form>
+            </div>
+            
+            <!-- Transfer History -->
+            <div class="transfer-card">
+                <div class="section-title">Transfer History</div>
+                
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" name="filter_from" class="form-control" placeholder="From Shareholder" value="{{ filter_from }}">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="filter_to" class="form-control" placeholder="To Shareholder" value="{{ filter_to }}">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="filter_date_from" class="form-control" placeholder="Date From" value="{{ filter_date_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="filter_date_to" class="form-control" placeholder="Date To" value="{{ filter_date_to }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="button-filter" class="btn btn-primary w-100">
+                                <i class="fa-solid fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transfer Table -->
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>From Shareholder</th>
+                                <th>To Shareholder</th>
+                                <th>Units</th>
+                                <th>Percentage</th>
+                                <th>Reference</th>
+                                <th>Recorded By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if transfers %}
+                                {% for transfer in transfers %}
+                                    <tr>
+                                        <td>{{ transfer.transfer_date|date('d M Y') }}</td>
+                                        <td>{{ transfer.from_name }}<br><small class="text-muted">{{ transfer.from_code }}</small></td>
+                                        <td>{{ transfer.to_name }}<br><small class="text-muted">{{ transfer.to_code }}</small></td>
+                                        <td>{{ transfer.units_transferred }} units</a></td>
+                                        <td>{{ transfer.percentage_transferred|round(2) }}%</a></td>
+                                        <td>{{ transfer.reference_number ?: '-' }}</a></td>
+                                        <td>{{ transfer.created_by_name }}</a></td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="7" class="text-center text-muted py-4">No transfer records found</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+// Preview calculation
+$('#from-shareholder, #to-shareholder, #units-to-transfer').on('change keyup', function() {
+    var fromId = $('#from-shareholder').val();
+    var toId = $('#to-shareholder').val();
+    var units = parseInt($('#units-to-transfer').val()) || 0;
+    
+    if (fromId && toId && units > 0 && fromId != toId) {
+        // Get from shareholder details
+        $.ajax({
+            url: 'index.php?route=account/pms_share_transfer.getShareholderDetails&language={{ language }}&shareholder_id=' + fromId + '&customer_token={{ customer_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    var afterUnits = json.shareholder.units - units;
+                    $('#preview-from-name').text(json.shareholder.name + ' (' + json.shareholder.code + ')');
+                    $('#preview-from-units').text(json.shareholder.units + ' units (' + json.shareholder.percentage + '%)');
+                    $('#preview-from-after').text(afterUnits + ' units (' + ((afterUnits / (json.shareholder.units + afterUnits)) * 100).toFixed(2) + '%)');
+                }
+            }
+        });
+        
+        // Get to shareholder details
+        $.ajax({
+            url: 'index.php?route=account/pms_share_transfer.getShareholderDetails&language={{ language }}&shareholder_id=' + toId + '&customer_token={{ customer_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    var afterUnits = parseInt(json.shareholder.units) + parseInt(units);
+                    $('#preview-to-name').text(json.shareholder.name + ' (' + json.shareholder.code + ')');
+                    $('#preview-to-units').text(json.shareholder.units + ' units (' + json.shareholder.percentage + '%)');
+                    $('#preview-to-after').text(afterUnits + ' units (' + ((afterUnits / (json.shareholder.units + afterUnits)) * 100).toFixed(2) + '%)');
+                    $('#preview-section').show();
+                }
+            }
+        });
+    } else {
+        $('#preview-section').hide();
+    }
+});
+
+// Filter
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_share_transfer&language={{ language }}&customer_token={{ customer_token }}';
+    
+    var filter_from = $('input[name="filter_from"]').val();
+    if (filter_from) url += '&filter_from=' + encodeURIComponent(filter_from);
+    
+    var filter_to = $('input[name="filter_to"]').val();
+    if (filter_to) url += '&filter_to=' + encodeURIComponent(filter_to);
+    
+    var filter_date_from = $('input[name="filter_date_from"]').val();
+    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
+    
+    var filter_date_to = $('input[name="filter_date_to"]').val();
+    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
+    
+    location = url;
+});
+</script>
+
+{{ footer }}

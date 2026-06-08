@@ -1,0 +1,335 @@
+{{ header }}
+
+<style>
+    .info-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .info-card-header {
+        background: #f8f9fa;
+        padding: 12px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 600;
+        font-size: 15px;
+    }
+    .info-card-header i {
+        margin-right: 8px;
+        color: #1F8A4D;
+    }
+    .info-card-body {
+        padding: 20px;
+    }
+    .info-row {
+        display: flex;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        width: 35%;
+        font-weight: 600;
+        color: #555;
+    }
+    .info-value {
+        width: 65%;
+        color: #333;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-planning { background: #e3f2fd; color: #1565c0; }
+    .status-land_acquisition { background: #fff3e0; color: #e65100; }
+    .status-construction { background: #fff3e0; color: #e65100; }
+    .status-operational { background: #e8f5e9; color: #2e7d32; }
+    .status-completed { background: #e0f2f1; color: #00695c; }
+    .status-suspended { background: #ffebee; color: #c62828; }
+    .stat-box {
+        text-align: center;
+        padding: 15px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .stat-box:last-child {
+        border-right: none;
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: 600;
+        color: #0B3C5D;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e0e0e0;
+    }
+    .progress-bar {
+        border-radius: 4px;
+        background: #1F8A4D;
+    }
+    .color-preview {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 8px;
+        vertical-align: middle;
+        border: 1px solid #ddd;
+    }
+    .btn-status {
+        margin-left: 10px;
+        padding: 4px 12px;
+        font-size: 12px;
+    }
+</style>
+
+<div class="container-fluid">
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Project Header -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-building"></i> Project Information
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <div class="info-label">Project Name</div>
+                        <div class="info-value"><strong>{{ project.name }}</strong></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Slug</div>
+                        <div class="info-value">{{ project.slug }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Description</div>
+                        <div class="info-value">{{ project.description|raw }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Theme Color</div>
+                        <div class="info-value">
+                            <span class="color-preview" style="background: {{ project.theme_color }};"></span>
+                            {{ project.theme_color }}
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Created Date</div>
+                        <div class="info-value">{{ project.created_at }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Section -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-chart-line"></i> Project Status
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <div class="info-label">Current Status</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ project.status }}">
+                                {{ project.status_text }}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-primary btn-status" data-bs-toggle="modal" data-bs-target="#statusModal">
+                                <i class="fa-regular fa-pen-to-square"></i> Change Status
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Completion Percentage</div>
+                        <div class="info-value">
+                            <div class="progress" style="width: 200px; display: inline-block;">
+                                <div class="progress-bar" style="width: {{ project.completion_percentage }}%;">
+                                    {{ project.completion_percentage }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Row -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-chart-simple"></i> Project Statistics
+                </div>
+                <div class="info-card-body">
+                    <div class="row">
+                        <div class="col-md-3 stat-box">
+                            <div class="stat-number">{{ stats.total_shareholders }}</div>
+                            <div class="stat-label">Shareholders</div>
+                        </div>
+                        <div class="col-md-3 stat-box">
+                            <div class="stat-number">{{ stats.total_apartments }}</div>
+                            <div class="stat-label">Apartments</div>
+                        </div>
+                        <div class="col-md-3 stat-box">
+                            <div class="stat-number">৳ {{ stats.total_expenses|number_format(0) }}</div>
+                            <div class="stat-label">Total Expenses</div>
+                        </div>
+                        <div class="col-md-3 stat-box">
+                            <div class="stat-number">{{ stats.collection_percentage }}%</div>
+                            <div class="stat-label">Collection Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-envelope"></i> Contact Information
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <div class="info-label">Contact Email</div>
+                        <div class="info-value">
+                            <a href="mailto:{{ project.contact_email }}">{{ project.contact_email }}</a>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Contact Phone</div>
+                        <div class="info-value">
+                            <a href="tel:{{ project.contact_phone }}">{{ project.contact_phone }}</a>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ project.address|raw }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">City</div>
+                        <div class="info-value">{{ project.city }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Country</div>
+                        <div class="info-value">{{ project.country }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-regular fa-calendar"></i> Project Timeline
+                </div>
+                <div class="info-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-muted small">Registration Date</div>
+                            <div><strong>{{ project.registration_date }}</strong></div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-muted small">Construction Start</div>
+                            <div><strong>{{ project.construction_start }}</strong></div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-muted small">Construction End</div>
+                            <div><strong>{{ project.construction_end }}</strong></div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-muted small">Handover Date</div>
+                            <div><strong>{{ project.handover_date }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Share Information -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fa-solid fa-chart-pie"></i> Share Information
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <div class="info-label">Total Shares</div>
+                        <div class="info-value">{{ project.total_shares }} units</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Share Value</div>
+                        <div class="info-value">{{ project.share_value != '-' ? '৳ ' ~ project.share_value : '-' }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Total Project Value</div>
+                        <div class="info-value">
+                            {% if project.share_value != '-' %}
+                                ৳ {{ (project.total_shares * project.share_value|replace({',': ''}))|number_format(2) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-chart-line"></i> Update Project Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-status" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select New Status</label>
+                        <select name="status" class="form-select" required>
+                            {% for status_value, status_name in status_options %}
+                                <option value="{{ status_value }}" {{ project.status == status_value ? 'selected' : '' }}>
+                                    {{ status_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fa-solid fa-info-circle"></i>
+                        Changing the project status will be visible to all users.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+        </div>
+    </div>
+</div>
+
+{{ footer }}

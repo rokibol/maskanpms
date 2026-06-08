@@ -1,0 +1,583 @@
+{{ header }} {{ column_left }}
+
+<style>
+    .view-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .view-header h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+    .view-header p {
+        margin: 5px 0 0;
+        opacity: 0.8;
+    }
+    .info-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .info-card-header {
+        background: #f8f9fa;
+        padding: 12px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .info-card-header i {
+        margin-right: 8px;
+        color: #1F8A4D;
+    }
+    .info-card-body {
+        padding: 20px;
+    }
+    .info-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        width: 35%;
+        font-weight: 600;
+        color: #555;
+    }
+    .info-value {
+        width: 65%;
+        color: #333;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .status-inactive {
+        background: #ffebee;
+        color: #c62828;
+    }
+    .status-planning { background: #e3f2fd; color: #1565c0; }
+    .status-land_acquisition { background: #fff3e0; color: #e65100; }
+    .status-construction { background: #fff3e0; color: #e65100; }
+    .status-operational { background: #e8f5e9; color: #2e7d32; }
+    .status-completed { background: #e0f2f1; color: #00695c; }
+    .status-suspended { background: #ffebee; color: #c62828; }
+    .stat-box {
+        text-align: center;
+        padding: 15px;
+        border-right: 1px solid #e0e0e0;
+    }
+    .stat-box:last-child {
+        border-right: none;
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0B3C5D;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .user-table th {
+        background: #f8f9fa;
+        padding: 10px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .user-table td {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .color-preview {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 8px;
+        vertical-align: middle;
+        border: 1px solid #ddd;
+    }
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e0e0e0;
+    }
+    .progress-bar {
+        border-radius: 4px;
+    }
+    /* Fix for content area */
+    .container-fluid {
+        width: 100%;
+        padding-right: 15px;
+        padding-left: 15px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+    #content {
+        width: 100% !important;
+        float: none !important;
+        clear: both !important;
+        overflow: visible !important;
+    }
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .col, [class*="col-"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+</style>
+
+<div id="content">
+    <div class="page-header">
+        <div class="container">
+            <div class="float-end">
+                <a href="{{ edit }}" class="btn btn-primary">
+                    <i class="fa-regular fa-pen-to-square"></i> {{ button_edit }}
+                </a>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> {{ button_back }}
+                </a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="view-header">
+            <h1><i class="fa-solid fa-building"></i> {{ name }}</h1>
+            <p>{{ slug }}</p>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="fa-solid fa-chart-line"></i> Project Statistics
+            </div>
+            <div class="info-card-body">
+                <div class="row">
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.total_shareholders }}</div>
+                        <div class="stat-label">Total Shareholders</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.total_apartments }}</div>
+                        <div class="stat-label">Total Apartments</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.total_expenses }}</div>
+                        <div class="stat-label">Total Expenses</div>
+                    </div>
+                    <div class="col-md-3 stat-box">
+                        <div class="stat-number">{{ stats.collection_percentage }}%</div>
+                        <div class="stat-label">Collection Rate</div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number">৳ {{ stats.total_expense_amount|number_format(2) }}</div>
+                        <div class="stat-label">Total Expense Amount</div>
+                    </div>
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number">৳ {{ stats.total_payment_amount|number_format(2) }}</div>
+                        <div class="stat-label">Total Collected</div>
+                    </div>
+                    <div class="col-md-4 stat-box">
+                        <div class="stat-number">৳ {{ stats.outstanding_dues|number_format(2) }}</div>
+                        <div class="stat-label">Outstanding Dues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a href="#tab-general" data-bs-toggle="tab" class="nav-link active">
+                    <i class="fa-solid fa-info-circle"></i> General Information
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-address" data-bs-toggle="tab" class="nav-link">
+                    <i class="fa-solid fa-location-dot"></i> Address
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-dates" data-bs-toggle="tab" class="nav-link">
+                    <i class="fa-regular fa-calendar"></i> Dates & Timeline
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-financial" data-bs-toggle="tab" class="nav-link">
+                    <i class="fa-solid fa-chart-pie"></i> Financial
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-users" data-bs-toggle="tab" class="nav-link">
+                    <i class="fa-solid fa-users"></i> Project Users
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            
+            <!-- Tab 1: General Information -->
+            <div class="tab-pane active" id="tab-general">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-building"></i> Basic Information
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Project Name</div>
+                            <div class="info-value"><strong>{{ name }}</strong></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Slug (URL)</div>
+                            <div class="info-value">{{ slug }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Description</div>
+                            <div class="info-value">{{ description ?: '-' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Theme Color</div>
+                            <div class="info-value">
+                                <span class="color-preview" style="background: {{ theme_color }};"></span>
+                                {{ theme_color }}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Store</div>
+                            <div class="info-value">{{ store_name }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Project Status</div>
+                            <div class="info-value">
+                                <span class="status-badge status-{{ status|lower|replace({' ': '_'}) }}">
+                                    {{ status }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Completion Percentage</div>
+                            <div class="info-value">
+                                <div class="progress" style="width: 200px; display: inline-block;">
+                                    <div class="progress-bar" style="width: {{ completion_percentage }}%; background: #1F8A4D;">
+                                        {{ completion_percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Active Status</div>
+                            <div class="info-value">
+                                <span class="status-badge {{ is_active == 'Enabled' ? 'status-active' : 'status-inactive' }}">
+                                    {{ is_active }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Created Date</div>
+                            <div class="info-value">{{ created_at }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-envelope"></i> Contact Information
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Contact Email</div>
+                            <div class="info-value">
+                                <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Contact Phone</div>
+                            <div class="info-value">
+                                <a href="tel:{{ contact_phone }}">{{ contact_phone }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Address -->
+            <div class="tab-pane" id="tab-address">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-location-dot"></i> Location Details
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Address</div>
+                            <div class="info-value">{{ address|raw }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">City</div>
+                            <div class="info-value">{{ city }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Postal Code</div>
+                            <div class="info-value">{{ postal_code }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Country</div>
+                            <div class="info-value">{{ country }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Dates & Timeline -->
+            <div class="tab-pane" id="tab-dates">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-regular fa-calendar"></i> Project Timeline
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Registration Date</div>
+                            <div class="info-value">{{ registration_date }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Construction Start Date</div>
+                            <div class="info-value">{{ construction_start_date }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Construction End Date</div>
+                            <div class="info-value">{{ construction_end_date }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Handover Date</div>
+                            <div class="info-value">{{ handover_date }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-chart-gantt"></i> Project Timeline Progress
+                    </div>
+                    <div class="info-card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="small text-muted">Registration</div>
+                                <div class="fw-bold">{{ registration_date != '-' ? registration_date : 'Pending' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small text-muted">Construction Start</div>
+                                <div class="fw-bold">{{ construction_start_date != '-' ? construction_start_date : 'Pending' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small text-muted">Construction End</div>
+                                <div class="fw-bold">{{ construction_end_date != '-' ? construction_end_date : 'Pending' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small text-muted">Handover</div>
+                                <div class="fw-bold">{{ handover_date != '-' ? handover_date : 'Pending' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Financial -->
+            <div class="tab-pane" id="tab-financial">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-chart-pie"></i> Share Information
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Total Shares</div>
+                            <div class="info-value"><strong>{{ total_shares }}</strong> units</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Share Value</div>
+                            <div class="info-value">{{ share_value != '-' ? '৳ ' ~ share_value : '-' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Total Project Value</div>
+                            <div class="info-value">
+                                {% if share_value != '-' %}
+                                    ৳ {{ (total_shares * share_value|replace({',': ''}))|number_format(2) }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-chart-simple"></i> Financial Summary
+                    </div>
+                    <div class="info-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <div class="info-label">Total Expenses</div>
+                                    <div class="info-value text-danger">৳ {{ stats.total_expense_amount|number_format(2) }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Total Collected</div>
+                                    <div class="info-value text-success">৳ {{ stats.total_payment_amount|number_format(2) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <div class="info-label">Outstanding Dues</div>
+                                    <div class="info-value text-warning">৳ {{ stats.outstanding_dues|number_format(2) }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Collection Rate</div>
+                                    <div class="info-value">{{ stats.collection_percentage }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Project Users -->
+            <div class="tab-pane" id="tab-users">
+                <!-- Managers -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-user-tie"></i> Managers ({{ project_users.managers|length }})
+                    </div>
+                    <div class="info-card-body">
+                        {% if project_users.managers %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for manager in project_users.managers %}
+                                            <tr>
+                                                <td>{{ manager.fullname }}</a></td>
+                                                <td>{{ manager.email }}</a></td>
+                                                <td>{{ manager.telephone ?: '-' }}</a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No managers assigned to this project.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Accountants -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-user-gear"></i> Accountants ({{ project_users.accountants|length }})
+                    </div>
+                    <div class="info-card-body">
+                        {% if project_users.accountants %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for accountant in project_users.accountants %}
+                                            <tr>
+                                                <td>{{ accountant.fullname }}</a></td>
+                                                <td>{{ accountant.email }}</a></td>
+                                                <td>{{ accountant.telephone ?: '-' }}</a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No accountants assigned to this project.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Shareholders -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-users"></i> Shareholders ({{ project_users.shareholders|length }})
+                    </div>
+                    <div class="info-card-body">
+                        {% if project_users.shareholders %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Ownership Units</th>
+                                            <th>Shareholder Code</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for shareholder in project_users.shareholders %}
+                                            <tr>
+                                                <td>{{ shareholder.fullname }}</a></td>
+                                                <td>{{ shareholder.email }}</a></td>
+                                                <td>{{ shareholder.telephone ?: '-' }}</a></td>
+                                                <td>{{ shareholder.ownership_units }} units</a></td>
+                                                <td>{{ shareholder.shareholder_code }}</a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No shareholders found for this project.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{{ footer }}

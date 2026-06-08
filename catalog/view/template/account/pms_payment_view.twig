@@ -1,0 +1,654 @@
+{{ header }}
+
+<style>
+    .payment-details-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .action-buttons {
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .btn-print {
+        background: #0B3C5D;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 0 5px;
+    }
+    
+    .btn-print:hover {
+        background: #082e4a;
+    }
+    
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 0 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    /* Money Receipt */
+    .receipt-wrapper {
+        background: #e8ecf1;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .money-receipt {
+        background: white;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+    }
+    
+    .receipt-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 20px;
+        text-align: center;
+        color: white;
+    }
+    
+    .receipt-logo {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .receipt-title {
+        background: rgba(255,255,255,0.2);
+        display: inline-block;
+        padding: 5px 20px;
+        border-radius: 20px;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+    
+    .receipt-body {
+        padding: 20px;
+    }
+    
+    .company-info {
+        text-align: center;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #eee;
+        margin-bottom: 20px;
+    }
+    
+    .company-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0B3C5D;
+        margin-bottom: 5px;
+    }
+    
+    .company-address {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    .receipt-info-row {
+        display: flex;
+        justify-content: space-between;
+        background: #f5f5f5;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .receipt-no-label, .receipt-date-label {
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .receipt-no-value, .receipt-date-value {
+        font-weight: bold;
+        color: #0B3C5D;
+    }
+    
+    .party-card {
+        background: #f0fdf4;
+        border-left: 4px solid #1F8A4D;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    
+    .party-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #1F8A4D;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    
+    .party-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #0B3C5D;
+        margin-bottom: 5px;
+    }
+    
+    .party-details {
+        font-size: 12px;
+        color: #555;
+    }
+    
+    .payment-details-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: #0B3C5D;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #eee;
+    }
+    
+    .payment-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .payment-details-table tr {
+        border-bottom: 1px solid #eee;
+    }
+    
+    .payment-details-table td {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .payment-details-table td:first-child {
+        width: 40%;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .amount-summary {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .amount-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+    
+    .amount-row.total {
+        border-top: 2px solid #ddd;
+        margin-top: 5px;
+        padding-top: 10px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    .amount-value.total {
+        color: #1F8A4D;
+    }
+    
+    .amount-words-box {
+        background: #fff8e7;
+        border: 1px solid #ffde9c;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .amount-words-label {
+        font-size: 10px;
+        font-weight: bold;
+        color: #b8860b;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .amount-words-text {
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+    }
+    
+    .signature-item {
+        text-align: center;
+        width: 45%;
+    }
+    
+    .signature-line {
+        border-top: 1px solid #333;
+        width: 80%;
+        margin: 20px auto 5px;
+    }
+    
+    .signature-label {
+        font-size: 10px;
+        color: #777;
+    }
+    
+    .receipt-footer {
+        text-align: center;
+        padding-top: 15px;
+        border-top: 1px dashed #ddd;
+        margin-top: 10px;
+    }
+    
+    .footer-note {
+        font-size: 9px;
+        color: #999;
+    }
+    
+    /* ======================================================
+       PRINT STYLES - PREVENT EXTRA BLANK PAGE
+       ====================================================== */
+    @media print {
+        /* Hide everything except the receipt */
+        .action-buttons,
+        .breadcrumb,
+        .column-left,
+        .column-right,
+        .header,
+        .footer,
+        .pagination,
+        .btn,
+        .btn-print,
+        .btn-back,
+        .navbar,
+        .sidebar,
+        #column-left,
+        #column-right,
+        .breadcrumb,
+        .alert,
+        .tooltip,
+        .modal,
+        .toast {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        /* Reset all margins and paddings */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+        
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Container reset */
+        .container,
+        .container-fluid,
+        .payment-details-container,
+        .row,
+        .col,
+        #content,
+        .col-sm-9,
+        .col-lg-9,
+        .col-md-8 {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            float: none !important;
+            position: static !important;
+            display: block !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: auto !important;
+        }
+        
+        /* Make sure content takes full width */
+        #content {
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Receipt wrapper */
+        .receipt-wrapper {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* Money receipt */
+        .money-receipt {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            overflow: visible !important;
+        }
+        
+        /* Page setup - A4 with no extra margins */
+        @page {
+            size: A4;
+            margin: 0.3cm !important;
+            padding: 0 !important;
+        }
+        
+        /* Prevent page breaks inside receipt parts */
+        .money-receipt,
+        .receipt-header,
+        .receipt-body,
+        .party-card,
+        .payment-details-table,
+        .amount-summary,
+        .amount-words-box,
+        .signature-section,
+        .receipt-footer {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+        }
+        
+        /* Compact spacing for print */
+        .receipt-header {
+            padding: 15px 10px !important;
+        }
+        
+        .receipt-body {
+            padding: 10px !important;
+        }
+        
+        .receipt-info-row {
+            margin-bottom: 8px !important;
+            padding: 5px 10px !important;
+        }
+        
+        .company-info {
+            padding-bottom: 8px !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .party-card {
+            margin-bottom: 10px !important;
+            padding: 8px 12px !important;
+        }
+        
+        .payment-details-table td {
+            padding: 4px 8px !important;
+        }
+        
+        .amount-summary {
+            margin-bottom: 10px !important;
+            padding: 8px 12px !important;
+        }
+        
+        .amount-words-box {
+            margin-bottom: 10px !important;
+            padding: 8px 12px !important;
+        }
+        
+        .signature-section {
+            margin: 10px 0 !important;
+        }
+        
+        .signature-line {
+            margin: 15px auto 5px !important;
+        }
+        
+        .receipt-footer {
+            padding-top: 8px !important;
+            margin-top: 5px !important;
+        }
+        
+        /* Remove any extra spacing at top and bottom */
+        body:before,
+        body:after,
+        .container:before,
+        .container:after,
+        .row:before,
+        .row:after {
+            display: none !important;
+            content: none !important;
+        }
+        
+        /* Ensure header prints with colors */
+        .receipt-header {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4 column-left">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="action-buttons">
+                <button onclick="printReceipt();" class="btn-print">
+                    <i class="fas fa-solid fa-print"></i> Print Receipt
+                </button>
+                <a href="{{ back }}" class="btn-back">
+                    <i class="fas fa-solid fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <div class="receipt-wrapper">
+                <div class="money-receipt">
+                    
+                    <div class="receipt-header">
+                        <div class="receipt-logo">SKY VIEW PMS</div>
+                        <div class="receipt-subtitle">Property Management System</div>
+                        <div class="receipt-title">MONEY RECEIPT</div>
+                    </div>
+                    
+                    <div class="receipt-body">
+                        
+                        <div class="company-info">
+                            <div class="company-name">{{ project_name|default('Sky View Apartments') }}</div>
+                            <div class="company-address">House #123, Gulshan Avenue, Dhaka-1212</div>
+                            <div class="company-address">Phone: +880 1234 567890 | Email: accounts@skyview.com</div>
+                        </div>
+                        
+                        <div class="receipt-info-row">
+                            <div class="receipt-no">
+                                <span class="receipt-no-label">RECEIPT NO:</span>
+                                <span class="receipt-no-value">{{ payment.receipt_no|default('RCPT-' ~ payment.payment_id) }}</span>
+                            </div>
+                            <div class="receipt-date">
+                                <span class="receipt-date-label">DATE:</span>
+                                <span class="receipt-date-value">{{ payment.payment_date }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="party-card">
+                            <div class="party-title">RECEIVED FROM</div>
+                            <div class="party-name">{{ payment.shareholder_name }}</div>
+                            <div class="party-details">
+                                Email: {{ payment.shareholder_email }}<br>
+                                Shareholder ID: {{ payment.shareholder_code }}
+                            </div>
+                        </div>
+                        
+                        <div class="payment-details-title">PAYMENT DETAILS</div>
+                        <table class="payment-details-table">
+                            <tr>
+                                <td>Payment Phase</td>
+                                <td>{{ payment.phase_name }}</td>
+                            </tr>
+                            <tr>
+                                <td>Payment Method</td>
+                                <td>{{ payment.payment_method|capitalize }}</td>
+                            </tr>
+                            {% if payment.reference_number != '-' %}
+                            <tr>
+                                <td>Reference / Transaction No</td>
+                                <td>{{ payment.reference_number }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr style="background: #f0fdf4;">
+                                <td><strong>Payment Amount</strong></td>
+                                <td><strong>BDT {{ payment.amount }}</strong></td>
+                            </tr>
+                        </table>
+                        
+                        <div class="amount-summary">
+                            <div class="amount-row">
+                                <span>Subtotal:</span>
+                                <span>BDT {{ payment.amount }}</span>
+                            </div>
+                            <div class="amount-row total">
+                                <span>TOTAL AMOUNT:</span>
+                                <span class="amount-value total">BDT {{ payment.amount }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="amount-words-box">
+                            <div class="amount-words-label">AMOUNT IN WORDS</div>
+                            <div class="amount-words-text" id="amount-in-words">Loading...</div>
+                        </div>
+                        
+                        <div class="signature-section">
+                            <div class="signature-item">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">Receiver's Signature</div>
+                            </div>
+                            <div class="signature-item">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">Authorized Signature</div>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-footer">
+                            <div class="footer-note">
+                                This is a computer generated receipt. For any query, please contact accounts department.
+                            </div>
+                            <div class="footer-note" style="margin-top: 5px;">
+                                Thank you for your payment!
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+function numberToWords(num) {
+    if (!num || isNaN(num)) return 'Zero Taka Only';
+    
+    var taka = Math.floor(num);
+    var poisha = Math.round((num - taka) * 100);
+    
+    var ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+                'Seventeen', 'Eighteen', 'Nineteen'];
+    var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    
+    function convert(n) {
+        if (n === 0) return '';
+        if (n < 20) return ones[n];
+        if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? ' ' + ones[n%10] : '');
+        if (n < 1000) return ones[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + convert(n%100) : '');
+        if (n < 100000) return convert(Math.floor(n/1000)) + ' Thousand' + (n%1000 ? ' ' + convert(n%1000) : '');
+        if (n < 10000000) return convert(Math.floor(n/100000)) + ' Lakh' + (n%100000 ? ' ' + convert(n%100000) : '');
+        return convert(Math.floor(n/10000000)) + ' Crore' + (n%10000000 ? ' ' + convert(n%10000000) : '');
+    }
+    
+    var result = '';
+    if (taka > 0) {
+        result = convert(taka) + ' Taka';
+    }
+    if (poisha > 0) {
+        result += (result ? ' and ' : '') + convert(poisha) + ' Poisha';
+    }
+    if (result === '') result = 'Zero Taka';
+    
+    return result + ' Only';
+}
+
+$(document).ready(function() {
+    var amount = parseFloat('{{ payment.amount }}');
+    $('#amount-in-words').text('{{ payment["amount_in_words"] }}');
+});
+
+// Improved print function with page break prevention
+function printReceipt() {
+    // Store original page title
+    var originalTitle = document.title;
+    
+    // Set print-friendly title
+    document.title = 'Money Receipt - ' + '{{ payment.shareholder_name }}';
+    
+    // Add a class to body for print-specific styling
+    document.body.classList.add('printing');
+    
+    // Trigger print
+    window.print();
+    
+    // Restore title after print dialog closes
+    setTimeout(function() {
+        document.title = originalTitle;
+        document.body.classList.remove('printing');
+    }, 500);
+}
+
+// Replace the onclick event for print button
+$(document).ready(function() {
+    // Update the print button to use the new function
+    $('.btn-print').off('click').on('click', function(e) {
+        e.preventDefault();
+        printReceipt();
+    });
+});
+</script>
+
+{{ footer }}

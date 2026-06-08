@@ -1,0 +1,136 @@
+{{ header }}
+
+<style>
+    .filter-bar { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .status-active { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+    .status-inactive { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ add }}" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> {{ button_add }}
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="filter_name" class="form-control" placeholder="Search by name or company" value="{{ filter_name }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="filter_status" class="form-select">
+                            <option value="">All Status</option>
+                            {% if filter_status == 'active' %}
+                                <option value="active" selected>Active</option>
+                            {% else %}
+                                <option value="active">Active</option>
+                            {% endif %}
+
+                            {% if filter_status == 'inactive' %}
+                                <option value="inactive" selected>Inactive</option>
+                            {% else %}
+                                <option value="inactive">Inactive</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" id="button-filter" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-search"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Suppliers Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Supplier Name</th>
+                            <th>Company</th>
+                            <th>Contact Person</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if suppliers %}
+                            {% for supplier in suppliers %}
+                                <tr>
+                                    <td>{{ supplier.supplier_code }}</td>
+                                    <td>{{ supplier.supplier_name }}</td>
+                                    <td>{{ supplier.company_name ?: '-' }}</td>
+                                    <td>{{ supplier.contact_person ?: '-' }}</td>
+                                    <td>{{ supplier.phone ?: '-' }}</td>
+                                    <td>{{ supplier.email ?: '-' }}</td>
+                                    <td>
+                                        <span class="status-{{ supplier.status }}">{{ supplier.status|capitalize }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ supplier.edit }}" class="btn btn-primary btn-sm"><i class="fa-regular fa-pen-to-square"></i></a>
+                                        <button onclick="deleteSupplier({{ supplier.supplier_id }})" class="btn btn-danger btn-sm"><i class="fa-regular fa-trash-can"></i></button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="8" class="text-center text-muted py-4">No suppliers found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_suppliers&language={{ language }}&customer_token= {{ customer_token }}';
+    var filter_name = $('input[name="filter_name"]').val();
+    var filter_status = $('select[name="filter_status"]').val();
+    if (filter_name) url += '&filter_name=' + encodeURIComponent(filter_name);
+    if (filter_status) url += '&filter_status=' + filter_status;
+    location = url;
+});
+
+function deleteSupplier(supplierId) {
+    if (confirm('Are you sure?')) {
+        $.ajax({
+            url: 'index.php?route=account/pms_suppliers.delete&language={{ language }}&customer_token={{ customer_token }}&supplier_id=' + supplierId,
+            type: 'GET',
+            success: function(json) {
+                if (json.success) location.reload();
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}

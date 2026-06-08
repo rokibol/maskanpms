@@ -1,0 +1,229 @@
+{{ header }}
+
+<style>
+    .allocation-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .allocation-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 20px;
+        color: white;
+    }
+    .allocation-body {
+        padding: 25px;
+    }
+    .formula-box {
+        background: #e8f0fe;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .formula-text {
+        font-family: monospace;
+        font-size: 14px;
+        color: #0B3C5D;
+    }
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .preview-table th {
+        background: #f8f9fa;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    .preview-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .highlight {
+        background: #e8f5e9;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid">
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_proportional_allocation }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Shareholders
+                    </a>
+                </div>
+            </div>
+            
+            <div class="allocation-card">
+                <div class="allocation-header">
+                    <h3 class="mb-1"><i class="fa-solid fa-chart-line"></i> Proportional Allocation</h3>
+                    <p class="mb-0 opacity-75">Enter one shareholder's allocation amount, and the system will calculate for all</p>
+                </div>
+                <div class="allocation-body">
+                    
+                    <div class="formula-box">
+                        <i class="fa-solid fa-calculator"></i>
+                        <strong>How it works:</strong><br>
+                        <span class="formula-text">
+                            If Shareholder A (X% ownership) gets ৳ Y, then:<br>
+                            Total Allocation = (Y ÷ X) × 100<br>
+                            Then each shareholder gets: Total Allocation × (Individual % ÷ 100)
+                        </span>
+                    </div>
+                    
+                    <form id="form-proportional-allocation" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Select Reference Shareholder</label>
+                            <div class="col-sm-9">
+                                <select name="reference_shareholder_id" id="reference-shareholder" class="form-select" required>
+                                    <option value="">-- Select Shareholder --</option>
+                                    {% for shareholder in shareholders %}
+                                        <option value="{{ shareholder.shareholder_id }}">
+                                            {{ shareholder.firstname }} {{ shareholder.lastname }} 
+                                            ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_percentage|round(2) }}% ownership
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Select the shareholder whose allocation amount you know</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Reference Shareholder's Allocation Amount</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="reference_amount" id="reference-amount" class="form-control" step="0.01" min="0.01" placeholder="Enter amount for selected shareholder" required>
+                                <small class="text-muted">Enter the amount this shareholder will receive</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Select Payment Phase</label>
+                            <div class="col-sm-9">
+                                <select name="payment_phase_id" class="form-select" required>
+                                    <option value="">-- Select Phase --</option>
+                                    {% for phase in payment_phases %}
+                                        <option value="{{ phase.phase_id }}">{{ phase.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Notes (Optional)</label>
+                            <div class="col-sm-9">
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes about this allocation..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Section -->
+                        <div class="alert alert-secondary" id="preview-section" style="display: none;">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <strong>Allocation Preview:</strong>
+                            <div id="preview-content"></div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="submit-btn" disabled>
+                                <i class="fa-solid fa-layer-group"></i> Allocate to All Shareholders
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" name="user_token" value="{{ user_token }}">
+                    </form>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var referenceShareholder = $('#reference-shareholder');
+    var referenceAmount = $('#reference-amount');
+    var previewSection = $('#preview-section');
+    var submitBtn = $('#submit-btn');
+    
+    function calculatePreview() {
+        var shareholderId = referenceShareholder.val();
+        var amount = referenceAmount.val();
+        
+        if (shareholderId && amount && amount > 0) {
+            $.ajax({
+                url: 'index.php?route=account/pms_shareholders.getProportionalPreview&language={{ language }}&user_token={{ user_token }}',
+                type: 'GET',
+                data: { 
+                    reference_shareholder_id: shareholderId,
+                    reference_amount: amount
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        var html = '<div class="alert alert-info mt-2">';
+                        html += '<strong>Calculation Summary:</strong><br>';
+                        html += 'Reference Shareholder: <strong>' + data.reference_shareholder + '</strong> (' + data.reference_percentage + '% ownership)<br>';
+                        html += 'Reference Amount: <strong>৳ ' + data.reference_amount.toFixed(2) + '</strong><br>';
+                        html += 'Total Allocation Amount: <strong>৳ ' + data.total_amount.toFixed(2) + '</strong>';
+                        html += '</div>';
+                        
+                        html += '<table class="preview-table">';
+                        html += '<thead><tr><th>Shareholder</th><th>Ownership %</th><th>Allocation Amount</th></tr></thead>';
+                        html += '<tbody>';
+                        
+                        for (var i in data.shareholders) {
+                            var highlight = '';
+                            if (data.shareholders[i].name == data.reference_shareholder) {
+                                highlight = 'highlight';
+                            }
+                            html += '<tr class="' + highlight + '">';
+                            html += '<td>' + data.shareholders[i].name + '</td>';
+                            html += '<td>' + data.shareholders[i].percentage + '%</td>';
+                            html += '<td>৳ ' + data.shareholders[i].amount.toFixed(2) + '</td>';
+                            html += '</tr>';
+                        }
+                        
+                        html += '<tfoot><tr><th colspan="2">Total:</th><th>৳ ' + data.total_amount.toFixed(2) + '</th></tr></tfoot>';
+                        html += '</tbody></table>';
+                        
+                        $('#preview-content').html(html);
+                        previewSection.show();
+                        submitBtn.prop('disabled', false);
+                    } else {
+                        previewSection.hide();
+                        submitBtn.prop('disabled', true);
+                    }
+                },
+                error: function() {
+                    previewSection.hide();
+                    submitBtn.prop('disabled', true);
+                }
+            });
+        } else {
+            previewSection.hide();
+            submitBtn.prop('disabled', true);
+        }
+    }
+    
+    referenceShareholder.on('change', calculatePreview);
+    referenceAmount.on('input', calculatePreview);
+});
+</script>
+
+{{ footer }}

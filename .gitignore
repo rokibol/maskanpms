@@ -1,0 +1,35 @@
+# OpenCart Cache
+system/storage/cache/*
+system/storage/logs/*
+system/storage/session/*
+system/storage/vendor/*
+system/storage/download/*
+system/storage/upload/*
+system/storage/marketplace/*
+
+# IDE Files
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backup Files
+*.zip
+*.rar
+*.sql
+*.bak
+
+# Composer
+vendor/
+
+# Node
+node_modules/
+
+# OpenCart Config Files
+config.php
+maskanadmin/config.php

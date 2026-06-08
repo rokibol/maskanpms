@@ -1,0 +1,149 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ text_form }}</h1>
+                <div>
+                    <button type="submit" form="form-apartment" class="btn btn-primary">
+                        <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
+                    </button>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-reply"></i> {{ button_back }}
+                    </a>
+                </div>
+            </div>
+            
+            <form id="form-apartment" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-building"></i> Apartment Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Apartment Number</label>
+                            <div class="col-sm-9">
+                                <input type="hidden" name="apartment_id" value="{{ apartment_id }}" />
+                                <input type="text" name="apartment_number" value="{{ apartment_number }}" class="form-control" required>
+                                <small class="text-muted">Example: 5A, 101, G-01</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Floor Number</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="floor_number" value="{{ floor_number }}" class="form-control" min="0" required>
+                                <small class="text-muted">0 for Ground Floor</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Assign Shareholder</label>
+                            <div class="col-sm-9">
+                                <input type="hidden" value="{{ shareholder_id }}" name="shareholder_id" />
+                                <select name="shareholder_id" class="form-select">
+                                    <option value="">-- Not Assigned --</option>
+                                    {% for shareholder in shareholders %}
+                                        <option value="{{ shareholder.id }}" {{ shareholder_id == shareholder.shareholder_id ? 'selected' : '' }}>
+                                            {{ shareholder.firstname }} {{ shareholder.lastname }} ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_units }} units
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Fixed Maintenance Fee (BDT)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="fixed_maintenance_fee" value="{{ fixed_maintenance_fee }}" class="form-control" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Is Active?</label>
+                            <div class="col-sm-9">
+                                <select name="is_active" class="form-select">
+                                    <option value="1" {{ is_active == 1 ? 'selected' : '' }}>Yes</option>
+                                    <option value="0" {{ is_active == 0 ? 'selected' : '' }}>No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <i class="fas fa-solid fa-ruler-combined"></i> Apartment Details
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 required">
+                            <label class="col-sm-3 col-form-label">Area (sq ft)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="area_sqft" value="{{ area_sqft }}" class="form-control" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Bedrooms</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="bedrooms" value="{{ bedrooms }}" class="form-control" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Bathrooms</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="bathrooms" value="{{ bathrooms }}" class="form-control" min="0" step="0.5">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Balcony</label>
+                            <div class="col-sm-9">
+                                <select name="balcony" class="form-select">
+                                    <option value="0" {{ balcony == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ balcony == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Parking Slot</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="parking_slot" value="{{ parking_slot }}" class="form-control" placeholder="Example: P-12, Car Parking-1">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Notes</label>
+                            <div class="col-sm-9">
+                                <textarea name="notes" rows="4" class="form-control" placeholder="Additional notes about this apartment...">{{ notes }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+{{ footer }}

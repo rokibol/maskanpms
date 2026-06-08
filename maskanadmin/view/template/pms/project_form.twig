@@ -1,0 +1,432 @@
+{{ header }} {{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <button type="submit" form="form-project" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </button>
+                <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light">
+                    <i class="fa-solid fa-reply"></i>
+                </a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <form id="form-project" action="{{ action }}" method="post" data-oc-toggle="ajax">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-pencil"></i> {{ text_form }}
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Basic Information Tab -->
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item"><a href="#tab-general" data-bs-toggle="tab" class="nav-link active">{{ tab_general }}</a></li>
+                        <li class="nav-item"><a href="#tab-address" data-bs-toggle="tab" class="nav-link">{{ tab_address }}</a></li>
+                        <li class="nav-item"><a href="#tab-dates" data-bs-toggle="tab" class="nav-link">{{ tab_dates }}</a></li>
+                        <li class="nav-item"><a href="#tab-financial" data-bs-toggle="tab" class="nav-link">{{ tab_financial }}</a></li>
+                        <li class="nav-item"><a href="#tab-customers" data-bs-toggle="tab" class="nav-link">{{ text_customers }}</a></li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        
+                        <!-- General Tab -->
+                        <div class="tab-pane active" id="tab-general">
+                            <fieldset>
+                                <legend>Basic Information</legend>
+                                
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-2 col-form-label">{{ entry_name }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_description }}</label>
+                                    <div class="col-sm-10">
+                                        <textarea name="description" rows="5" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ description }}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_theme_color }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="color" name="theme_color" value="{{ theme_color }}" id="input-theme-color" class="form-control form-control-color" style="width: 80px;" />
+                                        <small class="text-muted">{{ help_theme_color }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_store }}</label>
+                                    <div class="col-sm-10">
+                                        <select name="store_id" id="input-store" class="form-select">
+                                            <option value="0" {{ store_id == 0 ? 'selected' : '' }}>{{ text_default }}</option>
+                                            {% for store in stores %}
+                                                <option value="{{ store.store_id }}" {{ store.store_id == store_id ? 'selected' : '' }}>{{ store.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_status }}</label>
+                                    <div class="col-sm-10">
+                                        <select name="status" id="input-status" class="form-select">
+                                            {% for status_value, status_name in statuses %}
+                                                <option value="{{ status_value }}" {{ status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_completion }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" name="completion_percentage" value="{{ completion_percentage }}" placeholder="{{ entry_completion }}" id="input-completion" class="form-control" min="0" max="100" />
+                                        <small class="text-muted">{{ help_completion }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_is_active }}</label>
+                                    <div class="col-sm-10">
+                                        <select name="is_active" id="input-is-active" class="form-select">
+                                            <option value="1" {{ is_active == 1 ? 'selected' : '' }}>{{ text_enabled }}</option>
+                                            <option value="0" {{ is_active == 0 ? 'selected' : '' }}>{{ text_disabled }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="mt-4">
+                                <legend>Contact Information</legend>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_contact_email }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="email" name="contact_email" value="{{ contact_email }}" placeholder="{{ entry_contact_email }}" id="input-contact-email" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_contact_phone }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="contact_phone" value="{{ contact_phone }}" placeholder="{{ entry_contact_phone }}" id="input-contact-phone" class="form-control" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <!-- Address Tab -->
+                        <div class="tab-pane" id="tab-address">
+                            <fieldset>
+                                <legend>Location Details</legend>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_address }}</label>
+                                    <div class="col-sm-10">
+                                        <textarea name="address" rows="3" placeholder="{{ entry_address }}" id="input-address" class="form-control">{{ address }}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_city }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="city" value="{{ city }}" placeholder="{{ entry_city }}" id="input-city" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_postal_code }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="postal_code" value="{{ postal_code }}" placeholder="{{ entry_postal_code }}" id="input-postal-code" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_country }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="country" value="{{ country }}" placeholder="{{ entry_country }}" id="input-country" class="form-control" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <!-- Dates Tab -->
+                        <div class="tab-pane" id="tab-dates">
+                            <fieldset>
+                                <legend>Project Timeline</legend>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_registration_date }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="date" name="registration_date" value="{{ registration_date }}" id="input-registration-date" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_construction_start }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="date" name="construction_start_date" value="{{ construction_start_date }}" id="input-construction-start" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_construction_end }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="date" name="construction_end_date" value="{{ construction_end_date }}" id="input-construction-end" class="form-control" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_handover_date }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="date" name="handover_date" value="{{ handover_date }}" id="input-handover-date" class="form-control" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <!-- Financial Tab -->
+                        <div class="tab-pane" id="tab-financial">
+                            <fieldset>
+                                <legend>Share Information</legend>
+                                
+                                <div class="row mb-3 required">
+                                    <label class="col-sm-2 col-form-label">{{ entry_total_shares }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" name="total_shares" value="{{ total_shares }}" placeholder="{{ entry_total_shares }}" id="input-total-shares" class="form-control" min="1" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">{{ entry_share_value }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" name="share_value" value="{{ share_value }}" placeholder="{{ entry_share_value }}" id="input-share-value" class="form-control" min="0" step="0.01" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <!-- Customers Tab -->
+                        <div class="tab-pane" id="tab-customers">
+                            <fieldset>
+                                <legend>{{ text_customers }}</legend>
+                                
+                                <div class="mb-3 text-end">
+                                    <button type="button" class="btn btn-primary" onclick="addCustomer()" id="btn-add-customer-main">
+                                        <i class="fa-solid fa-plus"></i> {{ button_add_customer }}
+                                    </button>
+                                </div>
+                                
+                                <div id="customer-list">
+                                    <!-- Content will be loaded here -->
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                    </div>
+                    
+                    <input type="hidden" name="user_token" value="{{ user_token }}" />
+                    <input type="hidden" name="project_id" value="{{ project_id }}" />
+                    
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#form-project').on('submit', function(e) {
+        // Add any custom validation here if needed
+    });
+
+    // Customer Management
+    function loadCustomerList() {
+        var project_id = $('input[name="project_id"]').val();
+        
+        // Check if we have a project_id (edit mode) or if it's a new project
+        if (!project_id || project_id == 0) {
+            $('#customer-list').html(`
+                <div class="alert alert-info alert-dismissible">
+                    <i class="fa-solid fa-info-circle"></i> 
+                    <strong>No project created yet!</strong><br>
+                    Please save the project first. After saving, you will be able to add users to this project.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            // Disable add customer button
+            $('#btn-add-customer-main').prop('disabled', true);
+            $('#btn-add-customer-main').attr('title', 'Save the project first to add users');
+            return;
+        }
+        
+        // Enable add customer button
+        $('#btn-add-customer-main').prop('disabled', false);
+        $('#btn-add-customer-main').attr('title', 'Add user to this project');
+        
+        // Show loading state
+        $('#customer-list').html(`
+            <div class="text-center py-4">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <p class="mt-2 text-muted">Loading users...</p>
+            </div>
+        `);
+        
+        $.ajax({
+            url: 'index.php?route=pms/project_customers&user_token={{ user_token }}&project_id=' + project_id,
+            type: 'GET',
+            success: function(html) {
+                $('#customer-list').html(html);
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                $('#customer-list').html(`
+                    <div class="alert alert-danger">
+                        <i class="fa-solid fa-circle-exclamation"></i> 
+                        Error loading users. Please refresh the page and try again.
+                    </div>
+                `);
+            }
+        });
+    }
+
+    function addCustomer() {
+        var project_id = $('input[name="project_id"]').val();
+        
+        if (!project_id || project_id == 0) {
+            // Show a modal or alert message
+            $('#customer-list').prepend(`
+                <div class="alert alert-warning alert-dismissible fade show">
+                    <i class="fa-solid fa-triangle-exclamation"></i> 
+                    <strong>Cannot add customer!</strong> Please save the project first, then you can add users.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            
+            // Scroll to the warning
+            $('html, body').animate({
+                scrollTop: $('#customer-list').offset().top - 100
+            }, 500);
+            
+            // Auto hide after 5 seconds
+            setTimeout(function() {
+                $('.alert-warning').alert('close');
+            }, 5000);
+            
+            return;
+        }
+        
+        $.ajax({
+            url: 'index.php?route=pms/project_customers.addCustomerForm&user_token={{ user_token }}&project_id=' + project_id,
+            type: 'GET',
+            success: function(html) {
+                $('body').append('<div id="modal-add-customer" class="modal" tabindex="-1">' + html + '</div>');
+                $('#modal-add-customer').modal('show');
+                $('#modal-add-customer').on('hidden.bs.modal', function() {
+                    $('#modal-add-customer').remove();
+                    // Reload customer list after modal closes (in case customer was added)
+                    if ($('input[name="project_id"]').val()) {
+                        loadCustomerList();
+                    }
+                });
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert('Error opening add user form: ' + thrownError);
+            }
+        });
+    }
+
+    // Check if we're in edit mode (has project_id) or create mode
+    function checkProjectMode() {
+        var project_id = $('input[name="project_id"]').val();
+        var isNewProject = !project_id || project_id == 0;
+        
+        if (isNewProject) {
+            // Show a prominent message in the customers tab
+            $('#customer-list').html(`
+                <div class="alert alert-info border-0 rounded-3" style="background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%); color: white;">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fa-regular fa-save fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Save Project First</h5>
+                            <p class="mb-0 opacity-75">To add users to this project, please save the project information first. After saving, you'll be able to assign users from here.</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+            $('#btn-add-customer-main').prop('disabled', true);
+            $('#btn-add-customer-main').html('<i class="fa-solid fa-save"></i> Save Project First');
+        } else {
+            $('#btn-add-customer-main').prop('disabled', false);
+            $('#btn-add-customer-main').html('<i class="fa-solid fa-plus"></i> Add User');
+            loadCustomerList();
+        }
+    }
+
+    // Watch for project_id changes (when saved)
+    function watchProjectIdChange() {
+        // Check if there's a project_id input and monitor its value
+        var projectIdInput = $('input[name="project_id"]');
+        
+        if (projectIdInput.length) {
+            // Store initial value
+            var currentValue = projectIdInput.val();
+            
+            // Set up interval to check for changes
+            setInterval(function() {
+                var newValue = projectIdInput.val();
+                if (newValue !== currentValue && newValue && newValue != 0) {
+                    currentValue = newValue;
+                    // Project was saved, enable customer management
+                    $('#btn-add-customer-main').prop('disabled', false);
+                    $('#btn-add-customer-main').html('<i class="fa-solid fa-plus"></i> Add Customer');
+                    loadCustomerList();
+                } else if (!newValue || newValue == 0) {
+                    // Still no project
+                    $('#btn-add-customer-main').prop('disabled', true);
+                    $('#btn-add-customer-main').html('<i class="fa-solid fa-save"></i> Save Project First');
+                }
+            }, 1000);
+        }
+    }
+
+    // Initialize on document ready
+    $(document).ready(function() {
+        // Check project mode when tab is clicked
+        $('a[href="#tab-customers"]').on('shown.bs.tab', function() {
+            checkProjectMode();
+        });
+        
+        // Also check immediately if customers tab is active
+        if ($('#tab-customers').hasClass('active')) {
+            checkProjectMode();
+        }
+        
+        // Watch for project ID changes
+        watchProjectIdChange();
+        
+        // After form save, reload customer list
+        $('#form-project').on('submit', function() {
+            setTimeout(function() {
+                if ($('input[name="project_id"]').val()) {
+                    loadCustomerList();
+                    $('#btn-add-customer-main').prop('disabled', false);
+                    $('#btn-add-customer-main').html('<i class="fa-solid fa-plus"></i> Add Customer');
+                }
+            }, 1500);
+        });
+    });
+</script>
+
+{{ footer }}

@@ -1,0 +1,230 @@
+{{ header }}
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_view }}</h1>
+                <div>
+                    <a href="{{ edit }}" class="btn btn-primary">
+                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-user"></i> Personal Information
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%;">Shareholder Code</th>
+                                    <td>{{ shareholder.shareholder_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <td>{{ shareholder.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>{{ shareholder.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone</th>
+                                    <td>{{ shareholder.phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address</th>
+                                    <td>{{ shareholder.address|nl2br }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        <span class="shareholder-status status-{{ shareholder.status }}">
+                                            {{ shareholder.status|capitalize }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Registered Date</th>
+                                    <td>{{ shareholder.registered_date }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-chart-pie"></i> Ownership Information
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%;">Ownership Units</th>
+                                    <td>{{ shareholder.ownership_units }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Ownership Percentage</th>
+                                    <td>{{ shareholder.ownership_percentage }}%</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Due</th>
+                                    <td class="text-danger">৳ {{ shareholder.due_amount|number_format(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Credit Balance</th>
+                                    <td class="text-success">৳ {{ shareholder.credit_balance|number_format(2) }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-users"></i> Nominee Information
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%;">Nominee Name</th>
+                                    <td>{{ shareholder.nominee_name ?: '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nominee Relation</th>
+                                    <td>{{ shareholder.nominee_relation ?: '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nominee Phone</th>
+                                    <td>{{ shareholder.nominee_phone ?: '-' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-building-columns"></i> Banking Information
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 20%;">Bank Account No</th>
+                                    <td>{{ shareholder.bank_account_no ?: '-' }}</td>
+                                    <th style="width: 20%;">Bank Name</th>
+                                    <td>{{ shareholder.bank_name ?: '-' }}</td>
+                                    <th style="width: 20%;">TIN Number</th>
+                                    <td>{{ shareholder.tin_number ?: '-' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Payment Allocations -->
+                <div class="col-md-12 mt-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-solid fa-credit-card"></i> Payment Allocations
+                            <a href="{{ payment_allocation_link }}" class="btn btn-sm btn-primary float-end">
+                                <i class="fas fa-solid fa-plus"></i> Add Allocation
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if payment_allocations %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Phase</th>
+                                                <th>Amount</th>
+                                                <th>Notes</th>
+                                                <th>Created By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for allocation in payment_allocations %}
+                                                <tr>
+                                                    <td>{{ allocation.created_at|date('Y-m-d') }}</td>
+                                                    <td>{{ allocation.phase_name }}</td>
+                                                    <td class="text-success">+ ৳ {{ allocation.allocated_amount|number_format(2) }}</td>
+                                                    <td>{{ allocation.notes ?: '-' }}</td>
+                                                    <td>{{ allocation.created_by_name }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="2" class="text-end">Total Allocated:</th>
+                                                <th class="text-success">৳ {{ total_allocated|number_format(2) }}</th>
+                                                <th colspan="2"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
+                                    No payment allocations found.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if shareholder.notes %}
+                    <div class="col-md-12">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <i class="fas fa-solid fa-note-sticky"></i> Notes
+                            </div>
+                            <div class="card-body">
+                                {{ shareholder.notes|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<style>
+    .shareholder-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-active { background: #e8f5e9; color: #2e7d32; }
+    .status-inactive { background: #fff3e0; color: #e65100; }
+    .status-suspended { background: #ffebee; color: #c62828; }
+</style>
+
+{{ footer }}

@@ -1,0 +1,275 @@
+{{ header }}
+
+<style>
+    .summary-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .summary-number {
+        font-size: 28px;
+        font-weight: 600;
+        color: #0B3C5D;
+    }
+    .summary-label {
+        font-size: 13px;
+        color: #666;
+        margin-top: 5px;
+    }
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        background: #f5f5f5;
+        padding: 10px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .data-table td {
+        padding: 10px;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .text-right {
+        text-align: right;
+    }
+    .badge-phase {
+        background: #e8f0fe;
+        color: #0B3C5D;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+</style>
+
+<div class="container-fluid">
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div class="summary-number">৳ {{ summary.total_allocated|number_format(2) }}</div>
+                        <div class="summary-label">Total Allocated Amount</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div class="summary-number">{{ summary.total_allocations }}</div>
+                        <div class="summary-label">Total Allocations</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div class="summary-number">{{ summary.last_allocation }}</div>
+                        <div class="summary-label">Last Allocation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" name="filter_shareholder" class="form-control" placeholder="Shareholder Name" value="{{ filter_shareholder }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_phase" class="form-select">
+                            <option value="">All Phases</option>
+                            {% for phase in payment_phases %}
+                                <option value="{{ phase.phase_id }}" {{ filter_phase == phase.phase_id ? 'selected' : '' }}>{{ phase.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="filter_date_from" class="form-control" placeholder="Date From" value="{{ filter_date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="filter_date_to" class="form-control" placeholder="Date To" value="{{ filter_date_to }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="filter_amount_min" class="form-control" placeholder="Min Amount" value="{{ filter_amount_min }}" step="0.01">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="filter_amount_max" class="form-control" placeholder="Max Amount" value="{{ filter_amount_max }}" step="0.01">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="button" id="button-filter" class="btn btn-primary">
+                            <i class="fa-solid fa-search"></i> Filter
+                        </button>
+                        <button type="button" id="button-clear" class="btn btn-secondary">
+                            <i class="fa-solid fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Allocations by Phase Summary -->
+            {% if summary.by_phase %}
+            <div class="summary-card mb-4">
+                <div class="section-title">Allocations by Phase</div>
+                <div class="row">
+                    {% for phase in summary.by_phase %}
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <strong>{{ phase.phase_name }}</strong><br>
+                                <span class="text-success">৳ {{ phase.total|number_format(2) }}</span>
+                                <span class="text-muted">({{ phase.count }} allocations)</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Top Shareholders -->
+            {% if summary.top_shareholders %}
+            <div class="summary-card mb-4">
+                <div class="section-title">Top Shareholders by Allocation</div>
+                <div class="row">
+                    {% for shareholder in summary.top_shareholders %}
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <strong>{{ shareholder.shareholder_name }}</strong><br>
+                                <span class="text-success">৳ {{ shareholder.total|number_format(2) }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Allocations Table -->
+            <div class="summary-card">
+                <div class="section-title">Payment Allocations List</div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><a href="{{ sort_date }}">Date</a></th>
+                                <th><a href="{{ sort_shareholder }}">Shareholder</a></th>
+                                <th>Code</th>
+                                <th>Ownership</th>
+                                <th><a href="{{ sort_phase }}">Phase</a></th>
+                                <th><a href="{{ sort_amount }}">Amount</a></th>
+                                <th>Notes</th>
+                                <th>Recorded By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if allocations %}
+                                {% for allocation in allocations %}
+                                    <tr>
+                                        <td>{{ allocation.date_only }}</a></td>
+                                        <td>{{ allocation.shareholder_name }}</a></td>
+                                        <td>{{ allocation.shareholder_code }}</a></td>
+                                        <td>{{ allocation.ownership_percentage }}%</a></td>
+                                        <td><span class="badge-phase">{{ allocation.phase_name }}</span></a></td>
+                                        <td class="text-success">৳ {{ allocation.allocated_amount|number_format(2) }}</a></td>
+                                        <td>{{ allocation.notes ?: '-' }}</a></td>
+                                        <td>{{ allocation.created_by }}</a></td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
+                                        No payment allocations found.
+                                    </a>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5" class="text-end">Total:</th>
+                                <th class="text-success">৳ {{ summary.total_allocated|number_format(2) }}</th>
+                                <th colspan="2"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-sm-6 text-start">{{ pagination }}</div>
+                    <div class="col-sm-6 text-end">{{ results }}</div>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
+    
+    var filter_shareholder = $('input[name="filter_shareholder"]').val();
+    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+    
+    var filter_phase = $('select[name="filter_phase"]').val();
+    if (filter_phase) url += '&filter_phase=' + filter_phase;
+    
+    var filter_date_from = $('input[name="filter_date_from"]').val();
+    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
+    
+    var filter_date_to = $('input[name="filter_date_to"]').val();
+    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
+    
+    var filter_amount_min = $('input[name="filter_amount_min"]').val();
+    if (filter_amount_min) url += '&filter_amount_min=' + filter_amount_min;
+    
+    var filter_amount_max = $('input[name="filter_amount_max"]').val();
+    if (filter_amount_max) url += '&filter_amount_max=' + filter_amount_max;
+    
+    location = url;
+});
+
+$('#button-clear').on('click', function() {
+    location = 'index.php?route=account/pms_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
+});
+
+$('input, select').keydown(function(e) {
+    if (e.keyCode == 13) {
+        $('#button-filter').click();
+    }
+});
+</script>
+
+{{ footer }}

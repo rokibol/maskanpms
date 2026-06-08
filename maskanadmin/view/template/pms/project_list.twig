@@ -1,0 +1,178 @@
+{{ header }} {{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-project').submit() : false;">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-filter"></i> {{ text_filter }}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="filter_status" id="input-status" class="form-select">
+                            {% for status_value, status_name in statuses %}
+                                <option value="{{ status_value }}" {{ filter_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="filter_is_active" id="input-is-active" class="form-select">
+                            {% for active_value, active_name in active_options %}
+                                <option value="{{ active_value }}" {{ filter_is_active == active_value ? 'selected' : '' }}>{{ active_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" id="button-filter" class="btn btn-primary">
+                            <i class="fa-solid fa-search"></i> {{ button_filter }}
+                        </button>
+                        <button type="button" id="button-clear" class="btn btn-secondary">
+                            <i class="fa-solid fa-eraser"></i> {{ button_clear }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-list"></i> {{ text_list }}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <form id="form-project" action="{{ delete }}" method="post">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"></th>
+                                    <th><a href="{{ sort_name }}">{{ column_name }}</a></th>
+                                    <th><a href="{{ sort_status }}">{{ column_status }}</a></th>
+                                    <th><a href="{{ sort_store }}">{{ column_store }}</a></th>
+                                    <th><a href="{{ sort_is_active }}">{{ column_is_active }}</a></th>
+                                    <th><a href="{{ sort_date_added }}">{{ column_date_added }}</a></th>
+                                    <th class="text-end">{{ column_action }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if projects %}
+                                    {% for project in projects %}
+                                        <tr>
+                                            <td class="text-center">
+                                                <input type="checkbox" name="selected[]" value="{{ project.project_id }}">
+                                            </td>
+                                            <td>{{ project.name }}</td>
+                                            <td>
+                                                {% if project.status_raw == 'planning' %}
+                                                    <span class="badge bg-secondary">{{ project.status }}</span>
+                                                {% elseif project.status_raw == 'land_acquisition' %}
+                                                    <span class="badge bg-info">{{ project.status }}</span>
+                                                {% elseif project.status_raw == 'construction' %}
+                                                    <span class="badge bg-warning">{{ project.status }}</span>
+                                                {% elseif project.status_raw == 'operational' %}
+                                                    <span class="badge bg-success">{{ project.status }}</span>
+                                                {% elseif project.status_raw == 'completed' %}
+                                                    <span class="badge bg-primary">{{ project.status }}</span>
+                                                {% elseif project.status_raw == 'suspended' %}
+                                                    <span class="badge bg-danger">{{ project.status }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ project.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ project.store_name }}</td>
+                                            <td>
+                                                {% if project.is_active %}
+                                                    <span class="badge bg-success">{{ text_enabled }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ text_disabled }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ project.date_added }}</td>
+                                            <td class="text-end">
+                                                <a href="{{ project.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-sm">
+                                                    <i class="fa-regular fa-eye"></i>
+                                                </a>
+                                                <a href="{{ project.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </a>
+                                                <button type="button" onclick="confirmDelete('{{ project.delete }}')" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger btn-sm">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center">{{ text_no_results }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 text-start">{{ pagination }}</div>
+                    <div class="col-sm-6 text-end">{{ results }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#button-filter').on('click', function() {
+        var url = 'index.php?route=pms/project&user_token={{ user_token }}';
+        
+        var filter_name = $('input[name=\'filter_name\']').val();
+        if (filter_name) {
+            url += '&filter_name=' + encodeURIComponent(filter_name);
+        }
+        
+        var filter_status = $('select[name=\'filter_status\']').val();
+        if (filter_status) {
+            url += '&filter_status=' + encodeURIComponent(filter_status);
+        }
+        
+        var filter_is_active = $('select[name=\'filter_is_active\']').val();
+        if (filter_is_active !== '') {
+            url += '&filter_is_active=' + encodeURIComponent(filter_is_active);
+        }
+        
+        location = url;
+    });
+    
+    $('#button-clear').on('click', function() {
+        location = 'index.php?route=pms/project&user_token={{ user_token }}';
+    });
+    
+    $('input[name=\'filter_name\']').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            $('#button-filter').trigger('click');
+        }
+    });
+</script>
+
+{{ footer }}

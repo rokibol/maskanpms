@@ -1,0 +1,240 @@
+{{ header }}
+
+<style>
+    .filter-bar {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-enabled { background: #e8f5e9; color: #2e7d32; }
+    .status-disabled { background: #ffebee; color: #c62828; }
+    /* ========== FIX DROPDOWN OVERFLOW ========== */
+    .table-responsive {
+        overflow-x: auto;
+        overflow-y: visible !important;
+    }
+    
+    .table {
+        overflow: visible !important;
+    }
+    
+    .table tbody,
+    .table tr,
+    .table td {
+        overflow: visible !important;
+    }
+    
+    .dropdown {
+        position: static !important;
+    }
+    
+    .dropdown-menu {
+        position: absolute !important;
+        z-index: 9999 !important;
+        inset: auto auto 0 auto !important;
+        min-width: 180px;
+    }
+    
+    /* For the action column - make it position relative */
+    .table td:last-child {
+        position: relative;
+        overflow: visible !important;
+    }
+    
+    /* Ensure parent containers don't clip */
+    #content,
+    .card-body,
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    /* Fix for the dropdown button container */
+    .action-dropdown {
+        position: relative !important;
+        display: inline-block !important;
+    }
+    
+    .action-dropdown .dropdown-menu {
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        left: auto !important;
+        bottom: auto !important;
+        margin-top: 5px !important;
+        transform: translateY(0) !important;
+    }
+    
+    /* Ensure dropdown appears above modal backdrop if any */
+    .dropdown-menu.show {
+        display: block;
+        z-index: 1060;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <div>
+                    <a href="{{ add }}" class="btn btn-primary">
+                        <i class="fas fa-solid fa-plus"></i> Add Accountant
+                    </a>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fas fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <input type="text" name="filter_search" value="{{ filter_search }}" class="form-control" placeholder="Search by name or email">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="filter_status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for status_value, status_name in statuses %}
+                                <option value="{{ status_value }}" {{ filter_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="button-filter" class="btn btn-primary">
+                            <i class="fas fa-solid fa-search"></i> Filter
+                        </button>
+                        <button type="button" id="button-clear" class="btn btn-secondary">
+                            <i class="fas fa-solid fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customers Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th><a href="{{ sort_name }}">Name</a></th>
+                            <th><a href="{{ sort_email }}">Email</a></th>
+                            <th>Phone</th>
+                            <th><a href="{{ sort_status }}">Status</a></th>
+                            <th><a href="{{ sort_date }}">Date Added</a></th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if customers %}
+                            {% for customer in customers %}
+                                <tr>
+                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.email }}</td>
+                                    <td>{{ customer.telephone }}</td>
+                                    <td>{{ customer.status_badge|raw }}</td>
+                                    <td>{{ customer.date_added }}</td>
+                                    <td class="text-end">
+                                        <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
+                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-solid fa-gear"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{{ customer.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                                <li><a class="dropdown-item" href="{{ customer.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCustomer({{ customer.customer_id }})"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-regular fa-users fa-2x mb-2 d-block"></i>
+                                    No accountants found for this project.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=account/pms_customers&language={{ language }}';
+    
+    var filter_search = $('input[name="filter_search"]').val();
+    if (filter_search) {
+        url += '&filter_search=' + encodeURIComponent(filter_search);
+    }
+    
+    var filter_status = $('select[name="filter_status"]').val();
+    if (filter_status) {
+        url += '&filter_status=' + encodeURIComponent(filter_status);
+    }
+    
+    location = url;
+});
+
+$('#button-clear').on('click', function() {
+    location = 'index.php?route=account/pms_customers&language={{ language }}';
+});
+
+$('input[name="filter_search"]').keydown(function(e) {
+    if (e.keyCode == 13) {
+        $('#button-filter').click();
+    }
+});
+
+function deleteCustomer(customerId) {
+    if (confirm('Are you sure you want to delete this accountant? They will no longer have access to the system.')) {
+        $.ajax({
+            url: 'index.php?route=account/pms_customers.delete&language={{ language }}&customer_id=' + customerId + '&user_token={{ user_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}
