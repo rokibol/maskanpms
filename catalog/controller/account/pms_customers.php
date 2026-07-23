@@ -410,7 +410,7 @@ class PmsCustomers extends \Opencart\System\Engine\Controller {
             ];
             
             if (!empty($this->request->post['password'])) {
-                $customer_data['password'] = password_hash($this->request->post['password'], PASSWORD_DEFAULT);
+                $customer_data['password'] = $this->request->post['password'];
             }
             
             if (isset($this->request->get['customer_id'])) {

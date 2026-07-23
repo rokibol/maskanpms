@@ -24,6 +24,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         
         // Get current project
         $this->load->model('pms/project');
+        
         $project = $this->customer->getProject();
         
         if (!$project) {
@@ -86,7 +87,10 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         $this->load->model('pms/shareholder');
         
         $shareholder_total = $this->model_pms_shareholder->getTotalShareholders($filter_data);
+        $shareholder_total_allocated_unit = $this->model_pms_shareholder->getTotalUnitAllocated($filter_data);
         $results = $this->model_pms_shareholder->getShareholders($filter_data);
+
+        $data['shareholder_total_allocated_unit'] = $shareholder_total_allocated_unit;
         
         $data['shareholders'] = [];
         
@@ -145,7 +149,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
 			'total' => $shareholder_total,
 			'page'  => $page,
 			'limit' => $this->config->get('config_pagination_admin'),
-			'url'   => $this->url->link('account/pms_shareholders.list', 'customer_token=' . $this->session->data['customer_token'] . $url .  '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+			'url'   => $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language') . $url .  '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($shareholder_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($shareholder_total - $this->config->get('config_pagination_admin'))) ? $shareholder_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $shareholder_total, ceil($shareholder_total / $this->config->get('config_pagination_admin')));
@@ -174,16 +178,15 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         $data['sort'] = $sort;
         $data['order'] = $order;
         
-        // Bulk action URLs
-        $data['bulk_action_url'] = $this->url->link('account/pms_shareholders.bulkAction', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['language'] = $this->config->get('config_language');
+        $data['customer_token'] = $this->session->data['customer_token'];
         
         // URLs
         $data['add'] = $this->url->link('account/pms_shareholders.add', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         $data['back'] = $this->url->link('account/manager', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['bulk_allocation'] = $this->url->link('account/pms_shareholders.bulkAllocation', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        
         $data['proportional_allocation'] = $this->url->link('account/pms_shareholders.proportionalAllocation', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['bulk_allocation_rate'] = $this->url->link('account/pms_shareholders.bulkAllocationByRate', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-
+        
         // Template parts
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
@@ -220,7 +223,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
-        $data['total_shares'] = $project['total_shares'] - $project['occupied_total_units'];
+        $data['total_shares'] = $project['total_shares'];
 
         $data['text_form'] = $this->language->get("text_add");
         
@@ -586,12 +589,12 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             
             // Password validation for new shareholder
             if (!isset($this->request->get['id'])) {
-                if (empty($this->request->post['password']) || oc_validate_length((string)$this->request->post['firstname'], 1, 4)) {
+                if (empty($this->request->post['password']) || oc_validate_length((string)$this->request->post['password'], 1, 4)) {
                     $json['error']['password'] = $this->language->get('error_password');
                 }
             }
         }
-        
+
         if (!$json) {
             $this->load->model('pms/shareholder');
             
@@ -641,56 +644,6 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             }
             
             $json['success'] = $this->language->get('text_delete_success');
-            $json['redirect'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        }
-        
-        $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
-    }
-    
-    public function bulkAction(): void {
-        $this->load->language('pms/shareholder');
-        
-        $json = [];
-        
-        $customer_group_id = $this->customer->getGroupId();
-        $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
-        
-        if ($customer_group_id != $manager_group_id) {
-            $json['error'] = $this->language->get('error_permission');
-        }
-        
-        if (!$json) {
-            $this->load->model('pms/shareholder');
-            
-            $action = $this->request->post['action'];
-            $selected = $this->request->post['selected'];
-            
-            if (!empty($selected) && is_array($selected)) {
-                foreach ($selected as $id) {
-                    switch ($action) {
-                        case 'activate':
-                            $this->model_pms_shareholder->updateShareholderStatus($id, 'active');
-                            $this->model_pms_shareholder->updateCustomerStatus($id, 1);
-                            break;
-                        case 'deactivate':
-                            $this->model_pms_shareholder->updateShareholderStatus($id, 'inactive');
-                            $this->model_pms_shareholder->updateCustomerStatus($id, 0);
-                            break;
-                        case 'suspend':
-                            $this->model_pms_shareholder->updateShareholderStatus($id, 'suspended');
-                            $this->model_pms_shareholder->updateCustomerStatus($id, 0);
-                            break;
-                        case 'delete':
-                            $this->model_pms_shareholder->deleteShareholder($id);
-                            break;
-                    }
-                }
-                $json['success'] = $this->language->get('text_bulk_success');
-            } else {
-                $json['error'] = $this->language->get('error_no_selection');
-            }
-            
             $json['redirect'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         }
         
@@ -768,6 +721,17 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         // Get all payment allocations for this shareholder
         $data['allocations'] = $this->model_pms_shareholder->getPaymentAllocations($shareholder_id);
 
+        // Get discounted allocations for this shareholder
+        $data['discounted_allocations'] = $this->db->query("
+            SELECT pa.*, pp.name as phase_name
+            FROM `" . DB_PREFIX . "payment_allocation` pa
+            LEFT JOIN `" . DB_PREFIX . "payment_phase` pp ON pa.payment_phase_id = pp.phase_id
+            WHERE pa.shareholder_id = '" . (int)$shareholder_info['id'] . "'
+            AND pa.is_discounted = 1
+            AND pa.is_deleted = 0
+            ORDER BY pa.created_at DESC
+        ")->rows;
+
         // Get payment phases for dropdown
         $data['payments_record'] = $this->model_pms_shareholder->getPaymentRecords($shareholder_id);
         
@@ -780,6 +744,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         $data['view_link'] = $this->url->link('account/pms_shareholders.view', 'language=' . $this->config->get('config_language') . '&id=' . $shareholder_id . '&customer_token=' . $this->session->data['customer_token']);
         
         $data['customer_token'] = $this->session->data['customer_token'];
+        $data['language'] = $this->config->get('config_language');
         
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
@@ -811,7 +776,8 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             $this->load->model('pms/shareholder');
             
             $shareholder_id = (int)$this->request->post['shareholder_id'];
-            $project_id = (int)$this->request->post['project_id'];
+            $project_info = $this->customer->getProject();
+            $project_id = $project_info['project_id'];
             $payment_phase_id = (int)$this->request->post['payment_phase_id'];
             $allocated_amount = (float)$this->request->post['allocated_amount'];
             $notes = $this->request->post['notes'];
@@ -879,206 +845,28 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
     }
 
     /**
-     * Bulk Payment Allocation page
+     * Discount Allocation Form
      */
-    public function bulkAllocation(): void {
+    public function discountAllocation(): void {
         if (!$this->customer->isLogged()) {
             $this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language')));
         }
         
-        $this->load->language('pms/shareholder');
-        $this->load->language('pms/payment_allocation');
-        
-        $this->document->setTitle($this->language->get('heading_bulk_allocation'));
-        
-        // Get current project
-        $this->load->model('pms/project');
-        $project = $this->customer->getProject();
-        
-        if (!$project) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
-        }
-        
-        $data['project_id'] = $project['project_id'];
-        $data['project_name'] = $project['name'];
-        $data['total_shares'] = $project['total_shares'];
-        
-        // Load models
-        $this->load->model('pms/shareholder');
-        $this->load->model('pms/payment');
-        
-        // Get allocation summary
-        $data['allocation_summary'] = $this->model_pms_shareholder->getAllocationSummary($project['project_id']);
-        
-        // Get payment phases
-        $data['payment_phases'] = $this->model_pms_payment->getPaymentPhases();
-        
-        // Get active shareholders count
-        $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
-        $data['shareholder_count'] = count($shareholders);
-        
-        // Calculate total ownership
-        $total_ownership = 0;
-        foreach ($shareholders as $sh) {
-            $total_ownership += $sh['ownership_units'];
-        }
-        $data['total_ownership'] = $total_ownership;
-        
-        // Form action
-        $data['action_equal'] = $this->url->link('account/pms_shareholders.saveBulkAllocationEqual', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['action_percentage'] = $this->url->link('account/pms_shareholders.saveBulkAllocationPercentage', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['back'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        
-        $data['customer_token'] = $this->session->data['customer_token'];
-        
-        $data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
-        
-        $this->response->setOutput($this->load->view('account/pms_shareholder_bulk_allocation', $data));
-    }
-
-    /**
-     * Save bulk allocation (Equal distribution)
-     */
-    public function saveBulkAllocationEqual(): void {
-        $this->load->language('pms/payment_allocation');
-        
-        $json = [];
-        
-        // Check permission
+        // Check if user is Manager
         $customer_group_id = $this->customer->getGroupId();
         $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
         
         if ($customer_group_id != $manager_group_id) {
-            $json['error'] = $this->language->get('error_permission');
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
         }
         
-        if (!$json) {
-            $this->load->model('pms/shareholder');
-            $this->load->model('pms/project');
-            
-            $project = $this->customer->getProject();
-            
-            $allocation_data = [
-                'project_id'        => $project['project_id'],
-                'payment_phase_id'  => (int)$this->request->post['payment_phase_id'],
-                'allocated_amount'  => (float)$this->request->post['allocated_amount'],
-                'notes'             => $this->request->post['notes'] ?? ''
-            ];
-            
-            $result = $this->model_pms_shareholder->bulkAllocatePayment($allocation_data);
-            
-            if ($result['success']) {
-                $json['success'] = $this->language->get('text_bulk_allocation_success');
-                $json['allocated_count'] = $result['allocated'];
-                $json['redirect'] = $this->url->link('account/pms_shareholders.paymentAllocation', 'language=' . $this->config->get('config_language'));
-            } else {
-                $json['error'] = implode(', ', $result['errors']);
-            }
-        }
+        $this->load->language('pms/discount_allocation');
         
-        $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
-    }
-
-    /**
-     * Save bulk allocation (Percentage based)
-     */
-    public function saveBulkAllocationPercentage(): void {
-        $this->load->language('pms/payment_allocation');
-        
-        $json = [];
-        
-        // Check permission
-        $customer_group_id = $this->customer->getGroupId();
-        $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
-        
-        if ($customer_group_id != $manager_group_id) {
-            $json['error'] = $this->language->get('error_permission');
-        }
-        
-        if (!$json) {
-            $this->load->model('pms/shareholder');
-            $this->load->model('pms/project');
-            
-            $project = $this->customer->getProject();
-            
-            $allocation_data = [
-                'project_id'        => $project['project_id'],
-                'payment_phase_id'  => (int)$this->request->post['payment_phase_id'],
-                'total_amount'      => (float)$this->request->post['total_amount'],
-                'notes'             => $this->request->post['notes'] ?? ''
-            ];
-            
-            $result = $this->model_pms_shareholder->bulkAllocatePaymentByPercentage($allocation_data);
-            
-            if ($result['success']) {
-                $json['success'] = $this->language->get('text_bulk_allocation_success');
-                $json['allocated'] = $result['allocated'];
-                $json['redirect'] = $this->url->link('account/pms_shareholders.paymentAllocation', 'language=' . $this->config->get('config_language'));
-            } else {
-                $json['error'] = implode(', ', $result['errors']);
-            }
-        }
-        
-        $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
-    }
-
-    /**
-     * Get shareholders preview for bulk allocation
-     */
-    public function getShareholdersPreview(): void {
-        $json = [];
-        
-        $this->load->model('pms/project');
-        $this->load->model('pms/shareholder');
-        
-        $project = $this->customer->getProject();
-        
-        if ($project) {
-            $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
-            $total_amount = (float)$this->request->get['total_amount'];
-            
-            $json['success'] = true;
-            $json['shareholders'] = [];
-            
-            foreach ($shareholders as $shareholder) {
-                $amount = $total_amount * ($shareholder['ownership_percentage'] / 100);
-                $json['shareholders'][] = [
-                    'name' => $shareholder['firstname'] . ' ' . $shareholder['lastname'],
-                    'percentage' => round($shareholder['ownership_percentage'], 2),
-                    'amount' => $amount
-                ];
-            }
-        } else {
-            $json['success'] = false;
-        }
-        
-        $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
-    }
-
-    /**
-     * Proportional Bulk Allocation page
-     */
-    public function proportionalAllocation(): void {
-        if (!$this->customer->isLogged()) {
-            $this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language')));
-        }
-        
-        $this->load->language('pms/shareholder');
-        $this->load->language('pms/payment_allocation');
-        
-        $this->document->setTitle($this->language->get('heading_proportional_allocation'));
+        $this->document->setTitle($this->language->get('heading_discount_allocation'));
         
         // Get current project
         $this->load->model('pms/project');
-        $project = $this->customer->getProject();
+        $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
         
         if (!$project) {
             $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
@@ -1086,51 +874,43 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
-        $data['total_shares'] = $project['total_shares'];
         
-        // Load models
+        // Get shareholders
         $this->load->model('pms/shareholder');
-        $this->load->model('pms/payment');
-        
-        // Get all shareholders for dropdown
         $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
         $data['shareholders'] = $shareholders;
         
-        // Calculate total ownership
-        $total_ownership = 0;
-        foreach ($shareholders as $sh) {
-            $total_ownership += $sh['ownership_units'];
-        }
-        $data['total_ownership'] = $total_ownership;
-        
         // Get payment phases
+        $this->load->model('pms/payment');
         $data['payment_phases'] = $this->model_pms_payment->getPaymentPhases();
         
+        // Base amount (Land Purchase phase amount)
+        // You can set this dynamically or from a setting
+        $data['base_amount'] = 1050000; // 10,50,000 BDT
+        
+        // Get recent discounted allocations
+        $data['discounted_allocations'] = $this->model_pms_shareholder->getDiscountedAllocations($project['project_id']);
+        
         // Form action
-        $data['action'] = $this->url->link('account/pms_shareholders.saveProportionalAllocation', 'language=' . $this->config->get('config_language'));
+        $data['action'] = $this->url->link('account/pms_shareholders.saveDiscountAllocation', 'language=' . $this->config->get('config_language'));
         $data['back'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language'));
         
-        $data['customer_token'] = $this->session->data['customer_token'];
+        $data['user_token'] = $this->session->data['user_token'];
         
-        $data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
+        $data['header'] = $this->load->controller('common/header');
+        $data['footer'] = $this->load->controller('common/footer');
         
-        $this->response->setOutput($this->load->view('account/pms_shareholder_proportional_allocation', $data));
+        $this->response->setOutput($this->load->view('account/pms_discount_allocation', $data));
     }
 
     /**
-     * Save proportional allocation
+     * Save Discount Allocation
      */
-    public function saveProportionalAllocation(): void {
-        $this->load->language('pms/payment_allocation');
+    public function saveDiscountAllocation(): void {
+        $this->load->language('pms/discount_allocation');
         
         $json = [];
         
-        // Check permission
         $customer_group_id = $this->customer->getGroupId();
         $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
         
@@ -1142,25 +922,26 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             $this->load->model('pms/shareholder');
             $this->load->model('pms/project');
             
-            $project = $this->customer->getProject();
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
             
             $allocation_data = [
-                'project_id'                 => $project['project_id'],
-                'reference_shareholder_id'   => (int)$this->request->post['reference_shareholder_id'],
-                'reference_amount'           => (float)$this->request->post['reference_amount'],
-                'payment_phase_id'           => (int)$this->request->post['payment_phase_id'],
-                'notes'                      => $this->request->post['notes'] ?? ''
+                'shareholder_id'     => (int)$this->request->post['shareholder_id'],
+                'project_id'         => $project['project_id'],
+                'payment_phase_id'   => (int)$this->request->post['payment_phase_id'],
+                'allocated_amount'   => (float)$this->request->post['original_amount'],
+                'discount_type'      => $this->request->post['discount_type'],
+                'discount_value'     => (float)$this->request->post['discount_value'],
+                'discount_reason'    => $this->request->post['discount_reason'],
+                'notes'              => 'Discounted allocation'
             ];
             
-            $result = $this->model_pms_shareholder->proportionalAllocation($allocation_data);
+            $allocation_id = $this->model_pms_shareholder->addAllocationWithDiscount($allocation_data);
             
-            if ($result['success']) {
-                $json['success'] = $this->language->get('text_proportional_allocation_success');
-                $json['allocated_count'] = $result['allocated'];
-                $json['total_amount'] = $result['total_amount'];
-                $json['redirect'] = $this->url->link('account/pms_shareholders.paymentAllocation', 'language=' . $this->config->get('config_language'));
+            if ($allocation_id) {
+                $json['success'] = $this->language->get('text_discount_success');
+                $json['redirect'] = $this->url->link('account/pms_payment_allocations', 'language=' . $this->config->get('config_language'));
             } else {
-                $json['error'] = implode(', ', $result['errors']);
+                $json['error'] = 'Failed to create allocation';
             }
         }
         
@@ -1169,157 +950,72 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
     }
 
     /**
-     * Get preview for proportional allocation
+     * Apply discount to allocation (from paymentAllocation page)
      */
-    public function getProportionalPreview(): void {
-        $json = [];
-        
-        $this->load->model('pms/project');
-        $this->load->model('pms/shareholder');
-        
-        $project = $this->customer->getProject();
-        
-        if ($project) {
-            $reference_shareholder_id = (int)$this->request->get['reference_shareholder_id'];
-            $reference_amount = (float)$this->request->get['reference_amount'];
-            
-            // Get reference shareholder percentage
-            $reference = $this->db->query("
-                SELECT s.id, 
-                    (s.ownership_units / p.total_shares * 100) as ownership_percentage,
-                    CONCAT(c.firstname, ' ', c.lastname) as shareholder_name
-                FROM `" . DB_PREFIX . "shareholders` s
-                INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
-                INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
-                WHERE s.id = '" . (int)$reference_shareholder_id . "'
-                AND s.project_id = '" . (int)$project['project_id'] . "'
-            ");
-            
-            if ($reference->num_rows > 0) {
-                $reference_percentage = (float)$reference->row['ownership_percentage'];
-                $total_amount = ($reference_amount / $reference_percentage) * 100;
-                
-                // Get all shareholders
-                $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
-                
-                $json['success'] = true;
-                $json['total_amount'] = $total_amount;
-                $json['reference_shareholder'] = $reference->row['shareholder_name'];
-                $json['reference_percentage'] = round($reference_percentage, 2);
-                $json['reference_amount'] = $reference_amount;
-                $json['shareholders'] = [];
-                
-                foreach ($shareholders as $shareholder) {
-                    $amount = $total_amount * ($shareholder['ownership_percentage'] / 100);
-                    $json['shareholders'][] = [
-                        'name' => $shareholder['firstname'] . ' ' . $shareholder['lastname'],
-                        'percentage' => round($shareholder['ownership_percentage'], 2),
-                        'amount' => $amount
-                    ];
-                }
-            } else {
-                $json['success'] = false;
-                $json['error'] = 'Reference shareholder not found';
-            }
-        } else {
-            $json['success'] = false;
-        }
-        
-        $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
-    }
-
-    /**
-     * Bulk Allocation by Rate per Percentage
-     */
-    public function bulkAllocationByRate(): void {
-        if (!$this->customer->isLogged()) {
-            $this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language')));
-        }
-        
-        $this->load->language('pms/shareholder');
-        $this->load->language('pms/payment_allocation');
-        
-        $this->document->setTitle($this->language->get('heading_bulk_allocation_rate'));
-        
-        // Get current project
-        $this->load->model('pms/project');
-        $project = $this->customer->getProject();
-        
-        if (!$project) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
-        }
-        
-        $data['project_id'] = $project['project_id'];
-        $data['project_name'] = $project['name'];
-        $data['total_shares'] = $project['total_shares'];
-        
-        // Load models
-        $this->load->model('pms/shareholder');
-        $this->load->model('pms/payment');
-        
-        // Get all shareholders for display
-        $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
-        $data['shareholders'] = $shareholders;
-        
-        // Get payment phases
-        $data['payment_phases'] = $this->model_pms_payment->getPaymentPhases();
-        
-        // Form action
-        $data['action'] = $this->url->link('account/pms_shareholders.saveBulkAllocationByRate', 'language=' . $this->config->get('config_language'));
-        $data['back'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language'));
-        
-        $data['customer_token'] = $this->session->data['customer_token'];
-        
-        $data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
-        
-        $this->response->setOutput($this->load->view('account/pms_shareholder_bulk_allocation_rate', $data));
-    }
-
-    /**
-     * Save bulk allocation by rate
-     */
-    public function saveBulkAllocationByRate(): void {
+    public function applyDiscountToAllocation(): void {
         $this->load->language('pms/payment_allocation');
         
         $json = [];
         
         // Check permission
-        /*$customer_group_id = $this->customer->getGroupId();
+        $customer_group_id = $this->customer->getGroupId();
         $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
         
-        if ($customer_group_id != $manager_group_id) {
+        /*if ($customer_group_id != $manager_group_id) {
             $json['error'] = $this->language->get('error_permission');
         }*/
         
         if (!$json) {
-            $this->load->model('pms/shareholder');
-            $this->load->model('pms/project');
+            $allocation_id = (int)$this->request->post['allocation_id'];
+            $discount_type = $this->request->post['discount_type'];
+            $discount_value = (float)$this->request->post['discount_value'];
+            $discount_reason = $this->request->post['discount_reason'];
             
-            $project = $this->customer->getProject();
+            // Get current allocation
+            $current = $this->db->query("
+                SELECT * FROM `" . DB_PREFIX . "payment_allocation`
+                WHERE allocation_id = '" . (int)$allocation_id . "'
+            ");
             
-            $allocation_data = [
-                'project_id'        => $project['project_id'],
-                'payment_phase_id'  => (int)$this->request->post['payment_phase_id'],
-                'rate_per_unit'     => (float)$this->request->post['rate_per_unit'],
-                'calculation_type'  => $this->request->post['calculation_type'],
-                'notes'             => $this->request->post['notes'] ?? ''
-            ];
-            
-            $result = $this->model_pms_shareholder->bulkAllocateByPerUnitRate($allocation_data);
-            
-            if ($result['success']) {
-                $json['success'] = $this->language->get('text_bulk_allocation_success');
-                $json['allocated_count'] = $result['allocated'];
-                $json['total_allocated'] = $result['total_allocated'];
-                $json['redirect'] = $this->url->link('account/pms_shareholders.paymentAllocation', 'language=' . $this->config->get('config_language'));
+            if ($current->num_rows > 0) {
+                $original_amount = (float)$current->row['allocated_amount'];
+                $discount_amount = 0;
+                
+                if ($discount_type == 'percentage') {
+                    $discount_amount = ($original_amount * $discount_value) / 100;
+                } else {
+                    $discount_amount = $discount_value;
+                }
+                
+                if ($discount_amount > $original_amount) {
+                    $discount_amount = $original_amount;
+                }
+                
+                $final_amount = $original_amount - $discount_amount;
+                
+                // Update allocation with discount
+                $this->db->query("
+                    UPDATE `" . DB_PREFIX . "payment_allocation` 
+                    SET `allocated_amount` = '" . (float)$final_amount . "',
+                        `original_amount` = '" . (float)$original_amount . "',
+                        `discount_amount` = '" . (float)$discount_amount . "',
+                        `discount_type` = '" . $this->db->escape($discount_type) . "',
+                        `discount_reason` = '" . $this->db->escape($discount_reason) . "',
+                        `is_discounted` = 1
+                    WHERE `allocation_id` = '" . (int)$allocation_id . "'
+                ");
+                
+                // Update shareholder credit balance
+                $this->db->query("
+                    UPDATE `" . DB_PREFIX . "shareholders` 
+                    SET `current_credit_balance` = `current_credit_balance` - '" . (float)$discount_amount . "'
+                    WHERE `id` = '" . (int)$current->row['shareholder_id'] . "'
+                ");
+                
+                $json['success'] = true;
+                $json['message'] = 'Discount applied successfully!';
             } else {
-                $json['error'] = implode(', ', $result['errors']);
+                $json['error'] = 'Allocation not found';
             }
         }
         
@@ -1328,84 +1024,58 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
     }
 
     /**
-     * Get preview for rate-based allocation
+     * Delete discount from allocation
      */
-    public function getRateAllocationPreview(): void {
+    public function deleteDiscountFromAllocation(): void {
+        $this->load->language('pms/payment_allocation');
+        
         $json = [];
         
-        $this->load->model('pms/project');
-        $this->load->model('pms/shareholder');
+        // Check permission
+        $customer_group_id = $this->customer->getGroupId();
+        $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
         
-        $project = $this->customer->getProject();
+        /*if ($customer_group_id != $manager_group_id) {
+            $json['error'] = $this->language->get('error_permission');
+        }*/
         
-        if ($project) {
-            $calculation_type = $this->request->get['calculation_type'];
-            $rate_per_unit = (float)$this->request->get['rate_per_unit'];
+        if (!$json) {
+            $allocation_id = (int)$this->request->get['allocation_id'];
             
-            if ($calculation_type == 'percentage') {
-                // Get shareholders with percentage
-                $shareholders = $this->db->query("
-                    SELECT s.id, 
-                        (s.ownership_units / p.total_shares * 100) as ownership_percentage,
-                        CONCAT(c.firstname, ' ', c.lastname) as shareholder_name
-                    FROM `" . DB_PREFIX . "shareholders` s
-                    INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
-                    INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
-                    WHERE s.project_id = '" . (int)$project['project_id'] . "'
-                    AND s.is_deleted = 0
-                    AND s.status = 'active'
+            // Get current allocation
+            $current = $this->db->query("
+                SELECT * FROM `" . DB_PREFIX . "payment_allocation`
+                WHERE allocation_id = '" . (int)$allocation_id . "'
+            ");
+            
+            if ($current->num_rows > 0) {
+                $discount_amount = (float)$current->row['discount_amount'];
+                $original_amount = (float)$current->row['original_amount'];
+                
+                // Restore original amount
+                $this->db->query("
+                    UPDATE `" . DB_PREFIX . "payment_allocation` 
+                    SET `allocated_amount` = '" . (float)$original_amount . "',
+                        `original_amount` = NULL,
+                        `discount_amount` = 0,
+                        `discount_type` = NULL,
+                        `discount_reason` = NULL,
+                        `is_discounted` = 0
+                    WHERE `allocation_id` = '" . (int)$allocation_id . "'
+                ");
+                
+                // Restore shareholder credit balance
+                $this->db->query("
+                    UPDATE `" . DB_PREFIX . "shareholders` 
+                    SET `current_credit_balance` = `current_credit_balance` + '" . (float)$discount_amount . "'
+                    WHERE `id` = '" . (int)$current->row['shareholder_id'] . "'
                 ");
                 
                 $json['success'] = true;
-                $json['calculation_type'] = 'percentage';
-                $json['rate_per_unit'] = $rate_per_unit;
-                $json['shareholders'] = [];
-                $total_amount = 0;
-                
-                foreach ($shareholders->rows as $shareholder) {
-                    $amount = $rate_per_unit * $shareholder['ownership_percentage'];
-                    $total_amount += $amount;
-                    $json['shareholders'][] = [
-                        'name' => $shareholder['shareholder_name'],
-                        'value' => round($shareholder['ownership_percentage'], 2),
-                        'value_type' => '%',
-                        'amount' => $amount
-                    ];
-                }
-                $json['total_amount'] = $total_amount;
-                
+                $json['message'] = 'Discount removed successfully!';
             } else {
-                // Get shareholders with units
-                $shareholders = $this->db->query("
-                    SELECT s.id, s.ownership_units,
-                        CONCAT(c.firstname, ' ', c.lastname) as shareholder_name
-                    FROM `" . DB_PREFIX . "shareholders` s
-                    INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
-                    WHERE s.project_id = '" . (int)$project['project_id'] . "'
-                    AND s.is_deleted = 0
-                    AND s.status = 'active'
-                ");
-                
-                $json['success'] = true;
-                $json['calculation_type'] = 'units';
-                $json['rate_per_unit'] = $rate_per_unit;
-                $json['shareholders'] = [];
-                $total_amount = 0;
-                
-                foreach ($shareholders->rows as $shareholder) {
-                    $amount = $rate_per_unit * $shareholder['ownership_units'];
-                    $total_amount += $amount;
-                    $json['shareholders'][] = [
-                        'name' => $shareholder['shareholder_name'],
-                        'value' => $shareholder['ownership_units'],
-                        'value_type' => 'shares',
-                        'amount' => $amount
-                    ];
-                }
-                $json['total_amount'] = $total_amount;
+                $json['error'] = 'Allocation not found';
             }
-        } else {
-            $json['success'] = false;
         }
         
         $this->response->addHeader('Content-Type: application/json');

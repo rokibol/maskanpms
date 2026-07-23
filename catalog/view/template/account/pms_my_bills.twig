@@ -154,13 +154,13 @@
         <div id="content" class="col">
             {{ content_top }}
             
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ heading_title }}</h1>
-                <div>
-                    <a href="{{ payment_history_url }}" class="btn btn-info">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                <h1 class="mb-0 fs-4 fs-md-3">{{ heading_title }}</h1>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ payment_history_url }}" class="btn btn-info btn-sm btn-md">
                         <i class="fas fa-regular fa-clock-rotate-left"></i> Payment History
                     </a>
-                    <a href="{{ back }}" class="btn btn-secondary">
+                    <a href="{{ back }}" class="btn btn-secondary btn-sm btn-md">
                         <i class="fas fa-solid fa-arrow-left"></i> Back to Dashboard
                     </a>
                 </div>
@@ -257,7 +257,15 @@
                     {% endif %}
                     
                     <div class="bill-item">
-                        <div class="bill-type">{{ bill.bill_type_name }}</div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input bill-selector" 
+                                data-bill-id="{{ bill.bill_id }}" 
+                                data-amount="{{ bill.amount }}"
+                                id="bill_{{ bill.bill_id }}">
+                            <label class="form-check-label" for="bill_{{ bill.bill_id }}">
+                                <strong>{{ bill.bill_type_name }}</strong>
+                            </label>
+                        </div>
                         <div class="bill-amount {{ bill.is_paid ? 'paid' : 'unpaid' }}">
                             ৳ {{ bill.amount|number_format(2) }}
                         </div>
@@ -266,24 +274,15 @@
                     {% if loop.last %}
                             </div>
                             <div class="bill-footer">
-                                <span class="bill-total">Total for {{ month_key }}</span>
                                 <div>
-                                    {% set month_total = 0 %}
-                                    {% set month_unpaid = false %}
-                                    {% for b in bills %}
-                                        {% if b.bill_month|date('F Y') == month_key %}
-                                            {% set month_total = month_total + b.amount %}
-                                            {% if not b.is_paid %}
-                                                {% set month_unpaid = true %}
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    <span class="bill-total text-danger">৳ {{ month_total|number_format(2) }}</span>
-                                    {% if month_unpaid %}
-                                        <button class="btn-pay ms-3" onclick="payBill({{ bill.bill_id }}, {{ month_total }}, '{{ month_key }}')">
-                                            <i class="fas fa-regular fa-credit-card"></i> Pay This Month
-                                        </button>
-                                    {% endif %}
+                                    <input type="checkbox" id="select-all-bills" class="form-check-input me-2">
+                                    <label for="select-all-bills">Select All</label>
+                                </div>
+                                <div>
+                                    <span id="selected-total" class="me-3">Total: ৳ 0.00</span>
+                                    <button id="pay-selected" class="btn-pay" disabled>
+                                        <i class="fa-regular fa-credit-card"></i> Pay Selected
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -414,4 +413,43 @@ function submitPayment() {
 }
 </script>
 
+<script>
+// Bill selection logic
+let selectedBills = [];
+let selectedTotal = 0;
+
+function updateSelectedTotal() {
+    selectedTotal = 0;
+    selectedBills.forEach(function(billId) {
+        let amount = $('.bill-selector[data-bill-id="' + billId + '"]').data('amount');
+        selectedTotal += amount;
+    });
+    $('#selected-total').text('Total: ৳ ' + selectedTotal.toFixed(2));
+    $('#pay-selected').prop('disabled', selectedBills.length === 0);
+}
+
+$('.bill-selector').on('change', function() {
+    let billId = $(this).data('bill-id');
+    if ($(this).is(':checked')) {
+        selectedBills.push(billId);
+    } else {
+        selectedBills = selectedBills.filter(function(id) { return id != billId; });
+    }
+    updateSelectedTotal();
+});
+
+$('#select-all-bills').on('change', function() {
+    if ($(this).is(':checked')) {
+        $('.bill-selector').prop('checked', true).trigger('change');
+    } else {
+        $('.bill-selector').prop('checked', false).trigger('change');
+    }
+});
+
+$('#pay-selected').on('click', function() {
+    if (selectedBills.length > 0) {
+        window.location.href = 'index.php?route=account/pms_bill_payment&bill_ids=' + selectedBills.join(',');
+    }
+});
+</script>
 {{ footer }}

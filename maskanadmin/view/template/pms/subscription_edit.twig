@@ -1,0 +1,138 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fas fa-solid fa-arrow-left"></i> {{ button_back }}
+                </a>
+            </div>
+            <h1>{{ heading_edit }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-solid fa-building"></i> {{ text_subscription_details }}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width: 40%;">Project:</th>
+                                <td>{{ subscription.project_name }}</a>
+                            </a>
+                            <tr>
+                                <th>Duration:</th>
+                                <td>{{ subscription.duration_months }} months</a>
+                            </a>
+                            <tr>
+                                <th>Total Amount:</th>
+                                <td>৳ {{ subscription.total_amount|number_format(2) }}</a>
+                            </a>
+                            <tr>
+                                <th>Start Date:</th>
+                                <td>{{ subscription.start_date|date('d M Y') }}</a>
+                            </a>
+                            <tr>
+                                <th>End Date:</th>
+                                <td>{{ subscription.end_date|date('d M Y') }}</a>
+                            </a>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    {% if subscription.admin_override %}
+                                        <span class="badge bg-info">Admin Override Active</span>
+                                    {% elseif subscription.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Expired</span>
+                                    {% endif %}
+                                </a>
+                            </a>
+                            <tr>
+                                <th>Override Until:</th>
+                                <td>{{ subscription.override_until ? subscription.override_until|date('d M Y') : '-' }}</a>
+                            </a>
+                            <tr>
+                                <th>Override Reason:</th>
+                                <td>{{ subscription.override_reason ?: '-' }}</a>
+                            </a>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">{{ text_add_override }}</div>
+                            <div class="card-body">
+                                <form id="form-add-override" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                                    <input type="hidden" name="action" value="add_override">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ entry_override_months }}</label>
+                                        <select name="override_months" class="form-select" required>
+                                            <option value="">-- Select Duration --</option>
+                                            <option value="1">1 Month</option>
+                                            <option value="3">3 Months</option>
+                                            <option value="6">6 Months</option>
+                                            <option value="12">12 Months</option>
+                                            <option value="24">24 Months</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ entry_override_reason }}</label>
+                                        <textarea name="override_reason" class="form-control" rows="3" placeholder="Enter reason for manual override..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-solid fa-arrow-up"></i> {{ button_add_override }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if subscription.admin_override %}
+                    <div class="col-md-6">
+                        {% if subscription.admin_override %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-regular fa-circle-info"></i>
+                            <strong>Admin Override Active</strong><br>
+                            This project has been manually extended until <strong>{{ subscription.override_until|date('d M Y') }}</strong>.<br>
+                            Reason: {{ subscription.override_reason }}
+                        </div>
+                        {% endif %}
+                        <div class="card">
+                            <div class="card-header">{{ text_remove_override }}</div>
+                            <div class="card-body">
+                                <form id="form-remove-override" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                                    <input type="hidden" name="action" value="remove_override">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-regular fa-circle-exclamation"></i>
+                                        {{ text_remove_override_warning }}
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-regular fa-trash-can"></i> {{ button_remove_override }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ footer }}

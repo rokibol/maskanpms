@@ -1,0 +1,257 @@
+{{ header }}
+
+<style>
+    .manual-container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .manual-card {
+        max-width: 550px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 50px;
+    }
+    .manual-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 30px 20px;
+        text-align: center;
+        color: white;
+    }
+    .manual-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    .manual-header p {
+        margin: 10px 0 0;
+        opacity: 0.9;
+    }
+    .manual-body {
+        padding: 30px;
+    }
+    .info-box {
+        background: #e8f0fe;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-left: 4px solid #1F8A4D;
+    }
+    .info-title {
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #0B3C5D;
+    }
+    .bank-details {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #e0e0e0;
+    }
+    .bank-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .bank-row:last-child {
+        border-bottom: none;
+    }
+    .bank-label {
+        font-weight: 600;
+        color: #555;
+    }
+    .bank-value {
+        color: #333;
+        font-weight: 500;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: #1F8A4D;
+    }
+    .btn-submit {
+        width: 100%;
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-submit:hover {
+        background: #166d3e;
+        transform: translateY(-2px);
+    }
+    .btn-back {
+        width: 100%;
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.3s;
+    }
+    .btn-back:hover {
+        background: #5a6268;
+    }
+    .warning-text {
+        font-size: 12px;
+        color: #dc3545;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .success-text {
+        font-size: 12px;
+        color: #1F8A4D;
+        margin-top: 10px;
+        text-align: center;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="manual-container">
+        <div class="manual-card">
+            <div class="manual-header">
+                <h2 class="text-white">Complete Payment</h2>
+                <p>Manual Payment Instructions</p>
+            </div>
+            
+            <div class="manual-body">
+                <!-- Instruction Box -->
+                <div class="info-box">
+                    <div class="info-title">
+                        <i class="fas fa-regular fa-circle-info"></i> How to complete your payment:
+                    </div>
+                    <ol style="margin: 10px 0 0 20px; padding-left: 0;">
+                        <li>Transfer the exact amount to the bank account below</li>
+                        <li>Enter the transaction ID / reference number</li>
+                        <li>Click "Confirm Payment" to submit</li>
+                        <li>Your subscription will be activated after verification</li>
+                    </ol>
+                </div>
+                
+                <!-- Bank Details -->
+                <div class="bank-details">
+                    <div class="info-title" style="margin-bottom: 15px;">
+                        <i class="fas fa-solid fa-building-columns"></i> Bank Account Details
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Bank Name:</span>
+                        <span class="bank-value">Islami Bank Bangladesh Limited</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Account Name:</span>
+                        <span class="bank-value">Maskan PMS</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Account Number:</span>
+                        <span class="bank-value">20510123456789</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Branch:</span>
+                        <span class="bank-value">Gulshan Branch, Dhaka</span>
+                    </div>
+                    <div class="bank-row">
+                        <span class="bank-label">Routing Number:</span>
+                        <span class="bank-value">012345678</span>
+                    </div>
+                </div>
+                
+                <!-- Payment Form -->
+                <form id="form-manual-payment" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                    <input type="hidden" name="unique_id" value="{{ unique_id }}">
+                    
+                    <div class="form-group">
+                        <label>Transaction / Reference ID <span class="text-danger">*</span></label>
+                        <input type="text" name="transaction_id" class="form-control" placeholder="Enter bank transaction ID" required>
+                        <small class="text-muted">Example: TRX123456789 or BKASH reference number</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select name="payment_method" class="form-select" required>
+                            <option value="">-- Select Payment Method --</option>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="rocket">Rocket</option>
+                            <option value="cash">Cash</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reference / Additional Notes</label>
+                        <input type="text" name="reference" class="form-control" placeholder="Any additional reference">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-regular fa-circle-check"></i> Confirm Payment
+                    </button>
+                    
+                    <button type="button" class="btn-back" onclick="history.back()">
+                        <i class="fas fa-solid fa-arrow-left"></i> Go Back
+                    </button>
+                </form>
+                
+                <div class="warning-text">
+                    <i class="fas fa-regular fa-clock"></i>
+                    Payment verification may take up to 24 hours.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#form-manual-payment').on('submit', function(e) {
+        var transactionId = $('input[name="transaction_id"]').val();
+        var paymentMethod = $('select[name="payment_method"]').val();
+        
+        if (!transactionId) {
+            alert('Please enter transaction/reference ID');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!paymentMethod) {
+            alert('Please select payment method');
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+
+{{ footer }}

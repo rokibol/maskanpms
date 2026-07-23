@@ -433,20 +433,39 @@ class Expense extends \Opencart\System\Engine\Model {
             SELECT
                 c.category_name,
                 COUNT(*) AS total_expenses,
-                SUM(e.total_amount) AS total_amount,
+                SUM(combined.amount) AS total_amount,
                 ROUND(
-                    SUM(e.total_amount) * 100.0 /
-                    (SELECT SUM(total_amount)
-                    FROM " . DB_PREFIX . "expenses
-                    WHERE is_deleted = 0),
+                    SUM(combined.amount) * 100.0 / global_total.grand_sum, 
                     2
                 ) AS percentage
-            FROM " . DB_PREFIX . "expenses e
-            LEFT JOIN " . DB_PREFIX . "expense_categories c
-                ON c.id = e.category_id
-            WHERE e.is_deleted = 0 AND e.project_id = " . $project_id . "
-            GROUP BY e.category_id, c.category_name
-            ORDER BY total_amount DESC
+            FROM (
+                -- Source 1: Standard Expenses Table
+                SELECT 
+                    category_id, 
+                    total_amount AS amount 
+                FROM `" . DB_PREFIX . "expenses` 
+                WHERE is_deleted = 0 AND project_id = 14
+
+                UNION ALL
+
+                -- Source 2: Invoice Line-Items Table
+                SELECT 
+                    i.expense_category_id AS category_id, 
+                    i.total_price AS amount
+                FROM `" . DB_PREFIX . "pms_expense_invoice_item` i
+                INNER JOIN `" . DB_PREFIX . "pms_expense_invoice` e ON i.invoice_id = e.invoice_id
+                WHERE e.project_id = " . $project_id . "
+            ) combined
+            -- Connects the unified category IDs to your human-readable category names
+            LEFT JOIN `" . DB_PREFIX . "expense_categories` c 
+                ON c.id = combined.category_id
+            -- Calculates the 100% baseline total from BOTH tables across the entire database
+            CROSS JOIN (
+                SELECT (SELECT SUM(total_amount) FROM `" . DB_PREFIX . "expenses` WHERE is_deleted = 0) +
+                    (SELECT SUM(total_price) FROM `" . DB_PREFIX . "pms_expense_invoice_item`) AS grand_sum
+            ) global_total
+            GROUP BY combined.category_id, c.category_name, global_total.grand_sum
+            ORDER BY total_amount DESC LIMIT 5
         ";
 
         $query = $this->db->query($sql);

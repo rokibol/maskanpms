@@ -14,10 +14,6 @@ class Account extends \Opencart\System\Engine\Controller {
 	public function index(): string {
 		$this->load->language('extension/opencart/module/account');
 
-		// Source - https://stackoverflow.com/a/33877000
-		// Posted by miralong
-		// Retrieved 2026-05-22, License - CC BY-SA 3.0
-
 		$base_url = ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on' ? 'https' : 'http' ) . '://' .  $_SERVER['HTTP_HOST'];
 		$url = $base_url . $_SERVER["REQUEST_URI"];
 
@@ -28,7 +24,11 @@ class Account extends \Opencart\System\Engine\Controller {
 		$param = end($parts);
 
 		$data['logged'] = $this->customer->isLogged();
-		$data['project'] = $this->customer->getProject();
+		if($this->customer->getGroupId() == 1) { //Manager
+			$data['project'] = $this->customer->getManager();
+		} else {
+			$data['project'] = $this->customer->getProject();
+		}
 		$data['customer_name'] = $this->customer->getFullName();
 		$data['group'] = $this->customer->getGroup();
 		$data['register'] = $this->url->link('account/register', 'language=' . $this->config->get('config_language'));

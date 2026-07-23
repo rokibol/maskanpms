@@ -1,0 +1,243 @@
+{{ header }}
+
+<style>
+    .discount-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #e0e0e0;
+    }
+    .discount-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .discount-row:last-child {
+        border-bottom: none;
+    }
+    .discount-label {
+        font-weight: 600;
+        color: #555;
+    }
+    .discount-value {
+        font-weight: 600;
+    }
+    .discount-original {
+        color: #6c757d;
+        text-decoration: line-through;
+        margin-right: 10px;
+    }
+    .discount-final {
+        color: #1F8A4D;
+    }
+    .discount-amount {
+        color: #dc3545;
+    }
+    .badge-discount {
+        background: #dc3545;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+    }
+</style>
+
+<div class="container">
+    <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>
+    
+    <div class="row">
+        {{ column_left }}
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_discount_allocation }}</h1>
+                <div>
+                    <a href="{{ back }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Phase Info -->
+            <div class="alert alert-info">
+                <i class="fa-regular fa-building"></i>
+                <strong>{{ project_name }}</strong>
+                <span class="text-muted ms-3">| Phase: {{ phase_name }}</span>
+                <span class="text-muted ms-3">| Amount per Shareholder: ৳ {{ base_amount|number_format(2) }}</span>
+            </div>
+            
+            <!-- Discount Form -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-tag"></i> Apply Discount to Shareholders
+                </div>
+                <div class="card-body">
+                    
+                    <form id="form-discount-allocation" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                        
+                        <div class="form-group">
+                            <label for="shareholder_id">Select Shareholder <span class="required-star">*</span></label>
+                            <select name="shareholder_id" id="shareholder_id" class="form-control" required>
+                                <option value="">-- Select Shareholder --</option>
+                                {% for shareholder in shareholders %}
+                                    <option value="{{ shareholder.shareholder_id }}">
+                                        {{ shareholder.firstname }} {{ shareholder.lastname }} 
+                                        ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_units }} units
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Original Allocation Amount</label>
+                            <div class="form-control" style="background: #f5f5f5; font-weight: bold;">
+                                ৳ {{ base_amount|number_format(2) }}
+                            </div>
+                            <input type="hidden" name="original_amount" value="{{ base_amount }}">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="discount_type">Discount Type <span class="required-star">*</span></label>
+                                    <select name="discount_type" id="discount_type" class="form-control" required>
+                                        <option value="fixed">Fixed Amount (BDT)</option>
+                                        <option value="percentage">Percentage (%)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="discount_value">Discount Value <span class="required-star">*</span></label>
+                                    <input type="number" name="discount_value" id="discount_value" class="form-control" 
+                                           step="0.01" min="0" placeholder="Enter amount or %" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discount_reason">Reason for Discount</label>
+                            <input type="text" name="discount_reason" id="discount_reason" class="form-control" 
+                                   placeholder="e.g., Early payment discount, Special offer, etc.">
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div class="discount-summary" id="preview-box" style="display: none;">
+                            <h5 class="mb-3">Discount Preview</h5>
+                            <div class="discount-row">
+                                <span class="discount-label">Original Amount</span>
+                                <span class="discount-value discount-original" id="preview-original">0.00</span>
+                            </div>
+                            <div class="discount-row">
+                                <span class="discount-label">Discount</span>
+                                <span class="discount-value discount-amount" id="preview-discount">0.00</span>
+                            </div>
+                            <div class="discount-row">
+                                <span class="discount-label">Final Amount</span>
+                                <span class="discount-value discount-final" id="preview-final">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-3" id="submit-btn" disabled>
+                            <i class="fa-regular fa-tag"></i> Apply Discount & Allocate
+                        </button>
+                        
+                        <input type="hidden" name="user_token" value="{{ user_token }}">
+                    </form>
+                    
+                </div>
+            </div>
+            
+            <!-- Recent Discounted Allocations -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Recent Discounted Allocations
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Shareholder</th>
+                                    <th>Original Amount</th>
+                                    <th>Discount</th>
+                                    <th>Final Amount</th>
+                                    <th>Reason</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if discounted_allocations %}
+                                    {% for allocation in discounted_allocations %}
+                                        <tr>
+                                            <td>{{ allocation.shareholder_name }}</a>
+                                            <td>৳ {{ allocation.original_amount|number_format(2) }}</a>
+                                            <td>
+                                                <span class="badge-discount">- ৳ {{ allocation.discount_amount|number_format(2) }}</span>
+                                                ({{ allocation.discount_type }})
+                                             </a>
+                                            <td class="text-success">৳ {{ allocation.allocated_amount|number_format(2) }}</a>
+                                            <td>{{ allocation.discount_reason ?: '-' }}</a>
+                                            <td>{{ allocation.created_at|date('d M Y') }}</a>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="6" class="text-center">No discounted allocations found</a></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var baseAmount = {{ base_amount }};
+    
+    $('#discount_type, #discount_value').on('change keyup', function() {
+        var discountType = $('#discount_type').val();
+        var discountValue = parseFloat($('#discount_value').val()) || 0;
+        
+        if (discountValue > 0) {
+            var discountAmount = 0;
+            var finalAmount = 0;
+            
+            if (discountType == 'percentage') {
+                discountAmount = (baseAmount * discountValue) / 100;
+                if (discountAmount > baseAmount) discountAmount = baseAmount;
+            } else {
+                discountAmount = discountValue;
+                if (discountAmount > baseAmount) discountAmount = baseAmount;
+            }
+            
+            finalAmount = baseAmount - discountAmount;
+            
+            $('#preview-original').text('৳ ' + baseAmount.toFixed(2));
+            $('#preview-discount').text('- ৳ ' + discountAmount.toFixed(2) + ' (' + discountType + ')');
+            $('#preview-final').text('৳ ' + finalAmount.toFixed(2));
+            $('#preview-box').show();
+            $('#submit-btn').prop('disabled', false);
+        } else {
+            $('#preview-box').hide();
+            $('#submit-btn').prop('disabled', true);
+        }
+    });
+});
+</script>
+
+{{ footer }}

@@ -15,6 +15,16 @@ class Event extends \Opencart\System\Engine\Controller {
 		// Add events from the DB
 		$this->load->model('setting/event');
 
+		// Add to your event registration
+		$this->model_setting_event->addEvent([
+			'code' => 'pms_subscription_check',
+			'description' => 'Check subscription status before loading pages',
+			'trigger' => 'catalog/controller/*/before',
+			'action' => 'startup/pms_subscription',
+			'status' => 1,
+			'sort_order' => 0
+		]);
+
 		$results = $this->model_setting_event->getEvents();
 
 		foreach ($results as $result) {

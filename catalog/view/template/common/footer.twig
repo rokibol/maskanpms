@@ -56,4 +56,58 @@
 {% for script in scripts %}
   <script src="{{ script.href }}" type="text/javascript"></script>
 {% endfor %}
+<script>
+function toggleMobileSidebar() {
+    var sidebar = document.getElementById('mobileSidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    var isOpen = sidebar.classList.contains('open');
+    
+    if (isOpen) {
+        closeMobileSidebar();
+    } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeMobileSidebar() {
+    var sidebar = document.getElementById('mobileSidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if(sidebar) {
+      sidebar.classList.remove('open');
+    }
+    if(overlay) {
+      overlay.classList.remove('active');
+    }
+    document.body.style.overflow = '';
+}
+
+// Close sidebar on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeMobileSidebar();
+    }
+});
+
+// Swipe to close (touch)
+var touchStartX = 0;
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+});
+document.addEventListener('touchend', function(e) {
+    var touchEndX = e.changedTouches[0].screenX;
+    var sidebar = document.getElementById('mobileSidebar');
+    if (sidebar.classList.contains('open') && (touchStartX - touchEndX) > 80) {
+        closeMobileSidebar();
+    }
+});
+
+// Close sidebar on window resize (from mobile to desktop)
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        closeMobileSidebar();
+    }
+});
+</script>
 </body></html>

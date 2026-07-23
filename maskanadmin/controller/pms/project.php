@@ -113,6 +113,7 @@ class Project extends \Opencart\System\Engine\Controller {
         
         foreach ($results as $result) {
             $store_info = $this->model_setting_store->getStore($result['store_id']);
+            $subscription = $this->getSubscriptionStatus($result['project_id']);
 
             $status_text = '';
             switch ($result['status']) {
@@ -146,6 +147,11 @@ class Project extends \Opencart\System\Engine\Controller {
                 'store_name'  => $store_info ? $store_info['name'] : $this->language->get('text_default'),
                 'is_active'   => $result['is_active'],
                 'date_added'  => date($this->language->get('date_format_short'), strtotime($result['created_at'])),
+                'subscription_status' => $subscription['status'],
+                'subscription_end_date' => $subscription['end_date'] ? date($this->language->get('date_format_short'), strtotime($subscription['end_date'])) : '-',
+                'subscription_days_left' => $subscription['days_remaining'],
+                'subscription_badge' => $this->getSubscriptionBadge($subscription['status'], $subscription['days_remaining']),
+                'manage_subscription' => $this->url->link('pms/project_subscription', 'user_token=' . $this->session->data['user_token'] . '&project_id=' . $result['project_id'] . $url),
                 'edit'        => $this->url->link('pms/project.form', 'user_token=' . $this->session->data['user_token'] . '&project_id=' . $result['project_id'] . $url),
                 'view'        => $this->url->link('pms/project.view', 'user_token=' . $this->session->data['user_token'] . '&project_id=' . $result['project_id'] . $url),
                 'delete'      => $this->url->link('pms/project.delete', 'user_token=' . $this->session->data['user_token'] . '&project_id=' . $result['project_id'] . $url)
@@ -220,6 +226,22 @@ class Project extends \Opencart\System\Engine\Controller {
         $data['footer'] = $this->load->controller('common/footer');
 
         $this->response->setOutput($this->load->view('pms/project_list', $data));
+    }
+
+    private function getSubscriptionBadge(string $status, int $days_remaining): string {
+        switch ($status) {
+            case 'override':
+                return '<span class="badge bg-info">Override Active</span>';
+            case 'active':
+                if ($days_remaining <= 15) {
+                    return '<span class="badge bg-warning">Expiring Soon (' . $days_remaining . ' days)</span>';
+                }
+                return '<span class="badge bg-success">Active</span>';
+            case 'expired':
+                return '<span class="badge bg-danger">Expired</span>';
+            default:
+                return '<span class="badge bg-secondary">No Subscription</span>';
+        }
     }
 
     public function form(): void {
@@ -588,6 +610,8 @@ class Project extends \Opencart\System\Engine\Controller {
             'href' => $this->url->link('pms/project.view', 'user_token=' . $this->session->data['user_token'] . '&project_id=' . $this->request->get['project_id'] . $url)
         ];
 
+        $this->document->addStyle('view/stylesheet/project_view.css');
+
         if (isset($this->request->get['project_id'])) {
             $this->load->model('pms/project');
             $this->load->model('setting/store');
@@ -798,5 +822,45 @@ class Project extends \Opencart\System\Engine\Controller {
         $users['accountants'] = $query->rows;
         
         return $users;
+    }
+
+    /**
+     * Get subscription status for a project
+     */
+    public function getSubscriptionStatus(int $project_id): array {
+        $query = $this->db->query("
+            SELECT s.*,
+                CASE 
+                    WHEN s.admin_override = 1 AND s.override_until > NOW() THEN 'override'
+                    WHEN s.status = 'active' AND s.end_date > NOW() THEN 'active'
+                    WHEN s.status = 'active' AND s.end_date < NOW() THEN 'expired'
+                    ELSE 'no_subscription'
+                END as current_status,
+                DATEDIFF(s.end_date, NOW()) as days_remaining
+            FROM `" . DB_PREFIX . "pms_project_subscription` s
+            WHERE s.project_id = '" . (int)$project_id . "'
+            ORDER BY s.subscription_id DESC
+            LIMIT 1
+        ");
+        
+        if ($query->num_rows > 0) {
+            $row = $query->row;
+            return [
+                'has_subscription' => true,
+                'status' => $row['current_status'],
+                'end_date' => $row['end_date'],
+                'days_remaining' => $row['days_remaining'],
+                'admin_override' => $row['admin_override'],
+                'override_until' => $row['override_until']
+            ];
+        }
+        
+        return [
+            'has_subscription' => false,
+            'status' => 'none',
+            'end_date' => null,
+            'days_remaining' => 0,
+            'admin_override' => 0
+        ];
     }
 }

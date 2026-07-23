@@ -15,4 +15,4 @@ $_['text_account']      = 'My Account';
 $_['text_order']        = 'Order History';
 $_['text_wishlist']     = 'Wish List';
 $_['text_newsletter']   = 'Newsletter';
-$_['text_powered']      = 'Powered By <a href="https://www.maskanpms.com">Maskan PMS</a>';
+$_['text_powered']      = 'Powered By <a href="https://www.tekliodigitals.com">Teklio Digitals</a>';

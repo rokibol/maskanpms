@@ -1,0 +1,43 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Settings Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-gear"></i> {{ text_settings }}
+            </div>
+            <div class="card-body">
+                <form action="{{ action }}" method="post" class="form-horizontal">
+                    <div class="row mb-3">
+                        <label class="col-sm-2 col-form-label">Monthly Rate (BDT)</label>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <input type="number" name="monthly_rate" value="{{ monthly_rate }}" class="form-control" step="1" min="0">
+                                <button type="submit" class="btn btn-primary">Update Rate</button>
+                            </div>
+                            <small class="text-muted">Current rate: {{ monthly_rate }} BDT per month</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+
+{{ footer }}

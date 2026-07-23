@@ -254,7 +254,7 @@ function renderItems() {
         html += '<div class="row mb-3">';
         html += '<div class="col-md-3">';
         html += '<label class="form-label">Category</label>';
-        html += '<select class="form-select">';
+        html += '<select class="form-select category-updater" name="category_id" data-index="'+i+'">';
         html += '<option value="">-- Select Category --</option>';
         for (var j = 0; j < categories.length; j++) {
             var selected = (item.expense_category_id == categories[j].id) ? 'selected' : '';
@@ -317,6 +317,21 @@ function calculateTotals() {
     $('#total-amount').val(total);
     $('#items-json').val(JSON.stringify(items));
 }
+
+document.addEventListener('change', function(event) {
+    // Check if the changed element has our specific target class
+    if (event.target.classList.contains('category-updater')) {
+        const select = event.target;
+        
+        const index = select.getAttribute('data-index'); // Retrieves the loop index
+        const name  = select.name;                        // Retrieves "category_id"
+        const value = select.value;                       // Retrieves the selected option's value
+        
+        // Execute your custom function
+        updateItem(index, name, value);
+    }
+});
+
 
 // Document upload handling
 $(document).ready(function() {

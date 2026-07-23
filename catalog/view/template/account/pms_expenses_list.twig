@@ -37,11 +37,9 @@
     }
     .table-responsive {
         overflow-x: auto;
-        overflow-y: visible !important;
+        overflow-y: visible;
     }
-    .table {
-        overflow: visible !important;
-    }
+    
     .table td {
         overflow: visible !important;
         position: relative;
@@ -54,20 +52,14 @@
         font-size: 10px;
     }
 
-    /* ========== FIX DROPDOWN OVERFLOW ========== */
-    .table-responsive {
-        overflow-x: auto;
-        overflow-y: visible !important;
-    }
-    
     .table {
-        overflow: visible !important;
+        overflow-x: auto !important;
     }
     
     .table tbody,
     .table tr,
     .table td {
-        overflow: visible !important;
+        overflow-x: visible !important;
     }
     
     .dropdown {
@@ -91,7 +83,7 @@
     #content,
     .card-body,
     .table-responsive {
-        overflow: visible !important;
+        overflow-x: visible !important;
     }
     
     /* Fix for the dropdown button container */

@@ -1,0 +1,177 @@
+{{ header }}
+
+<style>
+    .payment-summary {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .bill-list {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .bill-item:last-child {
+        border-bottom: none;
+    }
+    .payment-methods {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .method-card {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .method-card:hover {
+        border-color: #1F8A4D;
+        background: #f8f9fa;
+    }
+    .method-card.selected {
+        border-color: #1F8A4D;
+        background: #e8f5e9;
+    }
+    .method-card i {
+        font-size: 30px;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .total-amount {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1F8A4D;
+    }
+</style>
+
+<div class="container-fluid">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            {{ column_left }}
+        </div>
+        
+        <div id="content" class="col">
+            {{ content_top }}
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ heading_title }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <div class="payment-summary">
+                <h5>Payment Summary</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Bills to Pay:</strong> {{ bills|length }} item(s)</p>
+                        <div class="bill-list">
+                            {% for bill in bills %}
+                                <div class="bill-item">
+                                    <span>{{ bill.bill_type_name }} ({{ bill.bill_month|date('M Y') }})</span>
+                                    <span class="text-danger">৳ {{ bill.amount|number_format(2) }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <p><strong>Total Amount</strong></p>
+                        <div class="total-amount">৳ {{ total_amount|number_format(2) }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="form-payment" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-credit-card"></i> Select Payment Method
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-methods">
+                            <div class="method-card" data-method="bkash">
+                                <i class="fa-solid fa-mobile-alt"></i>
+                                <strong>bKash</strong>
+                            </div>
+                            <div class="method-card" data-method="nagad">
+                                <i class="fa-solid fa-mobile-alt"></i>
+                                <strong>Nagad</strong>
+                            </div>
+                            <div class="method-card" data-method="rocket">
+                                <i class="fa-solid fa-rocket"></i>
+                                <strong>Rocket</strong>
+                            </div>
+                            <div class="method-card" data-method="bank">
+                                <i class="fa-solid fa-building-columns"></i>
+                                <strong>Bank Transfer</strong>
+                            </div>
+                            <div class="method-card" data-method="cash">
+                                <i class="fa-solid fa-money-bill"></i>
+                                <strong>Cash</strong>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="payment_method" id="payment_method" required>
+                        <input type="hidden" name="amount" value="{{ total_amount }}">
+                        
+                        <div class="mt-3" id="reference-field" style="display: none;">
+                            <label class="form-label">Reference / Transaction ID</label>
+                            <input type="text" name="reference_number" class="form-control" placeholder="Enter transaction ID or reference number">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                        <i class="fa-regular fa-circle-check"></i> Confirm Payment
+                    </button>
+                </div>
+            </form>
+            
+            {{ content_bottom }}
+        </div>
+        
+        {{ column_right }}
+    </div>
+</div>
+
+<script>
+$('.method-card').on('click', function() {
+    $('.method-card').removeClass('selected');
+    $(this).addClass('selected');
+    
+    var method = $(this).data('method');
+    $('#payment_method').val(method);
+    
+    // Show reference field for online payments
+    if (method == 'bkash' || method == 'nagad' || method == 'rocket' || method == 'bank') {
+        $('#reference-field').show();
+    } else {
+        $('#reference-field').hide();
+    }
+    
+    $('#submit-btn').prop('disabled', false);
+});
+</script>
+
+{{ footer }}

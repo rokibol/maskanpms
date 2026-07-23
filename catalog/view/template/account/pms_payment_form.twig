@@ -1,5 +1,85 @@
 {{ header }}
-
+<style>
+    /* Select2 custom styling to match your theme */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        height: 46px;
+        padding: 0px 0px;
+        background: #fff;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 34px;
+        padding-left: 12px;
+        color: #333;
+        font-size: 14px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px;
+    }
+    .select2-container--default .select2-dropdown {
+        border-color: #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #1F8A4D;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(31, 138, 77, 0.1);
+    }
+    .select2-container--default .select2-results__option {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #1F8A4D;
+    }
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #e8f5e9;
+        color: #1F8A4D;
+    }
+    .select2-container--default .select2-results__option .option-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .select2-container--default .select2-results__option .option-badges {
+        display: flex;
+        gap: 5px;
+    }
+    .select2-container--default .select2-results__option .badge {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+    .badge-units {
+        background: #e8f0fe;
+        color: #0B3C5D;
+    }
+    .badge-percentage {
+        background: #e8f5e9;
+        color: #1F8A4D;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        margin-right: 8px;
+        font-size: 16px;
+        color: #999;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+        color: #dc3545;
+    }
+    
+    /* Loading state */
+    .select2-container--default .select2-selection--single .select2-selection__rendered .select2-loading {
+        color: #999;
+    }
+</style>
 <div class="container-fluid">
     {#<ul class="breadcrumb">
         {% for breadcrumb in breadcrumbs %}
@@ -33,18 +113,20 @@
                         <i class="fas fa-solid fa-credit-card"></i> Payment Information
                     </div>
                     <div class="card-body">
-                        
+                        {# Shareholder Selection with Select2 #}
                         <div class="row mb-3 required">
                             <label class="col-sm-3 col-form-label">Select Shareholder</label>
                             <div class="col-sm-9">
-                                <select name="shareholder_id" class="form-select" required>
-                                    <option value="">-- Select Shareholder --</option>
+                                <select name="shareholder_id" id="shareholder-select" class="form-control" required>
+                                    <option value="">-- Search & Select Shareholder --</option>
                                     {% for shareholder in shareholders %}
-                                        <option value="{{ shareholder.id }}">
-                                            {{ shareholder.firstname }} {{ shareholder.lastname }} ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_percentage|round(2) }}% ownership
+                                        <option value="{{ shareholder.shareholder_id }}">
+                                            {{ shareholder.firstname }} {{ shareholder.lastname }} 
+                                            ({{ shareholder.phone }}) - {{ shareholder.ownership_percentage|round(2) }}% ownership
                                         </option>
                                     {% endfor %}
                                 </select>
+                                <small class="text-muted">Type to search by name, code, or email</small>
                             </div>
                         </div>
                         
@@ -110,5 +192,85 @@
         {{ column_right }}
     </div>
 </div>
-
+<!-- Add to the head section or before closing body -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize Select2 with AJAX
+    $('#shareholder-select').select2({
+        placeholder: 'Search for a shareholder...',
+        allowClear: true,
+        width: '100%',
+        minimumInputLength: 1,
+        dropdownAutoWidth: true,
+        
+        // AJAX configuration
+        ajax: {
+            url: 'index.php?route=account/pms_payments.searchShareholders&language={{ language }}&customer_token={{ customer_token }}',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return {
+                    q: params.term,
+                    project_id: {{ project_id }}
+                };
+            },
+            processResults: function(data) {
+                if (data.success && data.items) {
+                    return {
+                        results: data.items
+                    };
+                }
+                return {
+                    results: []
+                };
+            },
+            cache: true
+        },
+        
+        // Template for displaying selected option
+        templateSelection: function(data) {
+            if (!data.id) {
+                return data.text;
+            }
+            return data.name || data.text;
+        },
+        
+        // Template for dropdown options
+        templateResult: function(data) {
+            if (!data.id) {
+                return data.text;
+            }
+            
+            var $container = $(
+                '<div class="option-details">' +
+                    '<div>' +
+                        '<strong>' + (data.name || data.text) + '</strong>' +
+                        (data.code ? ' <span class="text-muted">(' + data.phone + ')</span>' : '') +
+                    '</div>' +
+                    '<div class="option-badges">' +
+                        (data.units ? '<span class="badge badge-units">' + data.units + ' units</span>' : '') +
+                        (data.percentage ? '<span class="badge badge-percentage">' + data.percentage + '%</span>' : '') +
+                    '</div>' +
+                '</div>'
+            );
+            
+            return $container;
+        },
+        
+        language: {
+            inputTooShort: function() {
+                return 'Type at least 1 character to search';
+            },
+            noResults: function() {
+                return 'No shareholders found';
+            },
+            searching: function() {
+                return 'Searching...';
+            }
+        }
+    });
+});
+</script>
 {{ footer }}

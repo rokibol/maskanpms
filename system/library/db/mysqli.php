@@ -96,6 +96,7 @@ class MySQLi {
 	 */
 	public function query(string $sql) {
 		try {
+			
 			$query = $this->connection->query($sql);
 
 			if ($query instanceof \mysqli_result) {

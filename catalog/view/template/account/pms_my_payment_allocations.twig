@@ -278,7 +278,7 @@
 
 <script>
 $('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_my_payment_allocations&language={{ language }}';
+    var url = 'index.php?route=account/pms_my_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
     
     var filter_phase = $('select[name="filter_phase"]').val();
     if (filter_phase) url += '&filter_phase=' + filter_phase;

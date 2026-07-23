@@ -16,7 +16,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
         
         if (!$project) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
         
         $this->load->model('pms/project_subscription');
@@ -25,10 +25,17 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $data['subscription'] = $this->model_pms_project_subscription->getSubscriptionByProject($project['project_id']);
         $data['is_active'] = $this->model_pms_project_subscription->isSubscriptionActive($project['project_id']);
         $data['expiry_days'] = $this->model_pms_project_subscription->getExpiryDays($project['project_id']);
-        $data['plans'] = $this->model_pms_project_subscription->getAvailablePlans();
+        $data['monthly_rate'] = $this->model_pms_project_subscription->getMonthlyRate();
+        $data['duration_options'] = $this->model_pms_project_subscription->getDurationOptions();
         
-        $data['action'] = $this->url->link('account/pms_subscription.upgrade', 'language=' . $this->config->get('config_language'));
-        $data['back'] = $this->url->link('account/pms_manager_dashboard', 'language=' . $this->config->get('config_language'));
+        // Calculate amounts for each duration option
+        $data['duration_amounts'] = [];
+        foreach ($data['duration_options'] as $months => $label) {
+            $data['duration_amounts'][$months] = $this->model_pms_project_subscription->calculateAmount($months);
+        }
+        
+        $data['action'] = $this->url->link('account/pms_subscription.activate', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['back'] = $this->url->link('account/manager', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
@@ -40,7 +47,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $this->response->setOutput($this->load->view('account/pms_subscription', $data));
     }
     
-    public function upgrade(): void {
+    /*public function activate(): void {
         $this->load->language('pms/subscription');
         
         $json = [];
@@ -56,16 +63,21 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
             if ($project) {
                 $this->load->model('pms/project_subscription');
                 
-                $plan_id = (int)$this->request->post['plan_id'];
-                $billing_type = $this->request->post['billing_type'];
+                $duration_months = (int)$this->request->post['duration_months'];
                 
-                $result = $this->model_pms_project_subscription->activateSubscription($project['project_id'], $plan_id, $billing_type);
-                
-                if ($result) {
-                    $json['success'] = $this->language->get('text_upgrade_success');
-                    $json['redirect'] = $this->url->link('account/pms_subscription', 'language=' . $this->config->get('config_language'));
+                if ($duration_months <= 0) {
+                    $json['error'] = 'Invalid duration selected';
                 } else {
-                    $json['error'] = $this->language->get('error_upgrade_failed');
+                    $result = $this->model_pms_project_subscription->activateSubscription($project['project_id'], $duration_months);
+                    
+                    if ($result['success']) {
+                        $json['success'] = $this->language->get('text_activation_success');
+                        $json['total_amount'] = $result['total_amount'];
+                        $json['end_date'] = date('d M Y', strtotime($result['end_date']));
+                        $json['redirect'] = $this->url->link('account/pms_subscription', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+                    } else {
+                        $json['error'] = $result['message'];
+                    }
                 }
             } else {
                 $json['error'] = 'Project not found';
@@ -74,5 +86,50 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }*/
+
+    public function activate(): void {
+        $this->load->language('pms/subscription');
+        
+        $json = [];
+        
+        if (!$this->customer->isLogged()) {
+            $json['error'] = $this->language->get('error_permission');
+        }
+        
+        if (!$json) {
+            $this->load->model('pms/project');
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+            
+            if ($project) {
+                $this->load->model('pms/project_subscription');
+                
+                $duration_months = (int)$this->request->post['duration_months'];
+                $monthly_rate = $this->model_pms_project_subscription->getMonthlyRate();
+                $total_amount = $duration_months * $monthly_rate;
+                
+                // Create payment request instead of direct activation
+                $payment_request = $this->model_pms_project_subscription->createPaymentRequest($project['project_id'], $duration_months, $total_amount);
+                
+                if ($payment_request) {
+                    $json['success'] = true;
+                    $json['redirect'] = $this->url->link('account/pms_subscription_payment', 'language=' . $this->config->get('config_language') . '&unique_id=' . $payment_request['payment_unique_id']);
+                } else {
+                    $json['error'] = 'Failed to create payment request';
+                }
+            } else {
+                $json['error'] = 'Project not found';
+            }
+        }
+        
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    /**
+     * Subscription Expired Page
+     */
+    public function expired(): void {
+        $this->index();
     }
 }

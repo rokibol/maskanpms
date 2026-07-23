@@ -1,32 +1,266 @@
 {# ==================== PREMIUM SIDEBAR MENU ==================== #}
-<div class="pms-sidebar">
-    
-    {# Sidebar Header with Logo #}
-    <div class="pms-sidebar-header">
-        <div class="pms-sidebar-logo">
-            {{ project['name'] }}
+<div class="pms-sidebar-desktop" id="desktop-sidebar">
+    <div class="pms-sidebar">
+        
+        {# Sidebar Header with Logo #}
+        <div class="pms-sidebar-header">
+            <div class="pms-sidebar-logo">
+                {{ project['name'] }}
+            </div>
+            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem;">
+                {{ group['name'] }} Portal
+            </div>
         </div>
-        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem;">
-            {{ group['name'] }} Portal
+        
+        {# User Information (when logged in) #}
+        {% if logged %}
+            <div class="pms-sidebar-user">
+                <div class="pms-sidebar-user-avatar">
+                    {{ customer_initials|default('MR') }}
+                </div>
+                <div class="pms-sidebar-user-info">
+                    <div class="pms-sidebar-user-name">{{ customer_name|default('Mr. Rahman') }}</div>
+                    <div class="pms-sidebar-user-role">{{ group['name'] }}</div>
+                </div>
+            </div>
+        {% endif %}
+        
+        {# Main Navigation Menu #}
+        <ul class="pms-sidebar-nav">
+            
+            {# Dashboard #}
+            {% if customer_group_id == 1 %} {# Manager #}
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_dashboard|default('#') }}" class="pms-sidebar-nav-link {{ active_dashboard|default('') }}">
+                        <i class="fas fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_shareholders }}" class="pms-sidebar-nav-link {{ active_shareholders|default('') }}">
+                        <i class="fas fa-solid fa-users"></i>
+                        <span>Shareholders</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_payment_allocations }}" class="pms-sidebar-nav-link {{ active_payment_allocations|default('') }}">
+                        <i class="fa-solid fa-list"></i>
+                        <span>Payment Allocations</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_customers }}" class="pms-sidebar-nav-link {{ active_customers|default('') }}">
+                        <i class="fas fa-solid fa-user-gear"></i>
+                        <span>Manage Accountants</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_apartments }}" class="pms-sidebar-nav-link {{ active_apartments|default('') }}">
+                        <i class="fas fa-solid fa-building"></i>
+                        <span>Apartments</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
+                        <i class="fas fa-solid fa-receipt"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_expense_invoices }}" class="pms-sidebar-nav-link {{ active_expense_invoices|default('') }}">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <span>Expense Invoices</span>
+                    </a>
+                </li>
+                
+                {# Share Transfer (conditional) #}
+                {% if share_transfer_allowed|default(true) %}
+                    <li class="pms-sidebar-nav-item">
+                        <a href="{{ pms_share_transfer|default('#') }}" class="pms-sidebar-nav-link {{ active_transfer|default('') }}">
+                            <i class="fas fa-solid fa-arrow-right-arrow-left"></i>
+                            <span>Share Transfer</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_project_details }}" class="pms-sidebar-nav-link {{ active_project_details|default('') }}">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Project Details</span>
+                    </a>
+                </li>
+
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_subscription }}" class="pms-sidebar-nav-link {{ active_subscription|default('') }}">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Subscription</span>
+                    </a>
+                </li>
+                
+            {% elseif customer_group_id == 2 %} {# Accountant #}
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_dashboard|default('#') }}" class="pms-sidebar-nav-link {{ active_dashboard|default('') }}">
+                        <i class="fas fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_payments }}" class="pms-sidebar-nav-link {{ active_payments|default('') }}">
+                        <i class="fas fa-solid fa-credit-card"></i>
+                        <span>Payment Collection</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
+                        <i class="fas fa-solid fa-receipt"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_bills }}" class="pms-sidebar-nav-link {{ active_bills|default('') }}">
+                        <i class="fas fa-solid fa-file-invoice"></i>
+                        <span>Monthly Bills</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_bills_unpaid }}" class="pms-sidebar-nav-link {{ active_unpaid_bills|default('') }}">
+                        <i class="fas fa-solid fa-clock"></i>
+                        <span>Unpaid Bills</span>
+                        {% if unpaid_bills_count > 0 %}
+                            <span class="pms-sidebar-badge">{{ unpaid_bills_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_suppliers }}" class="pms-sidebar-nav-link {{ active_suppliers|default('') }}">
+                        <i class="fa-solid fa-truck"></i>
+                        <span>Suppliers</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_expense_invoices }}" class="pms-sidebar-nav-link {{ active_expense_invoices|default('') }}">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <span>Expense Invoices</span>
+                    </a>
+                </li>
+            {% elseif customer_group_id == 3 %} {# Shareholder #}
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_dashboard|default('#') }}" class="pms-sidebar-nav-link {{ active_dashboard|default('') }}">
+                        <i class="fas fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_my_bills }}" class="pms-sidebar-nav-link {{ active_my_bills|default('') }}">
+                        <i class="fas fa-solid fa-file-invoice"></i>
+                        <span>My Bills</span>
+                        {% if unpaid_bills_count > 0 %}
+                            <span class="pms-sidebar-badge">{{ unpaid_bills_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_my_payment_history }}" class="pms-sidebar-nav-link {{ active_my_paymenthistory|default('') }}">
+                        <i class="fas fa-solid fa-file-invoice"></i>
+                        <span>Payment History</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_my_payment_allocations }}" class="pms-sidebar-nav-link {{ active_my_payment_allocations|default('') }}">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>My Allocations</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_my_apartments }}" class="pms-sidebar-nav-link {{ active_my_apartments|default('') }}">
+                        <i class="fa-solid fa-building"></i>
+                        <span>My Apartments</span>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {# Divider before account section #}
+            <li class="pms-sidebar-divider"></li>
+            
+            {# Account Settings Section #}
+            {% if not logged %}
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ login }}" class="pms-sidebar-nav-link">
+                        <i class="fas fa-solid fa-right-to-bracket"></i>
+                        <span>{{ text_login }}</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ forgotten }}" class="pms-sidebar-nav-link">
+                        <i class="fas fa-solid fa-key"></i>
+                        <span>{{ text_forgotten }}</span>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {# When logged in #}
+            {% if logged %}
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ edit }}" class="pms-sidebar-nav-link {{ active_edit|default('') }}">
+                        <i class="fas fa-solid fa-pen"></i>
+                        <span>{{ text_edit }}</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ password }}" class="pms-sidebar-nav-link {{ active_password|default('') }}">
+                        <i class="fas fa-solid fa-lock"></i>
+                        <span>{{ text_password }}</span>
+                    </a>
+                </li>
+                <li class="pms-sidebar-divider"></li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ logout }}" class="pms-sidebar-nav-link">
+                        <i class="fas fa-solid fa-right-from-bracket"></i>
+                        <span>{{ text_logout }}</span>
+                    </a>
+                </li>
+            {% endif %}
+            
+        </ul>
+    </div>
+</div>
+
+{# ==================== MOBILE TOGGLE BUTTON ==================== #}
+<button class="pms-sidebar-toggle" id="mobileToggleBtn" onclick="toggleMobileSidebar()" aria-label="Toggle Menu">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+{# ==================== MOBILE SIDEBAR OVERLAY ==================== #}
+<div class="pms-sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+{# ==================== MOBILE SIDEBAR ==================== #}
+<div class="pms-sidebar-mobile" id="mobileSidebar">
+    <button class="sidebar-close" onclick="closeMobileSidebar()">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    
+    <div class="sidebar-header">
+        <div class="logo">{{ project['name'] }}</div>
+        <div class="subtitle">
+            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem;">
+                {{ group['name'] }} Portal
+            </div>
         </div>
     </div>
-    
-    {# User Information (when logged in) #}
     {% if logged %}
-        <div class="pms-sidebar-user">
-            <div class="pms-sidebar-user-avatar">
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">
                 {{ customer_initials|default('MR') }}
             </div>
-            <div class="pms-sidebar-user-info">
-                <div class="pms-sidebar-user-name">{{ customer_name|default('Mr. Rahman') }}</div>
-                <div class="pms-sidebar-user-role">{{ group['name'] }}</div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">{{ customer_name|default('Mr. Rahman') }}</div>
+                <div class="sidebar-user-role">{{ group['name'] }}</div>
             </div>
         </div>
     {% endif %}
     
-    {# Main Navigation Menu #}
-    <ul class="pms-sidebar-nav">
-        
+    <ul class="sidebar-nav">
+        <!-- Your mobile menu items here -->
         {# Dashboard #}
         {% if customer_group_id == 1 %} {# Manager #}
             <li class="pms-sidebar-nav-item">
@@ -219,6 +453,9 @@
                 </a>
             </li>
         {% endif %}
-        
     </ul>
+    
+    <div class="sidebar-footer">
+        <i class="fa-regular fa-copyright"></i> {{ "now"|date("Y") }} Maskan PMS
+    </div>
 </div>

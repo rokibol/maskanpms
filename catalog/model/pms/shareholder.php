@@ -101,6 +101,127 @@ class Shareholder extends \Opencart\System\Engine\Model {
         
         return $query->rows;
     }
+
+    public function getUnallocatedApartmentShareholders(array $data = []): array {
+        /*$sql = "
+            SELECT s.*, 
+                   c.firstname, c.lastname, c.email, c.status as user_status,
+                   c.date_added as registered_date,
+                   (s.ownership_units / p.total_shares * 100) as ownership_percentage
+            FROM `" . DB_PREFIX . "shareholders` s
+            INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
+            INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
+            WHERE s.project_id = '" . (int)$data['project_id'] . "'
+            AND s.is_deleted = 0
+        ";*/
+
+        $sql = "
+            SELECT s.id,
+            s.shareholder_code,
+            s.user_id,
+            s.project_id,
+            s.ownership_units,
+            s.current_credit_balance,
+            s.phone,
+            s.status,
+            s.registered_date,
+            COUNT(a.id) AS allocated_apartments_count,
+            (s.ownership_units - COUNT(a.id)) AS remaining_unallocated_units,
+            c.firstname,
+            c.lastname,
+            c.email,
+            c.status,
+            c.date_added as registered_date,
+            (s.ownership_units / p.total_shares * 100) as ownership_percentage,
+            a.apartment_number,
+            a.floor_number,
+            a.is_active
+        FROM " . DB_PREFIX . "shareholders s
+        LEFT JOIN " . DB_PREFIX . "pms_apartment a 
+            ON s.id = a.shareholder_id 
+            AND a.is_deleted = 0                    -- Ignore deleted apartment allocations
+        INNER JOIN `" . DB_PREFIX . "customer` c ON c.customer_id = s.user_id
+        INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
+        WHERE s.status = 'active'                   -- Only look at active shareholders
+        AND s.is_deleted = 0                      -- Ignore soft-deleted shareholders
+        AND s.project_id = " . (int)$data['project_id'] . "
+        ";
+
+        // Filter by name/email
+        if (!empty($data['filter_search'])) {
+            $sql .= " AND (c.firstname LIKE '%" . $this->db->escape($data['filter_search']) . "%' 
+                        OR c.lastname LIKE '%" . $this->db->escape($data['filter_search']) . "%' 
+                        OR c.email LIKE '%" . $this->db->escape($data['filter_search']) . "%'
+                        OR s.shareholder_code LIKE '%" . $this->db->escape($data['filter_search']) . "%')";
+        }
+        
+        // Filter by status
+        if (!empty($data['filter_status'])) {
+            $sql .= " AND s.status = '" . $this->db->escape($data['filter_status']) . "'";
+        }
+        
+        // Filter by user status (active/inactive)
+        if (isset($data['filter_user_status']) && $data['filter_user_status'] !== '') {
+            $sql .= " AND c.status = '" . (int)$data['filter_user_status'] . "'";
+        }
+        
+        // Filter by ownership range
+        if (!empty($data['filter_ownership_min'])) {
+            $sql .= " HAVING ownership_percentage >= '" . (float)$data['filter_ownership_min'] . "'";
+        }
+        
+        if (!empty($data['filter_ownership_max'])) {
+            $sql .= " AND ownership_percentage <= '" . (float)$data['filter_ownership_max'] . "'";
+        }
+        
+        $sort_data = [
+            'c.firstname',
+            'c.lastname',
+            'c.email',
+            's.ownership_units',
+            'ownership_percentage',
+            's.status',
+            'c.status',
+            's.created_at'
+        ];
+
+        $sql .= "
+            GROUP BY 
+            s.id, 
+            s.shareholder_code, 
+            s.user_id, 
+            s.project_id, 
+            s.ownership_units
+        HAVING 
+            COUNT(a.id) < s.ownership_units       -- Catches both 0 allocations and partial allocations
+        ";
+        
+        if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
+            $sql .= " ORDER BY " . $data['sort'];
+        } else {
+            $sql .= " ORDER BY c.firstname";
+        }
+        
+        if (isset($data['order']) && ($data['order'] == 'DESC')) {
+            $sql .= " DESC";
+        } else {
+            $sql .= " ASC";
+        }
+        
+        if (isset($data['start']) || isset($data['limit'])) {
+            if ($data['start'] < 0) {
+                $data['start'] = 0;
+            }
+            if ($data['limit'] < 1) {
+                $data['limit'] = 20;
+            }
+            $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+        }
+        
+        $query = $this->db->query($sql);
+        
+        return $query->rows;
+    }
     
     /**
      * Get total shareholders count for pagination
@@ -108,6 +229,37 @@ class Shareholder extends \Opencart\System\Engine\Model {
     public function getTotalShareholders(array $data = []): int {
         $sql = "
             SELECT COUNT(*) as total
+            FROM `" . DB_PREFIX . "shareholders` s
+            INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
+            WHERE s.project_id = '" . (int)$data['project_id'] . "'
+            AND s.is_deleted = 0
+        ";
+        
+        if (!empty($data['filter_search'])) {
+            $sql .= " AND (c.firstname LIKE '%" . $this->db->escape($data['filter_search']) . "%' 
+                        OR c.lastname LIKE '%" . $this->db->escape($data['filter_search']) . "%' 
+                        OR c.email LIKE '%" . $this->db->escape($data['filter_search']) . "%')";
+        }
+        
+        if (!empty($data['filter_status'])) {
+            $sql .= " AND s.status = '" . $this->db->escape($data['filter_status']) . "'";
+        }
+        
+        if (isset($data['filter_user_status']) && $data['filter_user_status'] !== '') {
+            $sql .= " AND c.status = '" . (int)$data['filter_user_status'] . "'";
+        }
+        
+        $query = $this->db->query($sql);
+        
+        return (int)$query->row['total'];
+    }
+
+    /**
+     * Get total shareholders count for pagination
+     */
+    public function getTotalUnitAllocated(array $data = []): int {
+        $sql = "
+            SELECT SUM(ownership_units) as total
             FROM `" . DB_PREFIX . "shareholders` s
             INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
             WHERE s.project_id = '" . (int)$data['project_id'] . "'
@@ -1635,6 +1787,123 @@ class Shareholder extends \Opencart\System\Engine\Model {
             : 'No allocations';
         
         return $summary;
+    }
+
+    /**
+     * Add payment allocation with discount
+     * @param array $data
+     * @return int
+     */
+    public function addAllocationWithDiscount(array $data): int {
+        $original_amount = (float)$data['allocated_amount'];
+        $discount_type = $data['discount_type'] ?? null;
+        $discount_amount = 0;
+        $final_amount = $original_amount;
+        $is_discounted = 0;
+        
+        // Calculate discount
+        if ($discount_type && !empty($data['discount_value'])) {
+            if ($discount_type == 'percentage') {
+                $discount_amount = $original_amount * ((float)$data['discount_value'] / 100);
+            } elseif ($discount_type == 'fixed') {
+                $discount_amount = (float)$data['discount_value'];
+            }
+            
+            // Ensure discount doesn't exceed original amount
+            if ($discount_amount > $original_amount) {
+                $discount_amount = $original_amount;
+            }
+            
+            $final_amount = $original_amount - $discount_amount;
+            $is_discounted = 1;
+        }
+        
+        $this->db->query("
+            INSERT INTO `" . DB_PREFIX . "pms_payment_allocation` 
+            SET `shareholder_id` = '" . (int)$data['shareholder_id'] . "',
+                `project_id` = '" . (int)$data['project_id'] . "',
+                `payment_phase_id` = '" . (int)$data['payment_phase_id'] . "',
+                `allocated_amount` = '" . (float)$final_amount . "',
+                `original_amount` = '" . (float)$original_amount . "',
+                `discount_amount` = '" . (float)$discount_amount . "',
+                `discount_type` = '" . $this->db->escape($discount_type) . "',
+                `discount_reason` = '" . $this->db->escape($data['discount_reason'] ?? '') . "',
+                `is_discounted` = '" . (int)$is_discounted . "',
+                `notes` = '" . $this->db->escape($data['notes']) . "',
+                `created_by` = '" . (int)$this->customer->getId() . "',
+                `created_at` = NOW()
+        ");
+        
+        $allocation_id = $this->db->getLastId();
+        
+        // Update shareholder's credit balance with final amount
+        if ($final_amount > 0) {
+            $this->db->query("
+                UPDATE `" . DB_PREFIX . "shareholders` 
+                SET `current_credit_balance` = `current_credit_balance` + '" . (float)$final_amount . "'
+                WHERE `shareholder_id` = '" . (int)$data['shareholder_id'] . "'
+            ");
+        }
+        
+        return $allocation_id;
+    }
+
+    /**
+     * Get discounted allocations for a project
+     * @param int $project_id
+     * @return array
+     */
+    public function getDiscountedAllocations(int $project_id): array {
+        $query = $this->db->query("
+            SELECT pa.*, 
+                CONCAT(c.firstname, ' ', c.lastname) as shareholder_name,
+                s.shareholder_code,
+                pp.name as phase_name
+            FROM `" . DB_PREFIX . "pms_payment_allocation` pa
+            LEFT JOIN `" . DB_PREFIX . "shareholders` s ON pa.shareholder_id = s.shareholder_id
+            LEFT JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
+            LEFT JOIN `" . DB_PREFIX . "pms_payment_phase` pp ON pa.payment_phase_id = pp.phase_id
+            WHERE pa.project_id = '" . (int)$project_id . "'
+            AND pa.is_discounted = 1
+            AND pa.is_deleted = 0
+            ORDER BY pa.created_at DESC
+        ");
+        
+        return $query->rows;
+    }
+
+    /**
+     * Update allocation discount
+     * @param int $allocation_id
+     * @param array $data
+     */
+    public function updateAllocationDiscount(int $allocation_id, array $data): void {
+        $original_amount = (float)$data['original_amount'];
+        $discount_type = $data['discount_type'];
+        $discount_value = (float)$data['discount_value'];
+        $discount_reason = $data['discount_reason'];
+        
+        if ($discount_type == 'percentage') {
+            $discount_amount = $original_amount * ($discount_value / 100);
+        } else {
+            $discount_amount = $discount_value;
+        }
+        
+        if ($discount_amount > $original_amount) {
+            $discount_amount = $original_amount;
+        }
+        
+        $final_amount = $original_amount - $discount_amount;
+        
+        $this->db->query("
+            UPDATE `" . DB_PREFIX . "pms_payment_allocation` 
+            SET `allocated_amount` = '" . (float)$final_amount . "',
+                `discount_amount` = '" . (float)$discount_amount . "',
+                `discount_type` = '" . $this->db->escape($discount_type) . "',
+                `discount_reason` = '" . $this->db->escape($discount_reason) . "',
+                `is_discounted` = 1
+            WHERE `allocation_id` = '" . (int)$allocation_id . "'
+        ");
     }
 
     /**

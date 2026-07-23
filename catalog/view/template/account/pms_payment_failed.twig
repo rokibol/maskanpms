@@ -1,0 +1,93 @@
+{{ header }}
+
+<style>
+    .failed-container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .failed-card {
+        max-width: 500px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        overflow: hidden;
+    }
+    .failed-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        padding: 40px 20px;
+        color: white;
+    }
+    .failed-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    .failed-icon i {
+        font-size: 40px;
+    }
+    .failed-header h2 {
+        margin: 0;
+        font-size: 24px;
+    }
+    .failed-body {
+        padding: 30px;
+    }
+    .btn-retry {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    .btn-retry:hover {
+        background: #c82333;
+        color: white;
+    }
+    .help-text {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="failed-container">
+        <div class="failed-card">
+            <div class="failed-header">
+                <div class="failed-icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </div>
+                <h2>Payment Failed</h2>
+                <p>We couldn't process your payment</p>
+            </div>
+            <div class="failed-body">
+                <p>Your payment could not be completed. Please try again or contact support.</p>
+                <a href="{{ retry }}" class="btn-retry">
+                    <i class="fa-solid fa-arrow-rotate-right"></i> Try Again
+                </a>
+                <div class="help-text">
+                    <i class="fa-regular fa-circle-info"></i>
+                    If the amount was deducted from your account, it will be refunded within 3-5 business days.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ footer }}

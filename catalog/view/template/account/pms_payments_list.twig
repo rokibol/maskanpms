@@ -204,7 +204,7 @@
 
 <script>
 $('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_payments&language={{ language }}';
+    var url = 'index.php?route=account/pms_payments&language={{ language }}&customer_token={{ customer_token }}';
     
     var filter_shareholder = $('input[name="filter_shareholder"]').val();
     if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
@@ -225,7 +225,7 @@ $('#button-filter').on('click', function() {
 });
 
 $('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_payments&language={{ language }}';
+    location = 'index.php?route=account/pms_payments&language={{ language }}&customer_token={{ customer_token }}';
 });
 
 $('input').keydown(function(e) {
@@ -237,7 +237,7 @@ $('input').keydown(function(e) {
 function deletePayment(paymentId) {
     if (confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
         $.ajax({
-            url: 'index.php?route=account/pms_payments.delete&language={{ language }}&payment_id=' + paymentId + '&user_token={{ user_token }}',
+            url: 'index.php?route=account/pms_payments.delete&language={{ language }}&payment_id=' + paymentId + '&customer_token={{ customer_token }}',
             type: 'GET',
             dataType: 'json',
             success: function(json) {

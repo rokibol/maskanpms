@@ -1,64 +1,74 @@
 {{ header }}
 
 <style>
-    .plan-card {
+    .subscription-card {
         background: white;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 20px;
         margin-bottom: 20px;
-        transition: all 0.3s;
-        position: relative;
+        overflow: hidden;
     }
-    .plan-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    .card-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 600;
+        font-size: 16px;
     }
-    .plan-card.popular {
-        border-top: 4px solid #1F8A4D;
+    .card-body {
+        padding: 20px;
     }
-    .plan-name {
-        font-size: 22px;
+    .rate-info {
+        background: #e8f0fe;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .rate-amount {
+        font-size: 36px;
         font-weight: 700;
         color: #0B3C5D;
-        margin-bottom: 10px;
     }
-    .plan-price {
-        font-size: 32px;
+    .duration-option {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .duration-option:hover {
+        border-color: #1F8A4D;
+        background: #f8f9fa;
+    }
+    .duration-option.selected {
+        border-color: #1F8A4D;
+        background: #e8f5e9;
+    }
+    .duration-label {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .duration-price {
+        font-size: 18px;
         font-weight: 700;
         color: #1F8A4D;
-        margin: 15px 0;
     }
-    .plan-price small {
-        font-size: 14px;
-        color: #666;
-    }
-    .plan-features {
-        list-style: none;
-        padding: 0;
-        margin: 15px 0;
-    }
-    .plan-features li {
-        padding: 8px 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .plan-features li i {
-        color: #1F8A4D;
-        margin-right: 10px;
+    .save-badge {
+        background: #F59E0B;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        margin-left: 10px;
     }
     .current-plan {
         background: #e8f5e9;
-        border-color: #1F8A4D;
-    }
-    .current-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #1F8A4D;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
+        border-left: 4px solid #1F8A4D;
     }
     .expiry-alert {
         background: #fff3e0;
@@ -66,6 +76,24 @@
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 20px;
+    }
+    .btn-activate {
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .btn-activate:hover {
+        background: #166d3e;
+    }
+    .btn-activate:disabled {
+        background: #ccc;
+        cursor: not-allowed;
     }
 </style>
 
@@ -92,25 +120,29 @@
             </div>
             
             <!-- Current Subscription Status -->
-            <div class="card mb-4">
+            <div class="subscription-card">
                 <div class="card-header">
                     <i class="fas fa-solid fa-chart-line"></i> Current Subscription
                 </div>
                 <div class="card-body">
-                    {% if subscription %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Plan:</strong> {{ subscription.plan_name }}<br>
-                                <strong>Status:</strong> 
-                                {% if is_active %}
+                    {% if subscription and is_active %}
+                        <div class="current-plan" style="padding: 15px;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Status:</strong> 
                                     <span class="badge bg-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Expired</span>
-                                {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Expires on:</strong> {{ subscription.end_date|date('d M Y') }}
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <strong>Start Date:</strong> {{ subscription.start_date|date('d M Y') }}<br>
-                                <strong>End Date:</strong> {{ subscription.end_date|date('d M Y') }}
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <strong>Duration:</strong> {{ subscription.duration_months }} month(s)
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Amount Paid:</strong> ৳ {{ subscription.total_amount|number_format(2) }}
+                                </div>
                             </div>
                         </div>
                         
@@ -118,53 +150,67 @@
                             <div class="expiry-alert mt-3">
                                 <i class="fas fa-regular fa-clock"></i>
                                 <strong>Your subscription will expire in {{ expiry_days }} days!</strong>
-                                Please upgrade to continue using the service.
+                                Please renew below to continue using the service.
+                            </div>
+                        {% endif %}
+                        {% if subscription and is_active %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-regular fa-circle-info"></i>
+                                <strong>Current subscription expires on {{ subscription.end_date|date('d M Y') }}</strong><br>
+                                Purchasing additional months will <strong>extend</strong> your subscription from the current expiry date.
                             </div>
                         {% endif %}
                     {% else %}
                         <div class="alert alert-warning mb-0">
                             <i class="fas fa-regular fa-circle-exclamation"></i>
-                            No active subscription found. Please select a plan below.
+                            No active subscription found. Please select a plan below to activate.
                         </div>
                     {% endif %}
                 </div>
             </div>
             
-            <!-- Available Plans -->
-            <h3 class="mb-3">Available Plans</h3>
-            <div class="row">
-                {% for plan in plans %}
-                    <div class="col-md-4">
-                        <div class="plan-card {% if plan.slug == 'professional' %}popular{% endif %} {% if subscription and subscription.plan_id == plan.plan_id %}current-plan{% endif %}">
-                            {% if subscription and subscription.plan_id == plan.plan_id %}
-                                <span class="current-badge">Current Plan</span>
-                            {% endif %}
-                            <div class="plan-name">{{ plan.name }}</div>
-                            <div class="plan-price">
-                                ৳ {{ plan.price_monthly|number_format(0) }}
-                                <small>/month</small>
-                            </div>
-                            <div class="plan-price" style="font-size: 18px;">
-                                or ৳ {{ plan.price_yearly|number_format(0) }} <small>/year</small>
-                            </div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_projects }} Project(s)</li>
-                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_shareholders }} Shareholders</li>
-                                <li><i class="fas fa-regular fa-circle-check"></i> {{ plan.max_apartments }} Apartments</li>
-                            </ul>
-                            
-                            {% if not subscription or subscription.plan_id != plan.plan_id %}
-                                <button class="btn btn-primary w-100" onclick="upgradePlan({{ plan.plan_id }})">
-                                    <i class="fas fa-solid fa-arrow-up"></i> Upgrade
-                                </button>
-                            {% else %}
-                                <button class="btn btn-secondary w-100" disabled>
-                                    <i class="fas fa-regular fa-circle-check"></i> Current Plan
-                                </button>
-                            {% endif %}
-                        </div>
+            <!-- Pricing Info -->
+            <div class="subscription-card">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-tag"></i> Subscription Pricing
+                </div>
+                <div class="card-body">
+                    <div class="rate-info">
+                        <div class="rate-amount">৳ {{ monthly_rate|number_format(0) }}</div>
+                        <div>per month</div>
                     </div>
-                {% endfor %}
+                    <p class="text-muted text-center">Choose your subscription duration. Pay only for the months you need.</p>
+                </div>
+            </div>
+            
+            <!-- Duration Options -->
+            <div class="subscription-card">
+                <div class="card-header">
+                    <i class="fas fa-solid fa-calendar"></i> Select Duration
+                </div>
+                <div class="card-body">
+                    <div id="duration-options">
+                        {% for months, label in duration_options %}
+                            <div class="duration-option" data-months="{{ months }}">
+                                <div>
+                                    <span class="duration-label">{{ label }}</span>
+                                    {% if months >= 12 %}
+                                        {#<span class="save-badge">Save {{ ((months * monthly_rate) - duration_amounts[months])|round }}%</span>#}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="duration-price">৳ {{ duration_amounts[months]|number_format(2) }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <input type="hidden" id="selected-duration" value="">
+                    
+                    <button type="button" id="btn-activate" class="btn-activate" disabled>
+                        <i class="fas fa-solid fa-credit-card"></i> Activate Subscription
+                    </button>
+                </div>
             </div>
             
             {{ content_bottom }}
@@ -174,31 +220,43 @@
     </div>
 </div>
 
-<!-- Upgrade Modal -->
-<div class="modal fade" id="upgradeModal" tabindex="-1">
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-solid fa-arrow-up"></i> Upgrade Subscription</h5>
+                <h5 class="modal-title"><i class="fas fa-solid fa-credit-card"></i> Complete Payment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="form-upgrade" action="{{ action }}" method="post" data-oc-toggle="ajax">
+            <form id="form-activate" action="{{ action }}" method="post" data-oc-toggle="ajax">
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        <strong>Selected Plan:</strong> <span id="modal-plan-name"></span>
+                        <strong>Subscription Details:</strong><br>
+                        Duration: <span id="modal-duration"></span><br>
+                        Total Amount: <span id="modal-amount" class="text-success fw-bold"></span>
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label">Billing Type</label>
-                        <select name="billing_type" class="form-select" required>
-                            <option value="monthly">Monthly Billing</option>
-                            <option value="yearly">Yearly Billing (Save 15%)</option>
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment_method" class="form-select" required>
+                            <option value="">-- Select Method --</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="rocket">Rocket</option>
+                            <option value="bank">Bank Transfer</option>
                         </select>
                     </div>
-                    <input type="hidden" name="plan_id" id="modal-plan-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reference / Transaction ID</label>
+                        <input type="text" name="reference_number" class="form-control" placeholder="Enter transaction ID">
+                    </div>
+                    
+                    <input type="hidden" name="duration_months" id="modal-duration-months">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Confirm Upgrade</button>
+                    <button type="submit" class="btn btn-primary">Confirm Payment</button>
                 </div>
             </form>
         </div>
@@ -206,11 +264,32 @@
 </div>
 
 <script>
-function upgradePlan(planId, planName) {
-    $('#modal-plan-id').val(planId);
-    $('#modal-plan-name').text(planName);
-    $('#upgradeModal').modal('show');
-}
+$(document).ready(function() {
+    var selectedMonths = null;
+    var selectedAmount = null;
+    var selectedLabel = null;
+    
+    $('.duration-option').on('click', function() {
+        $('.duration-option').removeClass('selected');
+        $(this).addClass('selected');
+        
+        selectedMonths = $(this).data('months');
+        selectedLabel = $(this).find('.duration-label').text();
+        selectedAmount = $(this).find('.duration-price').text();
+        
+        $('#selected-duration').val(selectedMonths);
+        $('#btn-activate').prop('disabled', false);
+    });
+    
+    $('#btn-activate').on('click', function() {
+        if (selectedMonths) {
+            $('#modal-duration').text(selectedLabel);
+            $('#modal-amount').text(selectedAmount);
+            $('#modal-duration-months').val(selectedMonths);
+            $('#paymentModal').modal('show');
+        }
+    });
+});
 </script>
 
 {{ footer }}

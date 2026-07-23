@@ -121,7 +121,7 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
 			'total' => $apartment_total,
 			'page'  => $page,
 			'limit' => $this->config->get('config_pagination_admin'),
-			'url'   => $this->url->link('account/pms_shareholders.list', 'language=' . $this->config->get('config_language') . $url .  '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+			'url'   => $this->url->link('account/pms_apartments', 'language=' . $this->config->get('config_language') . $url .  '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($apartment_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($apartment_total - $this->config->get('config_pagination_admin'))) ? $apartment_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $apartment_total, ceil($apartment_total / $this->config->get('config_pagination_admin')));
@@ -214,7 +214,7 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
         
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
-        
+
         $this->load->model('pms/apartment');
         $this->load->model('pms/shareholder');
         
@@ -252,9 +252,13 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
                 $data[$field] = ($field == 'is_active') ? 1 : '';
             }
         }
+
+        $data['fixed_maintenance_fee'] = $data['fixed_maintenance_fee'] ? $data['fixed_maintenance_fee'] : (int)$project['fixed_maintenance_fee'];
+        $data['area_sqft'] = $data['area_sqft'] ? $data['area_sqft'] : (int)$project['area_sq_ft'];
         
         // Get all shareholders for dropdown
-        $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
+        $shareholders = $this->model_pms_shareholder->getUnallocatedApartmentShareholders(['project_id' => $project['project_id']]);
+
         $data['shareholders'] = $shareholders;
         
         $data['customer_token'] = $this->session->data['customer_token'];

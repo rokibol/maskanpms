@@ -73,7 +73,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
                 'status_badge'      => $status_badge,
                 'payment_count'     => $invoice['payment_count'],
                 'has_document'      => !empty($invoice['invoice_document']),
-                'view'              => $this->url->link('account/pms_expense_invoices.view', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id']),
+                'view'              => $this->url->link('account/pms_expense_invoices.view', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'] . '&customer_token=' . $this->session->data['customer_token']),
                 'edit'              => $this->customer->getGroupId() == 2 ? $this->url->link('account/pms_expense_invoices.edit', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id']) : '',
                 'download'          => !empty($invoice['invoice_document']) ? $this->url->link('account/pms_expense_invoices.downloadDocument', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id']) : '',
                 'delete'            => $this->url->link('account/pms_expense_invoices.delete', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'])
@@ -590,7 +590,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
         $data['paid_amount'] = $this->model_pms_expense_invoice->getTotalPaidForInvoice($invoice_id);
         $data['due_amount'] = $data['total_amount'] - $data['paid_amount'];
         $data['payment_methods'] = $this->model_pms_expense_invoice->getPaymentMethods();
-        $data['action'] = $this->url->link('account/pms_expense_invoices.savePayment', 'language=' . $this->config->get('config_language'));
+        $data['action'] = $this->url->link('account/pms_expense_invoices.savePayment', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         $this->response->setOutput($this->load->view('account/pms_expense_invoice_payment_form', $data));
     }
@@ -642,6 +642,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
                 
                 $this->model_pms_expense_invoice->addInvoicePayment($payment_data);
                 $json['success'] = $this->language->get('text_payment_success');
+                $json['redirect'] = $this->url->link('account/pms_expense_invoices.view', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&invoice_id=' . $invoice_id);
             }
         }
         

@@ -51,7 +51,7 @@ class Bill extends \Opencart\System\Engine\Model {
             SELECT COUNT(*) as total
             FROM `" . DB_PREFIX . "pms_bill_summary`
             WHERE project_id = '" . (int)$project_id . "'
-            AND bill_month = '" . $this->db->escape($bill_month) . "'
+            AND DATE_FORMAT(bill_month, '%Y-%m') = '" . $this->db->escape($bill_month) . "'
             AND bill_type_id = '" . (int)$bill_type_id . "'
         ");
         
@@ -593,7 +593,7 @@ class Bill extends \Opencart\System\Engine\Model {
         }
         
         if (!empty($data['filter_apartment'])) {
-            $sql .= " AND a.apartment_number LIKE '%" . $this->db->escape($data['filter_apartment']) . "%'";
+            $sql .= " AND a.apartment_number = '" . $this->db->escape($data['filter_apartment']) . "'";
         }
         
         $sql .= " ORDER BY b.bill_month ASC, a.apartment_number ASC";

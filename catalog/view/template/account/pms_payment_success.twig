@@ -1,0 +1,98 @@
+{{ header }}
+
+<style>
+    .success-container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .success-card {
+        max-width: 500px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        overflow: hidden;
+    }
+    .success-header {
+        background: linear-gradient(135deg, #1F8A4D 0%, #166d3e 100%);
+        padding: 40px 20px;
+        color: white;
+    }
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    .success-icon i {
+        font-size: 40px;
+    }
+    .success-header h2 {
+        margin: 0;
+        font-size: 24px;
+    }
+    .success-body {
+        padding: 30px;
+    }
+    .payment-details {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: left;
+    }
+    .btn-dashboard {
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-dashboard:hover {
+        background: #166d3e;
+        color: white;
+    }
+</style>
+
+<div class="container">
+    <div class="success-container">
+        <div class="success-card">
+            <div class="success-header">
+                <div class="success-icon">
+                    <i class="fa-regular fa-circle-check"></i>
+                </div>
+                <h2>Payment Successful!</h2>
+                <p>Your subscription has been activated</p>
+            </div>
+            <div class="success-body">
+                <p>Thank you for your payment. Your subscription is now active.</p>
+                {% if payment %}
+                <div class="payment-details">
+                    <p><strong>Transaction ID:</strong> {{ payment.transaction_id ?: 'N/A' }}</p>
+                    <p><strong>Duration:</strong> {{ payment.duration_months }} month(s)</p>
+                    <p><strong>Amount Paid:</strong> ৳ {{ payment.total_amount|number_format(2) }}</p>
+                    <p><strong>Payment Date:</strong> {{ payment.completed_at|date('d M Y H:i') }}</p>
+                </div>
+                {% endif %}
+                <a href="{{ dashboard }}" class="btn-dashboard">
+                    <i class="fa-solid fa-chart-line"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ footer }}

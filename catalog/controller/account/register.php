@@ -1,297 +1,326 @@
 <?php
 namespace Opencart\Catalog\Controller\Account;
-/**
- * Class Register
- *
- * @package Opencart\Catalog\Controller\Account
- */
+
 class Register extends \Opencart\System\Engine\Controller {
-	/**
-	 * Index
-	 *
-	 * @return void
-	 */
-	public function index(): void {
-		if ($this->customer->isLogged()) {
-			$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'], true));
-		}
 
-		$this->load->language('account/register');
+    public function index(): void {
+        $this->load->language('account/register');
+        $this->load->language('pms/register_project');
 
-		$this->document->setTitle($this->language->get('heading_title'));
+        $this->document->setTitle($this->language->get('heading_title'));
 
-		$data['breadcrumbs'] = [];
+        $data['breadcrumbs'] = [];
 
-		$data['breadcrumbs'][] = [
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language'))
-		];
-
-		$data['breadcrumbs'][] = [
-			'text' => $this->language->get('text_account'),
-			'href' => $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language'))
-		];
-
-		$data['breadcrumbs'][] = [
-			'text' => $this->language->get('text_register'),
-			'href' => $this->url->link('account/register', 'language=' . $this->config->get('config_language'))
-		];
-
-		$data['text_account_already'] = sprintf($this->language->get('text_account_already'), $this->url->link('account/login', 'language=' . $this->config->get('config_language')));
-
-		$data['error_upload_size'] = sprintf($this->language->get('error_upload_size'), $this->config->get('config_file_max_size'));
-
-		$data['config_file_max_size'] = ((int)$this->config->get('config_file_max_size') * 1024 * 1024);
-		$data['config_telephone_display'] = $this->config->get('config_telephone_display');
-		$data['config_telephone_required'] = $this->config->get('config_telephone_required');
-
-		// Create form token
-		$this->session->data['register_token'] = oc_token(26);
-
-		$data['register'] = $this->url->link('account/register.register', 'language=' . $this->config->get('config_language') . '&register_token=' . $this->session->data['register_token']);
-
-		$this->session->data['upload_token'] = oc_token(32);
-
-		$data['upload'] = $this->url->link('tool/upload', 'language=' . $this->config->get('config_language') . '&upload_token=' . $this->session->data['upload_token']);
-
-		// Customer Groups
-		$data['customer_groups'] = [];
-
-		if (is_array($this->config->get('config_customer_group_display'))) {
-			$this->load->model('account/customer_group');
-
-			$customer_groups = $this->model_account_customer_group->getCustomerGroups();
-
-			foreach ($customer_groups as $customer_group) {
-				if (in_array($customer_group['customer_group_id'], (array)$this->config->get('config_customer_group_display'))) {
-					$data['customer_groups'][] = $customer_group;
-				}
-			}
-		}
-
-		$data['customer_group_id'] = (int)$this->config->get('config_customer_group_id');
-
-		// Custom Fields
-		$data['custom_fields'] = [];
-
-		$this->load->model('account/custom_field');
-
-		$custom_fields = $this->model_account_custom_field->getCustomFields();
-
-		foreach ($custom_fields as $custom_field) {
-			if ($custom_field['location'] == 'account') {
-				$data['custom_fields'][] = $custom_field;
-			}
-		}
-
-		// Captcha
-		$this->load->model('setting/extension');
-
-		$extension_info = $this->model_setting_extension->getExtensionByCode('captcha', $this->config->get('config_captcha'));
-
-		if ($extension_info && $this->config->get('captcha_' . $this->config->get('config_captcha') . '_status') && in_array('register', (array)$this->config->get('config_captcha_page'))) {
-			$data['captcha'] = $this->load->controller('extension/' . $extension_info['extension'] . '/captcha/' . $extension_info['code']);
-		} else {
-			$data['captcha'] = '';
-		}
-
-		// Information
+		// ======================================================
+		// FETCH INFORMATION PAGES FOR TERMS & PRIVACY POLICY
+		// ======================================================
 		$this->load->model('catalog/information');
-
-		$information_info = $this->model_catalog_information->getInformation((int)$this->config->get('config_account_id'));
-
-		if ($information_info) {
-			$data['text_agree'] = sprintf($this->language->get('text_agree'), $this->url->link('information/information.info', 'language=' . $this->config->get('config_language') . '&information_id=' . $this->config->get('config_account_id')), $information_info['title']);
+		
+		// Get Terms & Conditions (ID 1)
+		$terms_info = $this->model_catalog_information->getInformation(1);
+		if ($terms_info) {
+			$data['terms_title'] = $terms_info['title'];
+			$data['terms_description'] = html_entity_decode($terms_info['description'], ENT_QUOTES, 'UTF-8');
 		} else {
-			$data['text_agree'] = '';
+			$data['terms_title'] = 'Terms & Conditions';
+			$data['terms_description'] = 'Terms and conditions content goes here.';
+		}
+		
+		// Get Privacy Policy (ID 2)
+		$privacy_info = $this->model_catalog_information->getInformation(2);
+		if ($privacy_info) {
+			$data['privacy_title'] = $privacy_info['title'];
+			$data['privacy_description'] = html_entity_decode($privacy_info['description'], ENT_QUOTES, 'UTF-8');
+		} else {
+			$data['privacy_title'] = 'Privacy Policy';
+			$data['privacy_description'] = 'Privacy policy content goes here.';
 		}
 
-		$data['language'] = $this->config->get('config_language');
+        $this->load->model('account/customer');
+        $this->load->model('account/customer_group');
 
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
+        // Customer Groups
+        $data['customer_groups'] = $this->model_account_customer_group->getCustomerGroups();
 
-		$this->response->setOutput($this->load->view('account/register', $data));
-	}
+        if (isset($this->request->post['customer_group_id'])) {
+            $data['customer_group_id'] = (int)$this->request->post['customer_group_id'];
+        } else {
+            $data['customer_group_id'] = (int)$this->config->get('config_customer_group_id');
+        }
 
-	/**
-	 * Register
-	 *
-	 * @return void
-	 */
-	public function register(): void {
-		$this->load->language('account/register');
+        // Countries
+        $this->load->model('localisation/country');
+        $data['countries'] = $this->model_localisation_country->getCountries();
 
-		$json = [];
+        // Account Fields
+        if (isset($this->request->post['firstname'])) {
+            $data['firstname'] = $this->request->post['firstname'];
+        } else {
+            $data['firstname'] = '';
+        }
 
-		$required = [
-			'customer_group_id' => 0,
-			'firstname'         => '',
-			'lastname'          => '',
-			'email'             => '',
-			'telephone'         => '',
-			'custom_field'      => [],
-			'password'          => '',
-			'agree'             => 0
-		];
+        if (isset($this->request->post['lastname'])) {
+            $data['lastname'] = $this->request->post['lastname'];
+        } else {
+            $data['lastname'] = '';
+        }
 
-		$post_info = $this->request->post + $required;
+        if (isset($this->request->post['email'])) {
+            $data['email'] = $this->request->post['email'];
+        } else {
+            $data['email'] = '';
+        }
 
-		if (!isset($this->request->get['register_token']) || !isset($this->session->data['register_token']) || ($this->session->data['register_token'] != $this->request->get['register_token'])) {
-			$json['redirect'] = $this->url->link('account/register', 'language=' . $this->config->get('config_language'), true);
-		}
+        if (isset($this->request->post['telephone'])) {
+            $data['telephone'] = $this->request->post['telephone'];
+        } else {
+            $data['telephone'] = '';
+        }
 
-		// Captcha first to prevent probing for registered emails
-		$this->load->model('setting/extension');
+        if (isset($this->request->post['password'])) {
+            $data['password'] = $this->request->post['password'];
+        } else {
+            $data['password'] = '';
+        }
 
-		$extension_info = $this->model_setting_extension->getExtensionByCode('captcha', $this->config->get('config_captcha'));
+        if (isset($this->request->post['confirm'])) {
+            $data['confirm'] = $this->request->post['confirm'];
+        } else {
+            $data['confirm'] = '';
+        }
 
-		if ($extension_info && $this->config->get('captcha_' . $this->config->get('config_captcha') . '_status') && in_array('register', (array)$this->config->get('config_captcha_page'))) {
-			$captcha = $this->load->controller('extension/' . $extension_info['extension'] . '/captcha/' . $extension_info['code'] . '.validate');
+        // ======================================================
+        // PROJECT REGISTRATION FIELDS
+        // ======================================================
 
-			if ($captcha) {
-				$json['error']['captcha'] = $captcha;
-			}
-		}
+        // Project Name
+        if (isset($this->request->post['project_name'])) {
+            $data['project_name'] = $this->request->post['project_name'];
+        } else {
+            $data['project_name'] = '';
+        }
 
-		if (!$json) {
-			// Customer Group
-			if ($post_info['customer_group_id']) {
-				$customer_group_id = (int)$post_info['customer_group_id'];
-			} else {
-				$customer_group_id = (int)$this->config->get('config_customer_group_id');
-			}
+        // Project Description
+        if (isset($this->request->post['project_description'])) {
+            $data['project_description'] = $this->request->post['project_description'];
+        } else {
+            $data['project_description'] = '';
+        }
 
-			$this->load->model('account/customer_group');
+        // Project Address
+        if (isset($this->request->post['project_address'])) {
+            $data['project_address'] = $this->request->post['project_address'];
+        } else {
+            $data['project_address'] = '';
+        }
 
-			$customer_group_info = $this->model_account_customer_group->getCustomerGroup($customer_group_id);
+        // Project City
+        if (isset($this->request->post['project_city'])) {
+            $data['project_city'] = $this->request->post['project_city'];
+        } else {
+            $data['project_city'] = '';
+        }
 
-			if (!$customer_group_info || !in_array($customer_group_id, (array)$this->config->get('config_customer_group_display'))) {
-				$json['error']['warning'] = $this->language->get('error_customer_group');
-			}
+        // Project Country
+        if (isset($this->request->post['project_country'])) {
+            $data['project_country'] = $this->request->post['project_country'];
+        } else {
+            $data['project_country'] = '';
+        }
 
-			if (!oc_validate_length($post_info['firstname'], 1, 32)) {
-				$json['error']['firstname'] = $this->language->get('error_firstname');
-			}
+        // Project Total Shares
+        if (isset($this->request->post['project_total_shares'])) {
+            $data['project_total_shares'] = $this->request->post['project_total_shares'];
+        } else {
+            $data['project_total_shares'] = '';
+        }
 
-			if (!oc_validate_length($post_info['lastname'], 1, 32)) {
-				$json['error']['lastname'] = $this->language->get('error_lastname');
-			}
+        // Trial Information
+        /*$this->load->model('pms/subscription_settings');*/
+        $trial_days = 30;
+        $data['trial_days'] = $trial_days;
+        $data['trial_end_date'] = date('d F Y', strtotime('+' . $trial_days . ' days'));
 
-			if (!oc_validate_email($post_info['email'])) {
-				$json['error']['email'] = $this->language->get('error_email');
-			}
+        // Agree to terms
+        if (isset($this->request->post['agree'])) {
+            $data['agree'] = $this->request->post['agree'];
+        } else {
+            $data['agree'] = false;
+        }
 
-			// Customer
-			$this->load->model('account/customer');
+        $data['action'] = $this->url->link('account/register.save', 'language=' . $this->config->get('config_language'));
 
-			if ($this->model_account_customer->getTotalCustomersByEmail($post_info['email'])) {
-				$json['error']['warning'] = $this->language->get('error_exists');
-			}
+        $this->load->model('localisation/country');
+        $data['countries'] = $this->model_localisation_country->getCountries();
 
-			if ($this->config->get('config_telephone_required') && !oc_validate_length($post_info['telephone'], 3, 32)) {
-				$json['error']['telephone'] = $this->language->get('error_telephone');
-			}
+        $data['header'] = $this->load->controller('common/header');
+        $data['footer'] = $this->load->controller('common/footer');
 
-			// Custom field validation
-			$this->load->model('account/custom_field');
+        $this->response->setOutput($this->load->view('account/register_project', $data));
+    }
 
-			$custom_fields = $this->model_account_custom_field->getCustomFields($customer_group_id);
+    public function save(): void {
+        $this->load->language('account/register');
+        $this->load->language('pms/register_project');
 
-			foreach ($custom_fields as $custom_field) {
-				if ($custom_field['location'] == 'account') {
-					if ($custom_field['required'] && empty($post_info['custom_field'][$custom_field['custom_field_id']])) {
-						$json['error']['custom_field_' . $custom_field['custom_field_id']] = sprintf($this->language->get('error_custom_field'), $custom_field['name']);
-					} elseif (($custom_field['type'] == 'text') && !empty($custom_field['validation']) && !oc_validate_regex($post_info['custom_field'][$custom_field['custom_field_id']], $custom_field['validation'])) {
-						$json['error']['custom_field_' . $custom_field['custom_field_id']] = sprintf($this->language->get('error_regex'), $custom_field['name']);
-					}
+        $json = [];
+
+        // Validate customer fields
+        if ((strlen($this->request->post['firstname']) < 1) || (strlen($this->request->post['firstname']) > 32)) {
+            $json['error']['firstname'] = $this->language->get('error_firstname');
+        }
+
+        if ((strlen($this->request->post['lastname']) < 1) || (strlen($this->request->post['lastname']) > 32)) {
+            $json['error']['lastname'] = $this->language->get('error_lastname');
+        }
+
+        if ((strlen($this->request->post['email']) > 96) || !filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL)) {
+            $json['error']['email'] = $this->language->get('error_email');
+        }
+
+        $this->load->model('account/customer');
+
+        if ($this->model_account_customer->getTotalCustomersByEmail($this->request->post['email'])) {
+            $json['error']['email'] = $this->language->get('error_exists');
+        }
+
+        if ((strlen($this->request->post['telephone']) < 3) || (strlen($this->request->post['telephone']) > 32)) {
+            $json['error']['telephone'] = $this->language->get('error_telephone');
+        }
+
+        if ((strlen($this->request->post['password']) < 4) || (strlen($this->request->post['password']) > 40)) {
+            $json['error']['password'] = $this->language->get('error_password');
+        }
+
+        if ($this->request->post['confirm'] != $this->request->post['password']) {
+            $json['error']['confirm'] = $this->language->get('error_confirm');
+        }
+
+        // ======================================================
+        // PROJECT VALIDATION
+        // ======================================================
+
+        if (empty($this->request->post['project_name']) || (strlen($this->request->post['project_name']) < 3) || (strlen($this->request->post['project_name']) > 100)) {
+            $json['error']['project_name'] = $this->language->get('error_project_name');
+        }
+
+        $this->load->model('pms/project');
+        
+        if (empty($this->request->post['project_total_shares']) || (int)$this->request->post['project_total_shares'] < 1) {
+            $json['error']['project_total_shares'] = $this->language->get('error_project_total_shares');
+        }
+
+        if (!isset($this->request->post['agree'])) {
+            $json['error']['agree'] = $this->language->get('error_agree');
+        }
+
+        if (!$json) {
+            // Start transaction
+            $this->db->query("START TRANSACTION");
+
+            try {
+                // 1. Create Customer (Manager)
+                $customer_data = [
+                    'firstname'         => $this->request->post['firstname'],
+                    'lastname'          => $this->request->post['lastname'],
+                    'email'             => $this->request->post['email'],
+                    'telephone'         => $this->request->post['telephone'],
+                    'password'          => password_hash($this->request->post['password'], PASSWORD_DEFAULT),
+                    'customer_group_id' => 1, // Manager group
+                    'status'            => 1,
+                    'newsletter'        => 0,
+                    'safe'              => 1
+                ];
+
+                // 2. Create Project
+                $project_data = [
+                    'name'              => $this->request->post['project_name'],
+                    'description'       => $this->request->post['project_description'],
+                    'address'           => $this->request->post['project_address'],
+                    'city'              => $this->request->post['project_city'],
+                    'country'           => $this->request->post['project_country'],
+                    'contact_email'     => $this->request->post['email'],
+                    'contact_phone'     => $this->request->post['telephone'],
+                    'total_shares'      => (int)$this->request->post['project_total_shares'],
+                    'status'            => 'planning',
+                    'is_active'         => 1,
+                    'theme_color'       => '#0B3C5D',
+                    'store_id'          => 0,
+                    'registration_date' => date('Y-m-d')
+                ];
+
+                $this->db->query("
+                    INSERT INTO `" . DB_PREFIX . "pms_project` 
+                    SET `name` = '" . $this->db->escape($project_data['name']) . "',
+                        `description` = '" . $this->db->escape($project_data['description']) . "',
+                        `address` = '" . $this->db->escape($project_data['address']) . "',
+                        `city` = '" . $this->db->escape($project_data['city']) . "',
+                        `country` = '" . $this->db->escape($project_data['country']) . "',
+                        `contact_email` = '" . $this->db->escape($project_data['contact_email']) . "',
+                        `contact_phone` = '" . $this->db->escape($project_data['contact_phone']) . "',
+                        `total_shares` = '" . (int)$project_data['total_shares'] . "',
+                        `status` = '" . $this->db->escape($project_data['status']) . "',
+                        `is_active` = '" . (int)$project_data['is_active'] . "',
+                        `theme_color` = '" . $this->db->escape($project_data['theme_color']) . "',
+                        `store_id` = '" . (int)$project_data['store_id'] . "',
+                        `registration_date` = '" . $this->db->escape($project_data['registration_date']) . "',
+                        `created_at` = NOW()
+                ");
+
+                $project_id = $this->db->getLastId();
+
+                // 3. Update customer with project_id
+                $this->db->query("
+                    INSERT INTO `" . DB_PREFIX . "customer` 
+                    SET `firstname` = '" . $this->db->escape($customer_data['firstname']) . "',
+                        `lastname` = '" . $this->db->escape($customer_data['lastname']) . "',
+                        `project_id` = '" . $project_id . "',
+                        `email` = '" . $this->db->escape($customer_data['email']) . "',
+                        `telephone` = '" . $this->db->escape($customer_data['telephone']) . "',
+                        `password` = '" . $this->db->escape($customer_data['password']) . "',
+                        `customer_group_id` = '" . (int)$customer_data['customer_group_id'] . "',
+                        `status` = '" . (int)$customer_data['status'] . "',
+                        `newsletter` = '" . (int)$customer_data['newsletter'] . "',
+                        `safe` = '" . (int)$customer_data['safe'] . "',
+                        `date_added` = NOW()
+                ");
+
+                // 4. Create Trial Subscription
+                $trial_days = 30;
+                $start_date = date('Y-m-d');
+                $end_date = date('Y-m-d', strtotime('+' . $trial_days . ' days'));
+
+                $this->db->query("
+                    INSERT INTO `" . DB_PREFIX . "pms_project_subscription` 
+                    SET `project_id` = '" . (int)$project_id . "',
+                        `duration_months` = 1,
+                        `total_amount` = 0,
+                        `start_date` = '" . $this->db->escape($start_date) . "',
+                        `end_date` = '" . $this->db->escape($end_date) . "',
+                        `status` = 'active',
+                        `admin_override` = 0
+                ");
+
+                $this->db->query("COMMIT");
+
+                // Auto login the user
+                if($this->customer->login($this->request->post['email'], $this->request->post['password'])) {
+
+					$this->session->data['customer_token'] = oc_token(26);
+
+					$json['success'] = $this->language->get('text_register_success');
+					$json['redirect'] = $this->url->link('account/manager', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+				} else {
+					$json['status'] = false;
 				}
-			}
 
-			$password = html_entity_decode($post_info['password'], ENT_QUOTES, 'UTF-8');
+            } catch (\Exception $e) {
+                $this->db->query("ROLLBACK");
+                $json['error']['warning'] = $e->getMessage();
+            }
+        }
 
-			if (!oc_validate_length($password, (int)$this->config->get('config_password_length'), 40)) {
-				$json['error']['password'] = sprintf($this->language->get('error_password_length'), (int)$this->config->get('config_password_length'));
-			}
-
-			$required = [];
-
-			if ($this->config->get('config_password_uppercase') && !preg_match('/[A-Z]/', $password)) {
-				$required[] = $this->language->get('error_password_uppercase');
-			}
-
-			if ($this->config->get('config_password_lowercase') && !preg_match('/[a-z]/', $password)) {
-				$required[] = $this->language->get('error_password_lowercase');
-			}
-
-			if ($this->config->get('config_password_number') && !preg_match('/[0-9]/', $password)) {
-				$required[] = $this->language->get('error_password_number');
-			}
-
-			if ($this->config->get('config_password_symbol') && !preg_match('/[^a-zA-Z0-9]/', $password)) {
-				$required[] = $this->language->get('error_password_symbol');
-			}
-
-			if ($required) {
-				$json['error']['password'] = sprintf($this->language->get('error_password'), implode(', ', $required), $this->config->get('config_password_length'));
-			}
-
-			// Agree to terms
-			$this->load->model('catalog/information');
-
-			$information_info = $this->model_catalog_information->getInformation((int)$this->config->get('config_account_id'));
-
-			if ($information_info && !$post_info['agree']) {
-				$json['error']['warning'] = sprintf($this->language->get('error_agree'), $information_info['title']);
-			}
-		}
-
-		if (!$json) {
-			$customer_id = $this->model_account_customer->addCustomer($post_info);
-
-			// Login if requires approval
-			if (!$customer_group_info['approval']) {
-				$this->customer->login($post_info['email'], html_entity_decode($post_info['password'], ENT_QUOTES, 'UTF-8'));
-
-				// Add customer details into session
-				$this->session->data['customer'] = [
-					'customer_id'       => $customer_id,
-					'customer_group_id' => $customer_group_id,
-					'firstname'         => $post_info['firstname'],
-					'lastname'          => $post_info['lastname'],
-					'email'             => $post_info['email'],
-					'telephone'         => $post_info['telephone'],
-					'custom_field'      => $post_info['custom_field']
-				];
-
-				// Log the IP info
-				$this->model_account_customer->addLogin($this->customer->getId(), oc_get_ip());
-
-				// Create customer token
-				$this->session->data['customer_token'] = oc_token(26);
-			}
-
-			// Remove form token
-			unset($this->session->data['register_token']);
-
-			// Clear any previous login attempts for unregistered accounts.
-			$this->model_account_customer->deleteLoginAttempts($post_info['email']);
-
-			// Clear old session data
-			unset($this->session->data['guest']);
-			unset($this->session->data['shipping_method']);
-			unset($this->session->data['shipping_methods']);
-			unset($this->session->data['payment_method']);
-			unset($this->session->data['payment_methods']);
-
-			$json['redirect'] = $this->url->link('account/success', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : ''), true);
-		}
-
-		$this->response->addHeader('Content-Type: application/json');
-		$this->response->setOutput(json_encode($json));
-	}
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
 }

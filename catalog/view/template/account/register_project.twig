@@ -1,0 +1,574 @@
+{{ header }}
+
+<style>
+    .register-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .register-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .register-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 25px 30px;
+        color: white;
+    }
+    .register-header h2 {
+        margin: 0;
+        font-size: 24px;
+    }
+    .register-header p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+    .register-body {
+        padding: 25px 30px;
+    }
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e0e0e0;
+        color: #0B3C5D;
+    }
+    .section-title i {
+        margin-right: 8px;
+        color: #1F8A4D;
+    }
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #333;
+        font-size: 13px;
+    }
+    .form-group .required {
+        color: #dc3545;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #1F8A4D;
+        box-shadow: 0 0 0 3px rgba(31, 138, 77, 0.1);
+    }
+    .trial-info {
+        background: #e8f5e9;
+        border-left: 4px solid #1F8A4D;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .trial-info i {
+        color: #1F8A4D;
+        margin-right: 8px;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover {
+        background: #166d3e;
+    }
+    .terms {
+        text-align: center;
+        margin: 15px 0;
+        font-size: 13px;
+        color: #666;
+    }
+    .terms a {
+        color: #1F8A4D;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .terms a:hover {
+        text-decoration: underline;
+    }
+    .login-link {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+        color: #666;
+    }
+    .login-link a {
+        color: #0B3C5D;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    .text-danger {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -10px;
+    }
+    .col-half {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 0 10px;
+    }
+    
+    /* ======================================================
+       MODAL STYLES
+       ====================================================== */
+    .policy-modal .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .policy-modal .modal-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 25px;
+        border-bottom: none;
+    }
+    .policy-modal .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    .policy-modal .modal-body {
+        padding: 25px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    .policy-modal .modal-body h4 {
+        color: #0B3C5D;
+        margin-bottom: 15px;
+    }
+    .policy-modal .modal-body p {
+        color: #444;
+        line-height: 1.8;
+        font-size: 14px;
+    }
+    .policy-modal .modal-body ul {
+        padding-left: 20px;
+    }
+    .policy-modal .modal-body ul li {
+        padding: 5px 0;
+        color: #555;
+        line-height: 1.6;
+    }
+    .policy-modal .modal-footer {
+        border-top: 1px solid #e0e0e0;
+        padding: 15px 25px;
+        justify-content: center;
+    }
+    .policy-modal .modal-footer .btn {
+        padding: 8px 30px;
+        border-radius: 50px;
+    }
+    .policy-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 0;
+    }
+    .policy-tab {
+        padding: 10px 20px;
+        font-weight: 600;
+        color: #666;
+        cursor: pointer;
+        border: none;
+        background: none;
+        position: relative;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+    .policy-tab.active {
+        color: #0B3C5D;
+    }
+    .policy-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #1F8A4D;
+    }
+    .policy-tab:hover {
+        color: #0B3C5D;
+    }
+    .policy-content {
+        display: none;
+    }
+    .policy-content.active {
+        display: block;
+    }
+    
+    /* Scrollbar styling for modal body */
+    .policy-modal .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    .policy-modal .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    .policy-modal .modal-body::-webkit-scrollbar-thumb {
+        background: #c1c7cd;
+        border-radius: 3px;
+    }
+    .policy-modal .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    @media (max-width: 768px) {
+        .col-half {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        .register-header {
+            padding: 20px;
+        }
+        .register-body {
+            padding: 20px;
+        }
+        .policy-modal .modal-body {
+            max-height: 50vh;
+        }
+        .policy-tab {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+    }
+    /* footer */
+    footer {
+        bottom: auto !important;
+    }
+</style>
+
+<div class="container register-container">
+    {#<ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>#}
+
+    <div class="register-card">
+        <div class="register-header">
+            <h2 class="text-white"><i class="fa-regular fa-building"></i> Register Your Project</h2>
+            <p>Create your project and start managing your property immediately with a {{ trial_days }}-day free trial</p>
+        </div>
+
+        <div class="register-body">
+            
+            <!-- Trial Info -->
+            <div class="trial-info">
+                <i class="fa-regular fa-gem"></i>
+                <strong>🎉 Free Trial Included!</strong><br>
+                Your project will be activated with a <strong>{{ trial_days }}-day free trial</strong>.
+                No payment required to start. Trial expires on <strong>{{ trial_end_date }}</strong>.
+                After the trial, you can subscribe to continue using the service.
+            </div>
+
+            <form id="form-register" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                
+                <!-- Personal Information -->
+                <div class="section-title"><i class="fa-regular fa-user"></i> Personal Information</div>
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-firstname">First Name <span class="required">*</span></label>
+                            <input type="text" name="firstname" value="{{ firstname }}" id="input-firstname" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-lastname">Last Name <span class="required">*</span></label>
+                            <input type="text" name="lastname" value="{{ lastname }}" id="input-lastname" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-email">Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" value="{{ email }}" id="input-email" class="form-control" required>
+                            <small class="text-muted">This will be your login email</small>
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-telephone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" name="telephone" value="{{ telephone }}" id="input-telephone" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-password">Password <span class="required">*</span></label>
+                            <input type="password" name="password" value="{{ password }}" id="input-password" class="form-control" required>
+                            <small class="text-muted">Minimum 4 characters</small>
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-confirm">Confirm Password <span class="required">*</span></label>
+                            <input type="password" name="confirm" value="{{ confirm }}" id="input-confirm" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Information -->
+                <div class="section-title" style="margin-top: 25px;"><i class="fa-regular fa-building"></i> Project Information</div>
+                
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-project-name">Project Name <span class="required">*</span></label>
+                            <input type="text" name="project_name" value="{{ project_name }}" id="input-project-name" class="form-control" placeholder="e.g., Maskan Tower" required>
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-project-slug">Project Slug (URL) <span class="required">*</span></label>
+                            <input type="text" name="project_slug" value="{{ project_slug }}" id="input-project-slug" class="form-control" placeholder="e.g., maskan-tower" required>
+                            <small class="text-muted">Use hyphens instead of spaces. Example: sky-view-tower</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-project-description">Project Description</label>
+                    <textarea name="project_description" id="input-project-description" class="form-control" rows="3">{{ project_description }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group">
+                            <label for="input-project-address">Address</label>
+                            <input type="text" name="project_address" value="{{ project_address }}" id="input-project-address" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group">
+                            <label for="input-project-city">City</label>
+                            <input type="text" name="project_city" value="{{ project_city }}" id="input-project-city" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-half">
+                        <div class="form-group">
+                            <label for="input-project-country">Country</label>
+                            <input type="text" name="project_country" value="{{ project_country }}" id="input-project-country" class="form-control" placeholder="Bangladesh">
+                        </div>
+                    </div>
+                    <div class="col-half">
+                        <div class="form-group required">
+                            <label for="input-project-shares">Total Shares <span class="required">*</span></label>
+                            <input type="number" name="project_total_shares" value="{{ project_total_shares }}" id="input-project-shares" class="form-control" min="1" placeholder="e.g., 100" required>
+                            <small class="text-muted">Total number of shares for this project</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms & Submit -->
+                <div class="terms">
+                    <label>
+                        <input type="checkbox" name="agree" id="agree-checkbox" value="1" {{ agree ? 'checked' : '' }}>
+                        I have read and agree to the 
+                        <a href="javascript:void(0);" onclick="openPolicyModal('terms')">Terms & Conditions</a> 
+                        and 
+                        <a href="javascript:void(0);" onclick="openPolicyModal('privacy')">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    <i class="fa-regular fa-circle-check"></i> Register Project & Start Free Trial
+                </button>
+
+                <div class="login-link">
+                    Already have an account? <a href="{{ login }}">Sign In</a>
+                </div>
+
+                <input type="hidden" name="user_token" value="{{ user_token }}">
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+    TERMS & CONDITIONS / PRIVACY POLICY MODAL
+    ====================================================== -->
+<div class="modal fade policy-modal" id="policyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" id="policyModalTitle">
+                    <i class="fas fa-regular fa-file-lines"></i> <span id="modal-title-text">Terms & Conditions</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="policyModalBody">
+                <!-- Tabs -->
+                <div class="policy-tabs">
+                    <button class="policy-tab active" data-tab="terms" onclick="switchPolicyTab('terms')">
+                        <i class="fas fa-regular fa-file-lines"></i> Terms & Conditions
+                    </button>
+                    <button class="policy-tab" data-tab="privacy" onclick="switchPolicyTab('privacy')">
+                        <i class="fas fa-regular fa-shield"></i> Privacy Policy
+                    </button>
+                </div>
+                
+                <!-- Terms Content -->
+                <div id="policy-content-terms" class="policy-content active">
+                    <h4>{{ terms_title }}</h4>
+                    <div class="policy-text">
+                        {{ terms_description|raw }}
+                    </div>
+                </div>
+                
+                <!-- Privacy Content -->
+                <div id="policy-content-privacy" class="policy-content">
+                    <h4>{{ privacy_title }}</h4>
+                    <div class="policy-text">
+                        {{ privacy_description|raw }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-regular fa-circle-check"></i> I Agree
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ======================================================
+// MODAL FUNCTIONS
+// ======================================================
+
+function openPolicyModal(tab) {
+    // Reset tabs
+    document.querySelectorAll('.policy-tab').forEach(function(t) {
+        t.classList.remove('active');
+    });
+    document.querySelectorAll('.policy-content').forEach(function(c) {
+        c.classList.remove('active');
+    });
+    
+    // Activate selected tab
+    var tabElement = document.querySelector('.policy-tab[data-tab="' + tab + '"]');
+    if (tabElement) {
+        tabElement.classList.add('active');
+    }
+    var contentElement = document.getElementById('policy-content-' + tab);
+    if (contentElement) {
+        contentElement.classList.add('active');
+    }
+    
+    // Update modal title
+    var title = (tab === 'terms') ? 'Terms & Conditions' : 'Privacy Policy';
+    document.getElementById('modal-title-text').textContent = title;
+    
+    // Show modal
+    $('#policyModal').modal('show');
+}
+
+function switchPolicyTab(tab) {
+    // Update tabs
+    document.querySelectorAll('.policy-tab').forEach(function(t) {
+        t.classList.remove('active');
+    });
+    document.querySelectorAll('.policy-content').forEach(function(c) {
+        c.classList.remove('active');
+    });
+    
+    var tabElement = document.querySelector('.policy-tab[data-tab="' + tab + '"]');
+    if (tabElement) {
+        tabElement.classList.add('active');
+    }
+    var contentElement = document.getElementById('policy-content-' + tab);
+    if (contentElement) {
+        contentElement.classList.add('active');
+    }
+    
+    // Update modal title
+    var title = (tab === 'terms') ? 'Terms & Conditions' : 'Privacy Policy';
+    document.getElementById('modal-title-text').textContent = title;
+}
+
+// Auto-generate slug from project name
+$('#input-project-name').on('keyup', function() {
+    var name = $(this).val();
+    var slug = name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    
+    var currentSlug = $('#input-project-slug').val();
+    if (!currentSlug || currentSlug === '') {
+        $('#input-project-slug').val(slug);
+    }
+});
+
+// Validate form before submit
+$('#form-register').on('submit', function(e) {
+    var password = $('#input-password').val();
+    var confirm = $('#input-confirm').val();
+    var agree = $('#agree-checkbox').is(':checked');
+    
+    if (password !== confirm) {
+        alert('Passwords do not match!');
+        e.preventDefault();
+        return false;
+    }
+    
+    if (!agree) {
+        alert('Please agree to the Terms & Conditions and Privacy Policy');
+        e.preventDefault();
+        return false;
+    }
+    
+    return true;
+});
+
+// Auto-check agree when modal closes with "I Agree"
+document.addEventListener('DOMContentLoaded', function() {
+    var agreeBtn = document.querySelector('#policyModal .btn-primary');
+    if (agreeBtn) {
+        agreeBtn.addEventListener('click', function() {
+            document.getElementById('agree-checkbox').checked = true;
+        });
+    }
+});
+</script>
+
+{{ footer }}

@@ -1,21 +1,486 @@
 {{ header }}
+
+{# ==================== PREMIUM LOGIN PAGE STYLES ==================== #}
+<style>
+    /* ======================================================
+       SKY VIEW PMS - LOGIN PAGE
+       Mobile Optimized
+       ====================================================== */
+    
+    :root {
+        --pms-primary-dark: #0B3C5D;
+        --pms-primary-green: #1F8A4D;
+        --pms-secondary-blue: #2F80ED;
+        --pms-secondary-green: #27AE60;
+        --pms-bg-white: #FFFFFF;
+        --pms-bg-light: #F5F7FA;
+        --pms-border: #D1D5DB;
+        --pms-text-dark: #374151;
+        --pms-text-muted: #6B7280;
+        --pms-success: #22C55E;
+        --pms-warning: #F59E0B;
+        --pms-danger: #EF4444;
+        --pms-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --pms-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+        --pms-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --pms-radius: 0.75rem;
+        --pms-radius-lg: 1rem;
+    }
+    
+    /* Full Page Background */
+    .pms-login-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--pms-bg-light) 0%, #E8EDF2 100%);
+        padding: 1.5rem 0;
+    }
+    
+    /* Login Wrapper */
+    .pms-login-wrapper {
+        max-width: 1100px;
+        width: 100%;
+        margin: 0 auto;
+        background: var(--pms-bg-white);
+        border-radius: var(--pms-radius-lg);
+        box-shadow: var(--pms-shadow-lg);
+        overflow: hidden;
+    }
+    
+    /* Two Column Layout */
+    .pms-login-hero {
+        background: linear-gradient(135deg, var(--pms-primary-dark) 0%, var(--pms-primary-green) 100%);
+        padding: 2.5rem;
+        color: white;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .pms-login-hero::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .pms-login-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -20%;
+        left: -10%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .pms-logo {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .pms-logo span {
+        color: var(--pms-secondary-green);
+    }
+    
+    .pms-hero-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .pms-hero-text {
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
+        font-size: 0.95rem;
+    }
+    
+    .pms-feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .pms-feature-list li {
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .pms-feature-list li i {
+        width: 18px;
+        color: var(--pms-secondary-green);
+        font-size: 0.9rem;
+    }
+    
+    /* Login Form Area */
+    .pms-login-form-area {
+        padding: 2.5rem;
+        background: var(--pms-bg-white);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .pms-login-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--pms-border);
+        padding-bottom: 0;
+    }
+    
+    .pms-login-tab {
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        color: var(--pms-text-muted);
+        cursor: pointer;
+        border: none;
+        background: none;
+        position: relative;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    
+    .pms-login-tab.active {
+        color: var(--pms-primary-dark);
+    }
+    
+    .pms-login-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--pms-primary-green);
+    }
+    
+    .pms-login-tab:hover {
+        color: var(--pms-primary-dark);
+    }
+    
+    /* Login Form */
+    .pms-login-form {
+        display: block;
+    }
+    
+    .pms-login-form.hidden {
+        display: none;
+    }
+    
+    .pms-form-group {
+        margin-bottom: 1.2rem;
+    }
+    
+    .pms-form-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--pms-text-dark);
+        margin-bottom: 0.4rem;
+    }
+    
+    .pms-form-label i {
+        color: var(--pms-primary-green);
+        width: 18px;
+    }
+    
+    .pms-form-control {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        border: 1px solid var(--pms-border);
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        background: var(--pms-bg-white);
+    }
+    
+    .pms-form-control:focus {
+        outline: none;
+        border-color: var(--pms-primary-green);
+        box-shadow: 0 0 0 3px rgba(31, 138, 77, 0.1);
+    }
+    
+    .pms-forgot-link {
+        font-size: 0.75rem;
+        color: var(--pms-secondary-blue);
+        text-decoration: none;
+        margin-top: 0.3rem;
+        display: inline-block;
+    }
+    
+    .pms-forgot-link:hover {
+        text-decoration: underline;
+    }
+    
+    .pms-btn-login {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--pms-primary-dark);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .pms-btn-login:hover {
+        background: #0a3250;
+        transform: translateY(-1px);
+    }
+    
+    /* Register Section */
+    .pms-register-section {
+        margin-top: 1.2rem;
+        padding-top: 1.2rem;
+        border-top: 1px solid var(--pms-border);
+        text-align: center;
+    }
+    
+    .pms-register-title {
+        font-size: 0.85rem;
+        color: var(--pms-text-muted);
+        margin-bottom: 0.5rem;
+    }
+    
+    .pms-btn-register {
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        background: transparent;
+        color: var(--pms-primary-green);
+        border: 1px solid var(--pms-primary-green);
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .pms-btn-register:hover {
+        background: var(--pms-primary-green);
+        color: white;
+        text-decoration: none;
+    }
+    
+    /* Alert Styles */
+    .pms-alert {
+        padding: 0.7rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .pms-alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--pms-success);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    
+    .pms-alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--pms-danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    /* Demo Credentials */
+    .pms-demo-credentials {
+        margin-top: 1.2rem;
+        padding: 0.8rem;
+        background: var(--pms-bg-light);
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .pms-demo-credentials p {
+        margin: 0;
+        color: var(--pms-text-muted);
+    }
+    
+    .pms-demo-credentials code {
+        background: var(--pms-bg-white);
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+        font-size: 0.7rem;
+    }
+    
+    /* ======================================================
+       MOBILE OPTIMIZATION
+       ====================================================== */
+    @media (max-width: 768px) {
+        .pms-login-container {
+            padding: 1rem 0;
+            min-height: auto;
+        }
+        
+        .pms-login-wrapper {
+            border-radius: 12px;
+            margin: 0 10px;
+        }
+        
+        /* Hero section - compact on mobile */
+        .pms-login-hero {
+            padding: 1.5rem 1.2rem;
+            min-height: 200px;
+        }
+        
+        .pms-logo {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .pms-hero-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+        }
+        
+        .pms-hero-text {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .pms-feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.2rem 0.8rem;
+        }
+        
+        .pms-feature-list li {
+            font-size: 0.7rem;
+            margin-bottom: 0.2rem;
+            gap: 0.4rem;
+        }
+        
+        .pms-feature-list li i {
+            width: 14px;
+            font-size: 0.7rem;
+        }
+        
+        /* Form area - compact on mobile */
+        .pms-login-form-area {
+            padding: 1.5rem 1.2rem;
+        }
+        
+        .pms-login-tabs {
+            margin-bottom: 1rem;
+        }
+        
+        .pms-login-tab {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .pms-form-group {
+            margin-bottom: 0.8rem;
+        }
+        
+        .pms-form-label {
+            font-size: 0.8rem;
+        }
+        
+        .pms-form-control {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .pms-btn-login {
+            padding: 0.6rem;
+            font-size: 0.85rem;
+        }
+        
+        .pms-demo-credentials {
+            font-size: 0.65rem;
+            padding: 0.6rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .pms-login-hero {
+            padding: 1rem 0.8rem;
+            min-height: 150px;
+        }
+        
+        .pms-logo {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pms-hero-title {
+            font-size: 0.9rem;
+        }
+        
+        .pms-hero-text {
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pms-feature-list {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.1rem 0.5rem;
+        }
+        
+        .pms-feature-list li {
+            font-size: 0.6rem;
+        }
+        
+        .pms-feature-list li i {
+            width: 12px;
+            font-size: 0.6rem;
+        }
+        
+        .pms-login-form-area {
+            padding: 1rem 0.8rem;
+        }
+    }
+</style>
+
 {# ==================== MAIN LOGIN CONTAINER ==================== #}
 <div id="account-login" class="pms-login-container">
     
     <div class="pms-login-wrapper">
+        {{ top_menu }}
         <div class="row g-0">
             
             {# LEFT SIDE - HERO SECTION #}
             <div class="col-md-6">
                 <div class="pms-login-hero">
-                    <div class="pms-logo">
-                        Maskan <span>PMS</span>
-                    </div>
+                    {#<div class="pms-logo">
+                        MASKAN <span>PMS</span>
+                    </div>#}
                     <div class="pms-hero-title">
                         Welcome to Your<br>Property Management Portal
                     </div>
                     <div class="pms-hero-text">
-                        Access your investment dashboard, track expenses, view bills, and manage your property portfolio all in one place.
+                        Access your investment dashboard, track expenses, and manage your property portfolio.
                     </div>
                     <ul class="pms-feature-list">
                         <li>
@@ -62,6 +527,9 @@
                     <div class="pms-login-tabs">
                         <button class="pms-login-tab active" data-tab="login">
                             <i class="fas fa-solid fa-key me-2"></i> Sign In
+                        </button>
+                        <button class="pms-login-tab" data-tab="register">
+                            <i class="fas fa-solid fa-user-plus me-2"></i> New Property
                         </button>
                     </div>
                     
@@ -117,9 +585,9 @@
                     <div id="register-form" class="pms-login-form hidden">
                         <div class="pms-register-section">
                             <div class="pms-register-title">
-                                <i class="fas fa-regular fa-building"></i> New to Sky View PMS?
+                                <i class="fas fa-regular fa-building"></i> Want to add new property to Maskan PMS?
                             </div>
-                            <p style="font-size: 0.75rem; color: var(--pms-text-muted); margin-bottom: 1rem;">
+                            <p style="font-size: 0.75rem; color: var(--pms-text-muted); margin-bottom: 0.8rem;">
                                 Register as a new user to access your property management dashboard.
                                 Shareholders will be verified by the building manager.
                             </p>
@@ -129,8 +597,8 @@
                         </div>
                         
                         {# Info Box #}
-                        <div style="margin-top: 1.5rem; padding: 1rem; background: var(--pms-bg-light); border-radius: 0.5rem;">
-                            <small style="color: var(--pms-text-muted); display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="margin-top: 1rem; padding: 0.8rem; background: var(--pms-bg-light); border-radius: 0.5rem;">
+                            <small style="color: var(--pms-text-muted); display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;">
                                 <i class="fas fa-regular fa-circle-info"></i>
                                 After registration, your account will be linked to your project by the manager.
                                 You will receive an email confirmation once approved.

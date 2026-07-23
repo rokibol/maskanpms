@@ -183,7 +183,141 @@
                     {% endif %}
                 </div>
             </div>
+            <!-- ==================== DISCOUNTS SECTION ==================== -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <i class="fa-solid fa-tag"></i> Discounts Applied
+                    <button type="button" class="btn btn-sm btn-warning float-end" onclick="showDiscountModal()">
+                        <i class="fa-solid fa-plus"></i> Add Discount
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Allocation ID</th>
+                                    <th>Phase</th>
+                                    <th>Original Amount</th>
+                                    <th>Discount Type</th>
+                                    <th>Discount Amount</th>
+                                    <th>Final Amount</th>
+                                    <th>Reason</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if discounted_allocations %}
+                                    {% for discount in discounted_allocations %}
+                                        <tr>
+                                            <td>#{{ discount.allocation_id }}</a>
+                                            <td>{{ discount.phase_name }}</a>
+                                            <td>৳ {{ discount.original_amount|number_format(2) }}</a>
+                                            <td>
+                                                <span class="badge bg-info">{{ discount.discount_type|capitalize }}</span>
+                                            </a>
+                                            <td class="text-danger">- ৳ {{ discount.discount_amount|number_format(2) }}</a>
+                                            <td class="text-success">৳ {{ discount.allocated_amount|number_format(2) }}</a>
+                                            <td>{{ discount.discount_reason ?: '-' }}</a>
+                                            <td>{{ discount.created_at|date('d M Y') }}</a>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-danger btn-sm" 
+                                                        onclick="deleteDiscount({{ discount.allocation_id }})" 
+                                                        data-bs-toggle="tooltip" title="Remove Discount">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </a>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-4">
+                                            <i class="fas fa-regular fa-tag fa-2x mb-2 d-block"></i>
+                                            No discounts applied to this shareholder yet.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Discount Modal -->
+            <div class="modal fade" id="discountModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-regular fa-tag"></i> Apply Discount to Allocation
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <strong>Shareholder:</strong> {{ shareholder.name }}<br>
+                                <strong>Current Credit Balance:</strong> <span id="current-balance">৳ {{ shareholder.credit_balance|number_format(2) }}</span>
+                            </div>
+                            
+                            <form id="form-discount">
+                                <input type="hidden" id="discount-allocation-id">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Select Allocation <span class="text-danger">*</span></label>
+                                    <select name="allocation_id" id="discount-allocation-select" class="form-select" required>
+                                        <option value="">-- Select Allocation --</option>
+                                        {% for allocation in allocations %}
+                                            {% if allocation.original_amount is null or allocation.original_amount == 0 %}
+                                                <option value="{{ allocation.allocation_id }}">
+                                                    #{{ allocation.allocation_id }} - {{ allocation.phase_name }} - ৳ {{ allocation.allocated_amount|number_format(2) }}
+                                                    (No discount yet)
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Discount Type <span class="text-danger">*</span></label>
+                                            <select name="discount_type" id="discount-type" class="form-select" required>
+                                                <option value="fixed">Fixed Amount (BDT)</option>
+                                                <option value="percentage">Percentage (%)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Discount Value <span class="text-danger">*</span></label>
+                                            <input type="number" name="discount_value" id="discount-value" class="form-control" 
+                                                step="0.01" min="0.01" placeholder="Enter amount" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Reason for Discount</label>
+                                    <input type="text" name="discount_reason" id="discount-reason" class="form-control" 
+                                        placeholder="e.g., Early payment discount, Special offer">
+                                </div>
+                                
+                                <div id="discount-preview-box" class="alert alert-secondary" style="display: none;">
+                                    <strong>Preview:</strong><br>
+                                    <span id="discount-preview-text"></span>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="saveDiscount()">
+                                <i class="fas fa-regular fa-tag"></i> Apply Discount
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Allocations List -->
             <div class="card" style="margin-top: 15px;">
                 <div class="card-header">
@@ -266,7 +400,6 @@
                         <input type="number" name="allocated_amount" class="form-control" step="0.01" min="0.01" required>
                         <small class="text-muted">Amount allocated to this payment phase</small>
                     </div>
-                    
                     <div class="mb-3">
                         <label class="form-label">Notes (Optional)</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Any notes about this allocation..."></textarea>
@@ -303,6 +436,115 @@ function deleteAllocation(allocationId) {
             }
         });
     }
+}
+// Discount Modal Functions
+function showDiscountModal() {
+    $('#discount-allocation-id').val('');
+    $('#discount-allocation-select').val('');
+    $('#discount-type').val('fixed');
+    $('#discount-value').val('');
+    $('#discount-reason').val('');
+    $('#discount-preview-box').hide();
+    $('#discountModal').modal('show');
+}
+
+// Preview discount on input change
+$('#discount-allocation-select, #discount-type, #discount-value').on('change keyup', function() {
+    var selectedOption = $('#discount-allocation-select option:selected');
+    var allocationAmount = parseFloat(selectedOption.text().match(/৳ ([\d,]+\.\d{2})/)?.[1]?.replace(/,/g, '')) || 0;
+    var discountType = $('#discount-type').val();
+    var discountValue = parseFloat($('#discount-value').val()) || 0;
+    
+    if (discountValue > 0 && allocationAmount > 0) {
+        var discountAmount = 0;
+        if (discountType == 'percentage') {
+            discountAmount = (allocationAmount * discountValue) / 100;
+        } else {
+            discountAmount = discountValue;
+        }
+        if (discountAmount > allocationAmount) discountAmount = allocationAmount;
+        var finalAmount = allocationAmount - discountAmount;
+        
+        $('#discount-preview-text').html(
+            'Original: <strong>৳ ' + allocationAmount.toFixed(2) + '</strong> | ' +
+            'Discount: <strong class="text-danger">- ৳ ' + discountAmount.toFixed(2) + '</strong> | ' +
+            'Final: <strong class="text-success">৳ ' + finalAmount.toFixed(2) + '</strong>'
+        );
+        $('#discount-preview-box').show();
+    } else {
+        $('#discount-preview-box').hide();
+    }
+});
+
+// Save discount
+function saveDiscount() {
+    var allocationId = $('#discount-allocation-select').val();
+    var discountType = $('#discount-type').val();
+    var discountValue = parseFloat($('#discount-value').val()) || 0;
+    var discountReason = $('#discount-reason').val();
+    
+    if (!allocationId) {
+        alert('Please select an allocation');
+        return;
+    }
+    
+    if (!discountValue || discountValue <= 0) {
+        alert('Please enter a valid discount value');
+        return;
+    }
+    
+    if (!discountReason) {
+        if (!confirm('No reason provided. Continue without reason?')) {
+            return;
+        }
+    }
+    
+    $.ajax({
+        url: 'index.php?route=account/pms_shareholders.applyDiscountToAllocation&language={{ language }}&customer_token={{ customer_token }}',
+        type: 'POST',
+        data: {
+            allocation_id: allocationId,
+            discount_type: discountType,
+            discount_value: discountValue,
+            discount_reason: discountReason
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#discountModal .btn-primary').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Applying...');
+        },
+        success: function(data) {
+            if (data.success) {
+                $('#discountModal').modal('hide');
+                location.reload();
+            } else {
+                alert(data.error);
+                $('#discountModal .btn-primary').prop('disabled', false).html('Apply Discount');
+            }
+        },
+        error: function(xhr) {
+            console.log(xhr);
+        }
+    });
+}
+
+// Delete discount
+function deleteDiscount(allocationId) {
+    if (!confirm('Are you sure you want to remove this discount? This will restore the original amount.')) {
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=account/pms_shareholders.deleteDiscountFromAllocation&language={{ language }}&user_token={{ user_token }}&allocation_id=' + allocationId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        }
+    });
 }
 </script>
 

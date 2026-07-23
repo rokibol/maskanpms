@@ -1,0 +1,84 @@
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+.status-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+.status-override {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+/* Modal Styles */
+.modal-confirm {
+    color: #636363;
+    width: 400px;
+}
+.modal-confirm .modal-content {
+    padding: 20px;
+    border-radius: 8px;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+}
+.modal-confirm .modal-header {
+    border-bottom: none;
+    position: relative;
+    justify-content: center;
+    padding: 0 0 15px 0;
+}
+.modal-confirm .modal-body {
+    padding: 0 0 20px 0;
+}
+.modal-confirm .modal-footer {
+    border-top: none;
+    justify-content: center;
+    padding: 0;
+}
+.modal-confirm .icon-box {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+.modal-confirm .icon-box.warning {
+    background: #fff3e0;
+    color: #f0ad4e;
+}
+.modal-confirm .icon-box.danger {
+    background: #f8d7da;
+    color: #dc3545;
+}
+.modal-confirm .icon-box i {
+    font-size: 45px;
+}
+.modal-confirm h4 {
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: 600;
+}
+.modal-confirm .btn {
+    padding: 8px 25px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.btn-warning {
+    background: #f0ad4e;
+    border-color: #f0ad4e;
+}
+.btn-warning:hover {
+    background: #ec971f;
+    border-color: #ec971f;
+}

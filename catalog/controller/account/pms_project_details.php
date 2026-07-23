@@ -42,6 +42,8 @@ class PmsProjectDetails extends \Opencart\System\Engine\Controller {
             'city'                  => $project['city'] ?: '-',
             'country'               => $project['country'] ?: '-',
             'total_shares'          => $project['total_shares'],
+            'fixed_maintenance_fee'          => $project['fixed_maintenance_fee'],
+            'area_sq_ft'          => $project['area_sq_ft'],
             'share_value'           => $project['share_value'] ? number_format($project['share_value'], 2) : '-',
             'registration_date'     => $project['registration_date'] ? date('d M Y', strtotime($project['registration_date'])) : '-',
             'construction_start'    => $project['construction_start_date'] ? date('d M Y', strtotime($project['construction_start_date'])) : '-',
@@ -64,7 +66,9 @@ class PmsProjectDetails extends \Opencart\System\Engine\Controller {
         ];
         
         $data['action'] = $this->url->link('account/pms_project_details.updateStatus', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['back'] = $this->url->link('account/pms_manager_dashboard', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['fee_action'] = $this->url->link('account/pms_project_details.updateMaintenanceFee', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['area_action'] = $this->url->link('account/pms_project_details.updateAreaSquareFeet', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['back'] = $this->url->link('account/manager', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         $data['customer_token'] = $this->session->data['customer_token'];
         
@@ -95,6 +99,60 @@ class PmsProjectDetails extends \Opencart\System\Engine\Controller {
                 $new_status = $this->request->post['status'];
                 $this->model_pms_project->updateProjectStatus($project['project_id'], $new_status);
                 $json['success'] = $this->language->get('text_status_updated');
+            } else {
+                $json['error'] = 'Project not found';
+            }
+        }
+        
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    public function updateMaintenanceFee(): void {
+        $this->load->language('pms/project_details');
+        
+        $json = [];
+        
+        if (!$this->customer->isLogged()) {
+            $json['error'] = $this->language->get('error_permission');
+        }
+        
+        if (!$json) {
+            $this->load->model('pms/project');
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+            
+            if ($project) {
+                $maintenance_fee = $this->request->post['maintenance_fee'];
+                $this->model_pms_project->updateMaintenanceFee($project['project_id'], $maintenance_fee);
+                $json['success'] = $this->language->get('text_fee_updated');
+                $json['redirect'] = $this->url->link('account/pms_project_details', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+            } else {
+                $json['error'] = 'Project not found';
+            }
+        }
+        
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    public function updateAreaSquareFeet(): void {
+        $this->load->language('pms/project_details');
+        
+        $json = [];
+        
+        if (!$this->customer->isLogged()) {
+            $json['error'] = $this->language->get('error_permission');
+        }
+        
+        if (!$json) {
+            $this->load->model('pms/project');
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+            
+            if ($project) {
+                $area_sq_ft = $this->request->post['area_sq_ft'];
+                $this->model_pms_project->updateAreaSqFt($project['project_id'], $area_sq_ft);
+                $json['success'] = $this->language->get('text_area_updated');
+                $json['redirect'] = $this->url->link('account/pms_project_details', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
             } else {
                 $json['error'] = 'Project not found';
             }

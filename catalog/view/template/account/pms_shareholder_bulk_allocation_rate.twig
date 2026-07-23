@@ -186,7 +186,7 @@ $(document).ready(function() {
         
         if (type && rate && rate > 0 && phase) {
             $.ajax({
-                url: 'index.php?route=account/pms_shareholders.getRateAllocationPreview&language={{ language }}&user_token={{ user_token }}',
+                url: 'index.php?route=account/pms_payment_allocations.getRateAllocationPreview&language={{ language }}&user_token={{ user_token }}',
                 type: 'GET',
                 data: { 
                     calculation_type: type,

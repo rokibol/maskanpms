@@ -63,6 +63,10 @@ class Customer {
 
 	private array $project = [];
 
+	private array $manager = [];
+
+	private array $accountant = [];
+
 	/**
 	 * Constructor
 	 *
@@ -88,6 +92,7 @@ class Customer {
 				$this->safe = (bool)$customer_query->row['safe'];
 				$this->commenter = (bool)$customer_query->row['commenter'];
 				$this->project = $this->getProjectByCustomerId($this->customer_id);
+				$this->manager = $this->getManagerByCustomerId($this->customer_id);
 				$this->customer_group = $this->getCustomerGroup($this->customer_group_id);
 
 				$this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `language_id` = '" . (int)$this->config->get('config_language_id') . "', `ip` = '" . $this->db->escape(oc_get_ip()) . "' WHERE `customer_id` = '" . (int)$this->customer_id . "'");
@@ -142,6 +147,7 @@ class Customer {
 			$this->safe = (bool)$customer_query->row['safe'];
 			$this->commenter = (bool)$customer_query->row['commenter'];
 			$this->project = $this->getProjectByCustomerId($this->customer_id);
+			$this->manager = $this->getManagerByCustomerId($this->customer_id);
 			$this->customer_group = $this->getCustomerGroup($this->customer_group_id);
 
 			$this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `language_id` = '" . (int)$this->config->get('config_language_id') . "', `ip` = '" . $this->db->escape(oc_get_ip()) . "' WHERE `customer_id` = '" . (int)$this->customer_id . "'");
@@ -159,7 +165,15 @@ class Customer {
 	}
 
 	public function getProject() {
-		return $this->project;
+		if($this->customer_group_id == 1 || $this->customer_group_id == 2) {
+			return $this->manager;
+		} else {
+			return $this->project;
+		}
+	}
+
+	public function getManager() {
+		return $this->manager;
 	}
 
 	private function getProjectByCustomerId(int $customer_id): array {
@@ -169,6 +183,20 @@ class Customer {
             INNER JOIN `" . DB_PREFIX . "customer` c ON c.project_id = p.project_id
 			INNER JOIN (SELECT project_id, SUM(ownership_units) AS occupied_total_units FROM `" . DB_PREFIX . "shareholders` GROUP BY project_id) AS `share_occupied` ON `share_occupied`.project_id = p.project_id
             INNER JOIN `" . DB_PREFIX . "project_status` ps ON ps.status_code = p.status
+			WHERE c.customer_id = '" . (int)$customer_id . "'
+            AND p.is_deleted = 0
+            AND p.is_active = 1
+        ");
+        
+        return $query->row;
+    }
+
+	private function getManagerByCustomerId(int $customer_id): array {
+        $query = $this->db->query("
+            SELECT p.* , ps.*
+            FROM `" . DB_PREFIX . "pms_project` p
+            INNER JOIN `" . DB_PREFIX . "customer` c ON c.project_id = p.project_id
+			INNER JOIN `" . DB_PREFIX . "project_status` ps ON ps.status_code = p.status
 			WHERE c.customer_id = '" . (int)$customer_id . "'
             AND p.is_deleted = 0
             AND p.is_active = 1

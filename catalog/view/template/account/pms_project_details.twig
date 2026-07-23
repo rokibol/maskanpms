@@ -287,6 +287,28 @@
                             {% endif %}
                         </div>
                     </div>
+                    <div class="info-row">
+                        <div class="info-label">Fixed Maintenance Fee</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ project.status }}">
+                                {{ project.fixed_maintenance_fee }}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-primary btn-status" data-bs-toggle="modal" data-bs-target="#maintenanceFeeUpdateModal">
+                                <i class="fas fa-regular fa-pen-to-square"></i> Update Fee
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Area (Square Feet)</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ project.status }}">
+                                {{ project.area_sq_ft }}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-primary btn-status" data-bs-toggle="modal" data-bs-target="#areaSquareFeetUpdateModal">
+                                <i class="fas fa-regular fa-pen-to-square"></i> Update Area
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -302,7 +324,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fa-solid fa-chart-line"></i> Update Project Status</h5>
+                <h5 class="modal-title"><i class="fas fa-solid fa-chart-line"></i> Update Project Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="form-status" action="{{ action }}" method="post" data-oc-toggle="ajax">
@@ -318,7 +340,7 @@
                         </select>
                     </div>
                     <div class="alert alert-info">
-                        <i class="fa-solid fa-info-circle"></i>
+                        <i class="fas fa-solid fa-info-circle"></i>
                         Changing the project status will be visible to all users.
                     </div>
                 </div>
@@ -326,7 +348,65 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Status</button>
                 </div>
-                <input type="hidden" name="user_token" value="{{ user_token }}">
+                <input type="hidden" name="customer_token" value="{{ customer_token }}">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Fixed Maintenance Fee Update Modal -->
+<div class="modal fade" id="maintenanceFeeUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-solid fa-chart-line"></i> Update Fixed Maintenance Fee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-maintenance_fee" action="{{ fee_action }}" method="post" data-oc-toggle="ajax">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fixed Maintenance Fee</label>
+                        <input type="text" name="maintenance_fee" class="form-control" placeholder="Fixed Maintenance Fee" required></input>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-solid fa-info-circle"></i>
+                        Changing the fixed maintenance fee will be visible to all shareholder when allocate the apartment.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+                <input type="hidden" name="customer_token" value="{{ customer_token }}">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Area (Square Feet) Update Modal -->
+<div class="modal fade" id="areaSquareFeetUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-solid fa-chart-line"></i> Update Area (Square Feet)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-area_square_feet" action="{{ area_action }}" method="post" data-oc-toggle="ajax">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Area (Square Feet)</label>
+                        <input type="text" name="area_sq_ft" class="form-control" placeholder="Area (Square Feet)" required></input>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-solid fa-info-circle"></i>
+                        Changing the area will be visible to all shareholder when allocate the apartment.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+                <input type="hidden" name="customer_token" value="{{ customer_token }}">
             </form>
         </div>
     </div>

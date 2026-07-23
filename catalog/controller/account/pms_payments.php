@@ -99,7 +99,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
 			'total' => $payment_total,
 			'page'  => $page,
 			'limit' => $this->config->get('config_pagination_admin'),
-			'url'   => $this->url->link('account/pms_shareholders.list', $url .  '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+			'url'   => $this->url->link('account/pms_payments', $url .'&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($payment_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($payment_total - $this->config->get('config_pagination_admin'))) ? $payment_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $payment_total, ceil($payment_total / $this->config->get('config_pagination_admin')));
@@ -127,6 +127,9 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         // Sort and order
         $data['sort'] = $sort;
         $data['order'] = $order;
+
+        $data['language'] = $this->config->get('config_language');
+        $data['customer_token'] = $this->session->data['customer_token'];
         
         // URLs
         $data['add'] = $this->url->link('account/pms_payments.add', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
@@ -179,6 +182,9 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         // Get all shareholders for this project
         $shareholders = $this->model_pms_shareholder->getShareholders(['project_id' => $project['project_id']]);
         $data['shareholders'] = $shareholders;
+
+        $data['language'] = $this->config->get('config_language');
+        $data['customer_token'] = $this->session->data['customer_token'];
         
         // Get payment phases and methods
         $data['payment_phases'] = $this->model_pms_payment->getPaymentPhases();
@@ -433,5 +439,64 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         }
         
         return $url;
+    }
+
+    /**
+     * AJAX search shareholders for Select2
+     */
+    public function searchShareholders(): void {
+        $json = [];
+        
+        $search = isset($this->request->get['q']) ? $this->request->get['q'] : '';
+        $project_id = (int)$this->request->get['project_id'];
+        
+        if ($project_id && strlen($search) >= 1) {
+            $this->load->model('pms/shareholder');
+            
+            $query = $this->db->query("
+                SELECT s.id, 
+                    CONCAT(c.firstname, ' ', c.lastname) as name,
+                    s.shareholder_code,
+                    s.ownership_units,
+                    s.phone,
+                    (s.ownership_units / p.total_shares * 100) as percentage,
+                    c.email
+                FROM `" . DB_PREFIX . "shareholders` s
+                INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
+                INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
+                WHERE s.project_id = '" . (int)$project_id . "'
+                AND s.is_deleted = 0
+                AND (
+                    c.firstname LIKE '%" . $this->db->escape($search) . "%'
+                    OR c.lastname LIKE '%" . $this->db->escape($search) . "%'
+                    OR c.email LIKE '%" . $this->db->escape($search) . "%'
+                    OR s.phone LIKE '%" . $this->db->escape($search) . "%'
+                    OR s.shareholder_code LIKE '%" . $this->db->escape($search) . "%'
+                )
+                ORDER BY c.firstname ASC
+                LIMIT 20
+            ");
+            
+            $json['items'] = [];
+            foreach ($query->rows as $row) {
+                $json['items'][] = [
+                    'id' => $row['id'],
+                    'text' => $row['name'] . '('.$row['phone'].') (' . $row['shareholder_code'] . ') - ' . round($row['percentage'], 2) . '%',
+                    'name' => $row['name'],
+                    'code' => $row['shareholder_code'],
+                    'phone' => $row['phone'],
+                    'units' => $row['ownership_units'],
+                    'percentage' => round($row['percentage'], 2),
+                    'email' => $row['email']
+                ];
+            }
+            
+            $json['success'] = true;
+        } else {
+            $json['success'] = false;
+        }
+        
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
     }
 }

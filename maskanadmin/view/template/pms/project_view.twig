@@ -1,157 +1,7 @@
 {{ header }} {{ column_left }}
-
-<style>
-    .view-header {
-        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    .view-header h1 {
-        margin: 0;
-        font-size: 24px;
-    }
-    .view-header p {
-        margin: 5px 0 0;
-        opacity: 0.8;
-    }
-    .info-card {
-        background: #fff;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        margin-bottom: 20px;
-        overflow: hidden;
-    }
-    .info-card-header {
-        background: #f8f9fa;
-        padding: 12px 20px;
-        border-bottom: 1px solid #e0e0e0;
-        font-weight: 600;
-        font-size: 16px;
-    }
-    .info-card-header i {
-        margin-right: 8px;
-        color: #1F8A4D;
-    }
-    .info-card-body {
-        padding: 20px;
-    }
-    .info-row {
-        display: flex;
-        padding: 10px 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .info-row:last-child {
-        border-bottom: none;
-    }
-    .info-label {
-        width: 35%;
-        font-weight: 600;
-        color: #555;
-    }
-    .info-value {
-        width: 65%;
-        color: #333;
-    }
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .status-active {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .status-inactive {
-        background: #ffebee;
-        color: #c62828;
-    }
-    .status-planning { background: #e3f2fd; color: #1565c0; }
-    .status-land_acquisition { background: #fff3e0; color: #e65100; }
-    .status-construction { background: #fff3e0; color: #e65100; }
-    .status-operational { background: #e8f5e9; color: #2e7d32; }
-    .status-completed { background: #e0f2f1; color: #00695c; }
-    .status-suspended { background: #ffebee; color: #c62828; }
-    .stat-box {
-        text-align: center;
-        padding: 15px;
-        border-right: 1px solid #e0e0e0;
-    }
-    .stat-box:last-child {
-        border-right: none;
-    }
-    .stat-number {
-        font-size: 28px;
-        font-weight: 700;
-        color: #0B3C5D;
-    }
-    .stat-label {
-        font-size: 12px;
-        color: #6c757d;
-        margin-top: 5px;
-    }
-    .user-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .user-table th {
-        background: #f8f9fa;
-        padding: 10px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    .user-table td {
-        padding: 10px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .color-preview {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-        margin-right: 8px;
-        vertical-align: middle;
-        border: 1px solid #ddd;
-    }
-    .progress {
-        height: 8px;
-        border-radius: 4px;
-        background: #e0e0e0;
-    }
-    .progress-bar {
-        border-radius: 4px;
-    }
-    /* Fix for content area */
-    .container-fluid {
-        width: 100%;
-        padding-right: 15px;
-        padding-left: 15px;
-        margin-right: auto;
-        margin-left: auto;
-    }
-    #content {
-        width: 100% !important;
-        float: none !important;
-        clear: both !important;
-        overflow: visible !important;
-    }
-    .row {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-    .col, [class*="col-"] {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-</style>
-
 <div id="content">
     <div class="page-header">
-        <div class="container">
+        <div class="container-fluid">
             <div class="float-end">
                 <a href="{{ edit }}" class="btn btn-primary">
                     <i class="fa-regular fa-pen-to-square"></i> {{ button_edit }}
@@ -169,50 +19,116 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container-fluid">
         <div class="view-header">
             <h1><i class="fa-solid fa-building"></i> {{ name }}</h1>
             <p>{{ slug }}</p>
         </div>
-
-        <!-- Statistics Row -->
         <div class="info-card">
             <div class="info-card-header">
                 <i class="fa-solid fa-chart-line"></i> Project Statistics
             </div>
-            <div class="info-card-body">
-                <div class="row">
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.total_shareholders }}</div>
-                        <div class="stat-label">Total Shareholders</div>
+        </div>
+        <!-- Stats Cards Row -->
+        <div class="stats-container">
+            <!-- Shareholders Stat -->
+            <div class="stat-card primary">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="stat-label">Total Shareholders</div>
+                <div class="stat-number">{{ stats.total_shareholders }}</div>
+                <div class="stat-sub">Active investors</div>
+            </div>
+
+            <!-- Apartments Stat -->
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <div class="stat-label">Total Apartments</div>
+                <div class="stat-number">{{ stats.total_apartments }}</div>
+                <div class="stat-sub">
+                    <span class="text-success">{{ stats.assigned_apartments }} assigned</span> | 
+                    <span class="text-warning">{{ stats.available_apartments }} available</span>
+                </div>
+            </div>
+
+            <!-- Expenses Stat -->
+            <div class="stat-card danger">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="stat-number">৳ {{ stats.total_expense_amount|number_format(0) }}</div>
+                <div class="stat-sub">{{ stats.total_expenses }} transactions</div>
+            </div>
+
+            <!-- Collections Stat -->
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div class="stat-label">Total Collections</div>
+                <div class="stat-number">৳ {{ stats.total_payment_amount|number_format(0) }}</div>
+                <div class="stat-sub">{{ stats.total_payments }} payments received</div>
+            </div>
+        </div>
+
+        <!-- Second Row - Financial Stats -->
+        <div class="stats-container">
+            <!-- Outstanding Dues -->
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="stat-label">Outstanding Dues</div>
+                <div class="stat-number">৳ {{ stats.outstanding_dues|number_format(0) }}</div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Collection Rate</span>
+                        <span>{{ stats.collection_percentage }}%</span>
                     </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.total_apartments }}</div>
-                        <div class="stat-label">Total Apartments</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.total_expenses }}</div>
-                        <div class="stat-label">Total Expenses</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.collection_percentage }}%</div>
-                        <div class="stat-label">Collection Rate</div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: {{ stats.collection_percentage }}%;"></div>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number">৳ {{ stats.total_expense_amount|number_format(2) }}</div>
-                        <div class="stat-label">Total Expense Amount</div>
-                    </div>
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number">৳ {{ stats.total_payment_amount|number_format(2) }}</div>
-                        <div class="stat-label">Total Collected</div>
-                    </div>
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number">৳ {{ stats.outstanding_dues|number_format(2) }}</div>
-                        <div class="stat-label">Outstanding Dues</div>
-                    </div>
+            </div>
+
+            <!-- Total Shares -->
+            <div class="stat-card primary">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-chart-pie"></i>
                 </div>
+                <div class="stat-label">Total Shares</div>
+                <div class="stat-number">{{ total_shares }}</div>
+                <div class="stat-sub">Total ownership units</div>
+            </div>
+
+            <!-- Share Value -->
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="stat-label">Share Value</div>
+                <div class="stat-number">৳ {{ share_value != '-' ? share_value|number_format(2) : 'N/A' }}</div>
+                <div class="stat-sub">Per share unit</div>
+            </div>
+
+            <!-- Project Value -->
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+                <div class="stat-label">Total Project Value</div>
+                <div class="stat-number">
+                    {% if share_value != '-' %}
+                        ৳ {{ (total_shares * share_value|replace({',': ''}))|number_format(0) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <div class="stat-sub">Based on share value</div>
             </div>
         </div>
 
@@ -288,19 +204,20 @@
                         <div class="info-row">
                             <div class="info-label">Completion Percentage</div>
                             <div class="info-value">
-                                <div class="progress" style="width: 200px; display: inline-block;">
-                                    <div class="progress-bar" style="width: {{ completion_percentage }}%; background: #1F8A4D;">
-                                        {{ completion_percentage }}%
-                                    </div>
+                                <div class="progress-bar-custom" style="width: 200px; display: inline-block;">
+                                    <div class="progress-fill" style="width: {{ completion_percentage }}%; background: #1F8A4D;"></div>
                                 </div>
+                                <span class="ms-2">{{ completion_percentage }}%</span>
                             </div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Active Status</div>
                             <div class="info-value">
-                                <span class="status-badge {{ is_active == 'Enabled' ? 'status-active' : 'status-inactive' }}">
-                                    {{ is_active }}
-                                </span>
+                                {% if is_active == 'Enabled' %}
+                                    <span class="status-badge" style="background: #e8f5e9; color: #2e7d32;">Active</span>
+                                {% else %}
+                                    <span class="status-badge" style="background: #ffebee; color: #c62828;">Inactive</span>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="info-row">
@@ -472,6 +389,43 @@
 
             <!-- Tab 5: Project Users -->
             <div class="tab-pane" id="tab-users">
+                <!-- Shareholders -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-users"></i> Shareholders ({{ project_users.shareholders|length }})
+                    </div>
+                    <div class="info-card-body">
+                        {% if project_users.shareholders %}
+                            <div class="table-responsive">
+                                <table class="user-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Ownership Units</th>
+                                            <th>Shareholder Code</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for shareholder in project_users.shareholders %}
+                                            <tr>
+                                                <td>{{ shareholder.fullname }}</a>
+                                                <td>{{ shareholder.email }}</a>
+                                                <td>{{ shareholder.telephone ?: '-' }}</a>
+                                                <td>{{ shareholder.ownership_units }} units</a>
+                                                <td>{{ shareholder.shareholder_code }}</a>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No shareholders found for this project.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <!-- Managers -->
                 <div class="info-card">
                     <div class="info-card-header">
@@ -480,7 +434,7 @@
                     <div class="info-card-body">
                         {% if project_users.managers %}
                             <div class="table-responsive">
-                                <table class="table table-bordered">
+                                <table class="user-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
@@ -491,9 +445,9 @@
                                     <tbody>
                                         {% for manager in project_users.managers %}
                                             <tr>
-                                                <td>{{ manager.fullname }}</a></td>
-                                                <td>{{ manager.email }}</a></td>
-                                                <td>{{ manager.telephone ?: '-' }}</a></td>
+                                                <td>{{ manager.fullname }}</a>
+                                                <td>{{ manager.email }}</a>
+                                                <td>{{ manager.telephone ?: '-' }}</a>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -513,7 +467,7 @@
                     <div class="info-card-body">
                         {% if project_users.accountants %}
                             <div class="table-responsive">
-                                <table class="table table-bordered">
+                                <table class="user-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
@@ -524,9 +478,9 @@
                                     <tbody>
                                         {% for accountant in project_users.accountants %}
                                             <tr>
-                                                <td>{{ accountant.fullname }}</a></td>
-                                                <td>{{ accountant.email }}</a></td>
-                                                <td>{{ accountant.telephone ?: '-' }}</a></td>
+                                                <td>{{ accountant.fullname }}</a>
+                                                <td>{{ accountant.email }}</a>
+                                                <td>{{ accountant.telephone ?: '-' }}</a>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -534,43 +488,6 @@
                             </div>
                         {% else %}
                             <p class="text-muted text-center py-3">No accountants assigned to this project.</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Shareholders -->
-                <div class="info-card">
-                    <div class="info-card-header">
-                        <i class="fa-solid fa-users"></i> Shareholders ({{ project_users.shareholders|length }})
-                    </div>
-                    <div class="info-card-body">
-                        {% if project_users.shareholders %}
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
-                                            <th>Ownership Units</th>
-                                            <th>Shareholder Code</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for shareholder in project_users.shareholders %}
-                                            <tr>
-                                                <td>{{ shareholder.fullname }}</a></td>
-                                                <td>{{ shareholder.email }}</a></td>
-                                                <td>{{ shareholder.telephone ?: '-' }}</a></td>
-                                                <td>{{ shareholder.ownership_units }} units</a></td>
-                                                <td>{{ shareholder.shareholder_code }}</a></td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <p class="text-muted text-center py-3">No shareholders found for this project.</p>
                         {% endif %}
                     </div>
                 </div>

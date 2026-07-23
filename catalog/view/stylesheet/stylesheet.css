@@ -21,17 +21,18 @@ button:focus {
 /* container */
 #container {
   width: 100%;
-  min-height: 100%;
-  position: absolute;
-  margin-bottom: 300px;
+  min-height: 100vh;
+  position: relative;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, var(--pms-bg-light) 0%, #E8EDF2 100%);
 }
 /* content */
 #content, #column-left, #column-right {
-  padding-bottom: 730px;
+  padding-bottom: 20px;
 }
 @media (min-width: 576px) {
   #content, #column-left, #column-right {
-    padding-bottom: 400px;
+    padding-bottom: 100px;
   }
 }
 #alert {

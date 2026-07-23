@@ -101,4 +101,4 @@ $_['text_pms_apartments']    = 'Apartments';
 $_['text_pms_reports']       = 'Reports';
 $_['text_pms_settings']      = 'Settings';
 
-$_['text_pms_subscription_plans'] = 'Subscription Plans';
+$_['text_pms_subscription_settings'] = 'Subscription Settings';

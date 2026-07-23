@@ -1,0 +1,297 @@
+{{ header }}
+
+<style>
+    .payment-container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .payment-card {
+        max-width: 550px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 50px;
+    }
+    .payment-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 30px 20px;
+        text-align: center;
+        color: white;
+    }
+    .payment-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    .payment-header p {
+        margin: 10px 0 0;
+        opacity: 0.9;
+    }
+    .payment-body {
+        padding: 30px;
+    }
+    .summary-box {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+    .summary-label {
+        font-weight: 600;
+        color: #555;
+    }
+    .summary-value {
+        font-weight: 700;
+        color: #333;
+    }
+    .total-row {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 2px solid #ddd;
+        font-size: 18px;
+    }
+    .total-row .summary-value {
+        color: #1F8A4D;
+        font-size: 22px;
+    }
+    .payment-methods {
+        margin: 20px 0;
+    }
+    .method-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+    .method-options {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .method-card {
+        flex: 1;
+        min-width: 100px;
+        text-align: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .method-card:hover {
+        border-color: #1F8A4D;
+        background: #f8f9fa;
+    }
+    .method-card.selected {
+        border-color: #1F8A4D;
+        background: #e8f5e9;
+    }
+    .method-card i {
+        font-size: 28px;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .method-card span {
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .reference-field {
+        margin-top: 20px;
+        display: none;
+    }
+    .reference-field input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .btn-pay {
+        width: 100%;
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+    .btn-pay:hover {
+        background: #166d3e;
+        transform: translateY(-2px);
+    }
+    .btn-pay:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .secure-note {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #999;
+    }
+    @media (max-width: 576px) {
+        .payment-body {
+            padding: 20px;
+        }
+        .method-card {
+            min-width: 80px;
+            padding: 10px;
+        }
+        .method-card i {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="payment-container">
+        <div class="payment-card">
+            <div class="payment-header">
+                <h2 class="text-white">Complete Payment</h2>
+                <p>Subscribe to continue using Maskan PMS</p>
+            </div>
+            
+            <div class="payment-body">
+                <!-- Payment Summary -->
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span class="summary-label">Plan Type</span>
+                        <span class="summary-value">Subscription ({{ duration_months }} month(s))</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Monthly Rate</span>
+                        <span class="summary-value">৳ {{ (total_amount / duration_months)|number_format(0) }}</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span class="summary-label">Total Amount</span>
+                        <span class="summary-value">৳ {{ total_amount|number_format(2) }}</span>
+                    </div>
+                </div>
+                
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                    <div class="method-title">Select Payment Method</div>
+                    <div class="method-options">
+                        <div class="method-card" data-method="bkash">
+                            <i class="fa-solid fa-mobile-alt"></i>
+                            <span>bKash</span>
+                        </div>
+                        <div class="method-card" data-method="nagad">
+                            <i class="fa-solid fa-mobile-alt"></i>
+                            <span>Nagad</span>
+                        </div>
+                        <div class="method-card" data-method="rocket">
+                            <i class="fa-solid fa-rocket"></i>
+                            <span>Rocket</span>
+                        </div>
+                        <div class="method-card" data-method="bank">
+                            <i class="fa-solid fa-building-columns"></i>
+                            <span>Bank Transfer</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reference Field (for manual payments) -->
+                <div class="reference-field" id="reference-field">
+                    <input type="text" id="reference_number" placeholder="Transaction ID / Reference Number">
+                </div>
+                
+                <!-- Pay Button -->
+                <button type="button" class="btn-pay" id="pay-btn" disabled>
+                    <i class="fa-regular fa-credit-card"></i> Pay Now
+                </button>
+                
+                <div class="secure-note">
+                    <i class="fa-regular fa-shield-haltered"></i> Secure payment powered by bKash
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var selectedMethod = null;
+    var uniqueId = '{{ unique_id }}';
+    var totalAmount = {{ total_amount }};
+    
+    // Payment method selection
+    $('.method-card').on('click', function() {
+        $('.method-card').removeClass('selected');
+        $(this).addClass('selected');
+        selectedMethod = $(this).data('method');
+        
+        // Show/hide reference field for manual methods
+        if (selectedMethod == 'bank') {
+            $('#reference-field').show();
+        } else {
+            $('#reference-field').hide();
+        }
+        
+        $('#pay-btn').prop('disabled', false);
+    });
+    
+    // Process payment
+    $('#pay-btn').on('click', function() {
+        if (!selectedMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+        
+        var referenceNumber = $('#reference_number').val();
+        
+        // Disable button to prevent double click
+        $('#pay-btn').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
+        
+        $.ajax({
+            url: '{{ action }}',
+            type: 'POST',
+            data: {
+                unique_id: uniqueId,
+                amount: totalAmount,
+                payment_method: selectedMethod,
+                reference_number: referenceNumber,
+                user_token: '{{ user_token }}'
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    if (json.bkashURL) {
+                        // Redirect to bKash payment page
+                        window.location.href = json.bkashURL;
+                    } else if (json.redirect) {
+                        window.location.href = json.redirect;
+                    }
+                } else {
+                    alert(json.error || 'Payment failed. Please try again.');
+                    $('#pay-btn').prop('disabled', false).html('<i class="fa-regular fa-credit-card"></i> Pay Now');
+                }
+            },
+            error: function() {
+                alert('An error occurred. Please try again.');
+                $('#pay-btn').prop('disabled', false).html('<i class="fa-regular fa-credit-card"></i> Pay Now');
+            }
+        });
+    });
+});
+</script>
+
+{{ footer }}

@@ -74,6 +74,7 @@
                                     <th><a href="{{ sort_store }}">{{ column_store }}</a></th>
                                     <th><a href="{{ sort_is_active }}">{{ column_is_active }}</a></th>
                                     <th><a href="{{ sort_date_added }}">{{ column_date_added }}</a></th>
+                                    <th>Subscription</th>
                                     <th class="text-end">{{ column_action }}</th>
                                 </tr>
                             </thead>
@@ -111,12 +112,21 @@
                                                 {% endif %}
                                             </td>
                                             <td>{{ project.date_added }}</td>
+                                            <td>
+                                                {{ project.subscription_badge|raw }}
+                                                {% if project.subscription_end_date != '-' %}
+                                                    <br><small class="text-muted">Until: {{ project.subscription_end_date }}</small>
+                                                {% endif %}
+                                            </td>
                                             <td class="text-end">
                                                 <a href="{{ project.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-sm">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
                                                 <a href="{{ project.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm">
                                                     <i class="fa-regular fa-pen-to-square"></i>
+                                                </a>
+                                                <a href="{{ project.manage_subscription }}" class="btn btn-info btn-sm" title="Manage Subscription">
+                                                    <i class="fa-solid fa-chart-line"></i>
                                                 </a>
                                                 <button type="button" onclick="confirmDelete('{{ project.delete }}')" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger btn-sm">
                                                     <i class="fa-regular fa-trash-can"></i>

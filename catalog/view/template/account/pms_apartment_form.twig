@@ -57,7 +57,7 @@
                                 <select name="shareholder_id" class="form-select">
                                     <option value="">-- Not Assigned --</option>
                                     {% for shareholder in shareholders %}
-                                        <option value="{{ shareholder.id }}" {{ shareholder_id == shareholder.shareholder_id ? 'selected' : '' }}>
+                                        <option value="{{ shareholder.id }}" {{ shareholder_id == shareholder.shareholder_id ? '' : '' }}>
                                             {{ shareholder.firstname }} {{ shareholder.lastname }} ({{ shareholder.shareholder_code }}) - {{ shareholder.ownership_units }} units
                                         </option>
                                     {% endfor %}
@@ -68,7 +68,7 @@
                         <div class="row mb-3 required">
                             <label class="col-sm-3 col-form-label">Fixed Maintenance Fee (BDT)</label>
                             <div class="col-sm-9">
-                                <input type="number" name="fixed_maintenance_fee" value="{{ fixed_maintenance_fee }}" class="form-control" step="0.01" min="0" required>
+                                <input type="number" name="fixed_maintenance_fee" value="{{ fixed_maintenance_fee }}" class="form-control" step="1" min="0" required>
                             </div>
                         </div>
                         
@@ -92,7 +92,7 @@
                         <div class="row mb-3 required">
                             <label class="col-sm-3 col-form-label">Area (sq ft)</label>
                             <div class="col-sm-9">
-                                <input type="number" name="area_sqft" value="{{ area_sqft }}" class="form-control" step="0.01" min="0" required>
+                                <input type="number" name="area_sqft" value="{{ area_sqft }}" class="form-control" step="1" min="0" required>
                             </div>
                         </div>
                         

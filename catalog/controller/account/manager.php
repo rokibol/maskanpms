@@ -66,7 +66,11 @@ class Manager extends \Opencart\System\Engine\Controller {
 
 		$data['total_due'] = (int)$data['allocated_amount'] - (int)$data['total_collections'];
 
-		$data['collection_percentage'] = $data['allocated_amount'] = (int)(($data['total_collections'] / $data['allocated_amount']) * 100);
+		if($data['allocated_amount'] > 0) {
+			$data['collection_percentage'] = $data['allocated_amount'] = (int)(($data['total_collections'] / $data['allocated_amount']) * 100);
+		} else {
+			$data['collection_percentage'] = 0;
+		}
 
 		$data['manager_name'] = $this->customer->getFullName();
 
@@ -109,6 +113,49 @@ class Manager extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
 
 		$this->response->setOutput($this->load->view('account/manager_dashboard', $data));
+	}
+
+	/**
+	 * Get collection breakdown for AJAX modal
+	 */
+	public function getCollectionBreakdown(): void {
+		$json = [];
+		
+		// Get current project
+		$this->load->model('pms/project');
+		$project = $this->customer->getProject();
+		
+		if ($project) {
+			$query = $this->db->query("
+				SELECT 
+					pp.phase_id,
+					pp.name AS phase_name,
+					COUNT(p.id) AS total_transactions,
+					COALESCE(SUM(p.amount), 0) AS total_collected_amount
+				FROM `" . DB_PREFIX . "payment_phase` pp
+				LEFT JOIN `" . DB_PREFIX . "pms_payment` p 
+					ON pp.phase_id = p.payment_phase_id 
+					AND p.project_id = '" . (int)$project['project_id'] . "'
+					AND p.is_deleted = 0
+				WHERE pp.is_active = 1
+				GROUP BY pp.phase_id, pp.name
+				ORDER BY pp.sort_order ASC
+			");
+			
+			if ($query->num_rows > 0) {
+				$json['success'] = true;
+				$json['data'] = $query->rows;
+			} else {
+				$json['success'] = true;
+				$json['data'] = [];
+			}
+		} else {
+			$json['success'] = false;
+			$json['error'] = 'Project not found';
+		}
+		
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
 	}
 
 	/**

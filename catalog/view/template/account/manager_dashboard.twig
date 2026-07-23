@@ -1,4 +1,31 @@
 {{ header }}
+<style>
+/* Clickable Stat Card with View Button */
+.pms-stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+.pms-stat-card.clickable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #1F8A4D;
+}
+.pms-stat-card.clickable .btn-outline-primary {
+    border-color: #2F80ED;
+    color: #2F80ED;
+    font-size: 11px;
+    padding: 4px 12px;
+    transition: all 0.2s ease;
+}
+.pms-stat-card.clickable .btn-outline-primary:hover {
+    background: #2F80ED;
+    color: white;
+}
+.pms-stat-card.clickable .btn-outline-primary i {
+    font-size: 11px;
+}
+</style>
 {# ==================== MAIN CONTAINER ==================== #}
 <div id="account-account" class="container-fluid">
     
@@ -76,9 +103,18 @@
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6">
-                    <div class="pms-stat-card">
-                        <div class="pms-stat-icon blue-bg">
-                            <i class="fas fa-regular fa-credit-card"></i>
+                    <div class="pms-stat-card clickable" onclick="openCollectionBreakdown()">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="pms-stat-icon blue-bg">
+                                    <i class="fas fa-regular fa-credit-card"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="event.stopPropagation(); openCollectionBreakdown();">
+                                    <i class="fa-regular fa-eye"></i> View Breakdown
+                                </button>
+                            </div>
                         </div>
                         <div class="pms-stat-label">Total Collections</div>
                         <div class="pms-stat-value">৳ {{ total_collections|default('0') }}</div>
@@ -361,4 +397,110 @@ $('#top-shareholder-criteria').on('change', function() {
     });
 });
 </script>
+<script>
+// ==================== COLLECTION BREAKDOWN MODAL ====================
+
+function openCollectionBreakdown() {
+    // Show modal with loading spinner
+    $('#collectionBreakdownModal').modal('show');
+    $('#collection-breakdown-content').html(`
+        <div class="text-center py-4">
+            <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">Loading collection breakdown...</p>
+        </div>
+    `);
+    
+    // Load data via AJAX
+    $.ajax({
+        url: 'index.php?route=account/manager.getCollectionBreakdown&language={{ language }}&customer_token={{ customer_token }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success && data.data.length > 0) {
+                var html = '<div class="table-responsive">';
+                html += '<table class="table table-bordered table-striped">';
+                html += '<thead>';
+                html += '<tr>';
+                html += '<th>Phase</th>';
+                html += '<th>Transactions</th>';
+                html += '<th class="text-end">Total Collected</th>';
+                html += '<th class="text-end">Average per Transaction</th>';
+                html += '</tr>';
+                html += '</thead>';
+                html += '<tbody>';
+                
+                var grandTotal = 0;
+                var grandTransactions = 0;
+                
+                for (var i in data.data) {
+                    var row = data.data[i];
+                    var avg = row.total_transactions > 0 ? row.total_collected_amount / row.total_transactions : 0;
+                    grandTotal += parseFloat(row.total_collected_amount);
+                    grandTransactions += parseInt(row.total_transactions);
+                    
+                    html += '<tr>';
+                    html += '<td><strong>' + row.phase_name + '</strong></td>';
+                    html += '<td>' + row.total_transactions + '</td>';
+                    html += '<td class="text-end text-success">৳ ' + parseFloat(row.total_collected_amount).toFixed(2) + '</td>';
+                    html += '<td class="text-end">৳ ' + avg.toFixed(2) + '</td>';
+                    html += '</tr>';
+                }
+                
+                html += '</tbody>';
+                html += '<tfoot class="fw-bold">';
+                html += '<tr>';
+                html += '<td><strong>Grand Total</strong></td>';
+                html += '<td>' + grandTransactions + '</td>';
+                html += '<td class="text-end text-success">৳ ' + grandTotal.toFixed(2) + '</td>';
+                html += '<td class="text-end">-</td>';
+                html += '</tr>';
+                html += '</tfoot>';
+                html += '</table>';
+                html += '</div>';
+                
+                $('#collection-breakdown-content').html(html);
+            } else {
+                $('#collection-breakdown-content').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-regular fa-inbox fa-2x text-muted mb-2 d-block"></i>
+                        <p class="text-muted">No collection data found</p>
+                    </div>
+                `);
+            }
+        },
+        error: function(xhr) {
+            console.log(xhr);
+            $('#collection-breakdown-content').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-regular fa-circle-exclamation"></i>
+                    Failed to load collection breakdown. Please try again.
+                </div>
+            `);
+        }
+    });
+}
+</script>
+<!-- ==================== COLLECTION BREAKDOWN MODAL ==================== -->
+<div class="modal fade" id="collectionBreakdownModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-regular fa-credit-card"></i> Collection Breakdown
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="collection-breakdown-content">
+                <!-- Content loaded via AJAX -->
+                <div class="text-center py-4">
+                    <i class="fas fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted">Loading collection breakdown...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {{ footer }}

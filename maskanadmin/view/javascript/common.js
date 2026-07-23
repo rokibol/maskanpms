@@ -177,7 +177,6 @@ $(document).on('submit', 'form', function(e) {
             },
             success: function(json, textStatus) {
                 console.log(json);
-                console.log(textStatus);
 
                 $('.alert-dismissible').remove();
                 $(element).find('.is-invalid').removeClass('is-invalid');

@@ -85,11 +85,14 @@ class Login extends \Opencart\System\Engine\Controller {
 		}
 
 		$this->session->data['login_token'] = oc_token(26);
+	
 
 		$data['login'] = $this->url->link('account/login.login', 'language=' . $this->config->get('config_language') . '&login_token=' . $this->session->data['login_token']);
 		$data['register'] = $this->url->link('account/register', 'language=' . $this->config->get('config_language'));
 		$data['forgotten'] = $this->url->link('account/forgotten', 'language=' . $this->config->get('config_language'));
 
+		$data['top_menu'] = $this->load->controller('common/pms_top_menu');
+		
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
 		$data['content_top'] = $this->load->controller('common/content_top');

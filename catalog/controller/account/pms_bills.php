@@ -205,7 +205,7 @@ class PmsBills extends \Opencart\System\Engine\Controller {
         // Set default month to next month if not set
         $data['bill_month'] = date('Y-m-d', strtotime('first day of next month'));
         
-        $data['user_token'] = $this->session->data['user_token'];
+        $data['customer_token'] = $this->session->data['customer_token'];
         
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');

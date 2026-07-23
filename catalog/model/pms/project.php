@@ -223,6 +223,40 @@ class Project extends \Opencart\System\Engine\Model {
     }
 
     /**
+     * Update project maintenance fee only
+     * @param int $project_id
+     * @param int $maintenance_fee
+     * @return bool
+     */
+    public function updateMaintenanceFee(int $project_id, int $maintenance_fee): bool {
+        $this->db->query("
+            UPDATE `" . DB_PREFIX . "pms_project` 
+            SET `fixed_maintenance_fee` = '" . $this->db->escape($maintenance_fee) . "',
+                `updated_at` = NOW()
+            WHERE `project_id` = '" . (int)$project_id . "'
+        ");
+        
+        return true;
+    }
+
+    /**
+     * Update project area square feet only
+     * @param int $project_id
+     * @param int $area_sq_ft
+     * @return bool
+     */
+    public function updateAreaSqFt(int $project_id, int $area_sq_ft): bool {
+        $this->db->query("
+            UPDATE `" . DB_PREFIX . "pms_project` 
+            SET `area_sq_ft` = '" . $this->db->escape($area_sq_ft) . "',
+                `updated_at` = NOW()
+            WHERE `project_id` = '" . (int)$project_id . "'
+        ");
+        
+        return true;
+    }
+
+    /**
      * Get project statistics for manager view
      * @param int $project_id
      * @return array

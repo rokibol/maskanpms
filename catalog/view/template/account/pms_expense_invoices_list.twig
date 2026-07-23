@@ -14,6 +14,15 @@
     .status-partial { background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
     .status-unpaid { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
     .status-overdue { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+    /* Apply to the responsive table wrapper if you use .table-responsive */
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Ensure the cell itself doesn't clip content */
+    td {
+        overflow: visible !important;
+    }
 </style>
 
 <div class="container-fluid">
@@ -129,7 +138,7 @@
                                             <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                                                 <i class="fas fa-solid fa-gear"></i>
                                             </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
+                                            <ul class="dropdown-menu dropdown-menu-end" data-bs-boundary="viewport">
                                                 <li><a class="dropdown-item" href="{{ invoice.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
                                                 {% if invoice.edit %}<li><a class="dropdown-item" href="{{ invoice.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>{% endif %}
                                                 {% if invoice.has_document %}

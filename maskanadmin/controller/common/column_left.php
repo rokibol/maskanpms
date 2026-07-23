@@ -176,10 +176,10 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				'children' => []
 			];
 
-			// Add after the PMS menu
+			// Add to PMS menu
 			$pms[] = [
-				'name' => $this->language->get('text_pms_subscription_plans'),
-				'href' => $this->url->link('pms/subscription_plan', 'user_token=' . $this->session->data['user_token']),
+				'name' => $this->language->get('text_pms_subscription_settings'),
+				'href' => $this->url->link('pms/subscription_settings', 'user_token=' . $this->session->data['user_token']),
 				'children' => []
 			];
 

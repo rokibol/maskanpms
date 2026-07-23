@@ -400,24 +400,30 @@ class ExpenseInvoice extends \Opencart\System\Engine\Model {
         $stats['total_amount'] = (float)$query->row['total'];
         
         // Paid amount
-        $query = $this->db->query("
+        /*$query = $this->db->query("
             SELECT COALESCE(SUM(total_amount), 0) as total
             FROM `" . DB_PREFIX . "pms_expense_invoice`
             WHERE project_id = '" . (int)$project_id . "'
             AND payment_status = 'paid'
             AND is_deleted = 0
-        ");
+        ");*/
+        
+        $query = $this->db->query("
+            SELECT COALESCE(SUM(amount)) AS total 
+            FROM `" . DB_PREFIX . "pms_expense_invoice_payment` 
+            WHERE invoice_id IN (SELECT invoice_id FROM " . DB_PREFIX . "pms_expense_invoice WHERE project_id = " . (int)$project_id . ")");
+        
         $stats['paid_amount'] = (float)$query->row['total'];
         
         // Unpaid amount
-        $query = $this->db->query("
+        /*$query = $this->db->query("
             SELECT COALESCE(SUM(total_amount), 0) as total
             FROM `" . DB_PREFIX . "pms_expense_invoice`
             WHERE project_id = '" . (int)$project_id . "'
             AND payment_status IN ('unpaid', 'partial', 'overdue')
             AND is_deleted = 0
-        ");
-        $stats['unpaid_amount'] = (float)$query->row['total'];
+        ");*/
+        $stats['unpaid_amount'] = (float)$stats['total_amount'] - (float)$query->row['total'];
         
         // Invoice counts by status
         $query = $this->db->query("
