@@ -18,17 +18,40 @@
     .card-body {
         padding: 20px;
     }
-    .rate-info {
-        background: #e8f0fe;
-        padding: 15px;
+    .calc-box {
+        background: #f8f9fa;
         border-radius: 8px;
-        text-align: center;
-        margin-bottom: 20px;
+        padding: 20px;
+        margin: 15px 0;
+        border: 1px solid #e0e0e0;
     }
-    .rate-amount {
-        font-size: 36px;
-        font-weight: 700;
-        color: #0B3C5D;
+    .calc-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .calc-row:last-child {
+        border-bottom: none;
+    }
+    .calc-label {
+        color: #555;
+    }
+    .calc-value {
+        font-weight: 600;
+        color: #333;
+    }
+    .calc-total {
+        font-size: 18px;
+        color: #1F8A4D;
+    }
+    .discount-badge {
+        background: #F59E0B;
+        color: white;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        display: inline-block;
     }
     .duration-option {
         border: 1px solid #e0e0e0;
@@ -58,24 +81,10 @@
         font-weight: 700;
         color: #1F8A4D;
     }
-    .save-badge {
-        background: #F59E0B;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 20px;
-        font-size: 11px;
-        margin-left: 10px;
-    }
-    .current-plan {
-        background: #e8f5e9;
-        border-left: 4px solid #1F8A4D;
-    }
-    .expiry-alert {
-        background: #fff3e0;
-        border-left: 4px solid #F59E0B;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+    .duration-price .per-month {
+        font-size: 13px;
+        font-weight: 400;
+        color: #6c757d;
     }
     .btn-activate {
         background: #1F8A4D;
@@ -95,15 +104,31 @@
         background: #ccc;
         cursor: not-allowed;
     }
+    .rate-info {
+        background: #e8f0fe;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .rate-amount {
+        font-size: 36px;
+        font-weight: 700;
+        color: #0B3C5D;
+    }
+    .project-rate {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    .project-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0B3C5D;
+        margin-bottom: 5px;
+    }
 </style>
 
 <div class="container-fluid">
-    {#<ul class="breadcrumb">
-        {% for breadcrumb in breadcrumbs %}
-            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
-        {% endfor %}
-    </ul>#}
-    
     <div class="row">
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
@@ -115,55 +140,78 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>{{ heading_title }}</h1>
                 <a href="{{ back }}" class="btn btn-secondary">
-                    <i class="fas fa-solid fa-arrow-left"></i> Back
+                    <i class="fa-solid fa-arrow-left"></i> Back
                 </a>
             </div>
             
-            <!-- Current Subscription Status -->
+            <!-- Project Name -->
+            <div class="project-name">{{ project_name }}</div>
+            
+            <!-- Current Subscription -->
             <div class="subscription-card">
                 <div class="card-header">
-                    <i class="fas fa-solid fa-chart-line"></i> Current Subscription
+                    <i class="fa-solid fa-chart-line"></i> Current Subscription
                 </div>
                 <div class="card-body">
                     {% if subscription and is_active %}
-                        <div class="current-plan" style="padding: 15px;">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Status:</strong> 
-                                    <span class="badge bg-success">Active</span>
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Expires on:</strong> {{ subscription.end_date|date('d M Y') }}
-                                </div>
+                        <div class="calc-box">
+                            <div class="calc-row">
+                                <span class="calc-label">Apartments</span>
+                                <span class="calc-value">{{ subscription.apartment_count }}</span>
                             </div>
-                            <div class="row mt-2">
-                                <div class="col-md-6">
-                                    <strong>Duration:</strong> {{ subscription.duration_months }} month(s)
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Amount Paid:</strong> ৳ {{ subscription.total_amount|number_format(2) }}
-                                </div>
+                            <div class="calc-row">
+                                <span class="calc-label">Duration</span>
+                                <span class="calc-value">{{ subscription.duration_months }} month(s)</span>
+                            </div>
+                            <div class="calc-row">
+                                <span class="calc-label">Rate per Apartment</span>
+                                <span class="calc-value">৳ {{ calculation.rate_per_apartment|number_format(2) }}</span>
+                            </div>
+                            {% if subscription.discount_type != 'none' and subscription.discount_value > 0 %}
+                            <div class="calc-row">
+                                <span class="calc-label">Discount</span>
+                                <span class="calc-value">
+                                    <span class="discount-badge">
+                                        {% if subscription.discount_type == 'percentage' %}
+                                            - {{ subscription.discount_value }}%
+                                        {% else %}
+                                            - ৳ {{ subscription.discount_value|number_format(2) }} / apt
+                                        {% endif %}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ subscription.discount_reason }}</small>
+                                </span>
+                            </div>
+                            {% endif %}
+                            <div class="calc-row calc-total">
+                                <span class="calc-label">Total Paid</span>
+                                <span class="calc-value">৳ {{ subscription.total_amount|number_format(2) }}</span>
                             </div>
                         </div>
-                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Status:</strong>
+                                {% if is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Expired</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Expires on:</strong> {{ subscription.end_date|date('d M Y') }}
+                            </div>
+                        </div>
                         {% if expiry_days > 0 and expiry_days <= 15 %}
-                            <div class="expiry-alert mt-3">
+                            <div class="alert alert-warning mt-3">
                                 <i class="fas fa-regular fa-clock"></i>
                                 <strong>Your subscription will expire in {{ expiry_days }} days!</strong>
-                                Please renew below to continue using the service.
-                            </div>
-                        {% endif %}
-                        {% if subscription and is_active %}
-                            <div class="alert alert-info mt-3">
-                                <i class="fas fa-regular fa-circle-info"></i>
-                                <strong>Current subscription expires on {{ subscription.end_date|date('d M Y') }}</strong><br>
-                                Purchasing additional months will <strong>extend</strong> your subscription from the current expiry date.
+                                Please renew below.
                             </div>
                         {% endif %}
                     {% else %}
                         <div class="alert alert-warning mb-0">
                             <i class="fas fa-regular fa-circle-exclamation"></i>
-                            No active subscription found. Please select a plan below to activate.
+                            No active subscription found. Please select a plan below.
                         </div>
                     {% endif %}
                 </div>
@@ -172,21 +220,55 @@
             <!-- Pricing Info -->
             <div class="subscription-card">
                 <div class="card-header">
-                    <i class="fas fa-solid fa-tag"></i> Subscription Pricing
+                    <i class="fa-solid fa-tag"></i> Project Pricing
                 </div>
                 <div class="card-body">
                     <div class="rate-info">
-                        <div class="rate-amount">৳ {{ monthly_rate|number_format(0) }}</div>
-                        <div>per month</div>
+                        <div class="rate-amount">৳ {{ calculation.rate_per_apartment|number_format(2) }}</div>
+                        <div>per apartment per month</div>
+                        <div class="project-rate">Total Apartments: {{ calculation.apartment_count }}</div>
                     </div>
-                    <p class="text-muted text-center">Choose your subscription duration. Pay only for the months you need.</p>
+                    <div class="calc-box">
+                        <div class="calc-row">
+                            <span class="calc-label">Total Apartments</span>
+                            <span class="calc-value">{{ calculation.apartment_count }}</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Base Monthly</span>
+                            <span class="calc-value">৳ {{ calculation.base_monthly|number_format(2) }}</span>
+                        </div>
+                        {% if calculation.has_discount %}
+                        <div class="calc-row">
+                            <span class="calc-label">Discount</span>
+                            <span class="calc-value">
+                                <span class="discount-badge">
+                                    {% if calculation.discount_type == 'percentage' %}
+                                        - {{ calculation.discount_value }}%
+                                    {% else %}
+                                        - ৳ {{ calculation.discount_per_apartment|number_format(2) }} / apt
+                                    {% endif %}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ calculation.discount_reason }}</small>
+                            </span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Effective Rate</span>
+                            <span class="calc-value">৳ {{ calculation.effective_rate|number_format(2) }} / apt / mo</span>
+                        </div>
+                        {% endif %}
+                        <div class="calc-row calc-total">
+                            <span class="calc-label">Monthly Subscription</span>
+                            <span class="calc-value">৳ {{ calculation.final_monthly|number_format(2) }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- Duration Options -->
             <div class="subscription-card">
                 <div class="card-header">
-                    <i class="fas fa-solid fa-calendar"></i> Select Duration
+                    <i class="fa-solid fa-calendar"></i> Select Duration
                 </div>
                 <div class="card-body">
                     <div id="duration-options">
@@ -195,11 +277,14 @@
                                 <div>
                                     <span class="duration-label">{{ label }}</span>
                                     {% if months >= 12 %}
-                                        {#<span class="save-badge">Save {{ ((months * monthly_rate) - duration_amounts[months])|round }}%</span>#}
+                                        <span class="badge bg-success ms-2">Save {{ ((months * calculation.final_monthly - duration_amounts[months]) / (months * calculation.final_monthly) * 100)|round }}%</span>
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <span class="duration-price">৳ {{ duration_amounts[months]|number_format(2) }}</span>
+                                    <span class="duration-price">
+                                        ৳ {{ duration_amounts[months]|number_format(2) }}
+                                        <span class="per-month">(৳ {{ (duration_amounts[months] / months)|number_format(2) }}/mo)</span>
+                                    </span>
                                 </div>
                             </div>
                         {% endfor %}
@@ -208,7 +293,7 @@
                     <input type="hidden" id="selected-duration" value="">
                     
                     <button type="button" id="btn-activate" class="btn-activate" disabled>
-                        <i class="fas fa-solid fa-credit-card"></i> Activate Subscription
+                        <i class="fa-regular fa-credit-card"></i> Activate Subscription
                     </button>
                 </div>
             </div>
@@ -225,31 +310,16 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-solid fa-credit-card"></i> Complete Payment</h5>
+                <h5 class="modal-title"><i class="fa-regular fa-credit-card"></i> Complete Payment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="form-activate" action="{{ action }}" method="post" data-oc-toggle="ajax">
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        <strong>Subscription Details:</strong><br>
-                        Duration: <span id="modal-duration"></span><br>
-                        Total Amount: <span id="modal-amount" class="text-success fw-bold"></span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Payment Method</label>
-                        <select name="payment_method" class="form-select" required>
-                            <option value="">-- Select Method --</option>
-                            <option value="bkash">bKash</option>
-                            <option value="nagad">Nagad</option>
-                            <option value="rocket">Rocket</option>
-                            <option value="bank">Bank Transfer</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Reference / Transaction ID</label>
-                        <input type="text" name="reference_number" class="form-control" placeholder="Enter transaction ID">
+                        <strong>Project:</strong> {{ project_name }}<br>
+                        <strong>Apartments:</strong> {{ calculation.apartment_count }}<br>
+                        <strong>Duration:</strong> <span id="modal-duration"></span><br>
+                        <strong>Total Amount:</strong> <span id="modal-amount" class="text-success fw-bold"></span>
                     </div>
                     
                     <input type="hidden" name="duration_months" id="modal-duration-months">
@@ -275,7 +345,7 @@ $(document).ready(function() {
         
         selectedMonths = $(this).data('months');
         selectedLabel = $(this).find('.duration-label').text();
-        selectedAmount = $(this).find('.duration-price').text();
+        selectedAmount = $(this).find('.duration-price').text().trim();
         
         $('#selected-duration').val(selectedMonths);
         $('#btn-activate').prop('disabled', false);

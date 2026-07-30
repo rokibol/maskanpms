@@ -11,8 +11,20 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		$this->load->language('checkout/payment_method');
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('checkout/payment_method');
 
 		if (isset($this->session->data['payment_method'])) {
 			$data['payment_method'] = $this->session->data['payment_method']['name'];
@@ -47,7 +59,7 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 
 		$data['language'] = $this->config->get('config_language');
 
-		return $this->load->view('checkout/payment_method', $data);
+		return $this->load->view('checkout/payment_method', $data);*/
 	}
 
 	/**
@@ -55,7 +67,7 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function getMethods(): void {
+	/*public function getMethods(): void {
 		$this->load->language('checkout/payment_method');
 
 		$json = [];
@@ -112,14 +124,14 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Save
 	 *
 	 * @return void
 	 */
-	public function save(): void {
+	/*public function save(): void {
 		$this->load->language('checkout/payment_method');
 
 		$json = [];
@@ -168,14 +180,14 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Comment
 	 *
 	 * @return void
 	 */
-	public function comment(): void {
+	/*public function comment(): void {
 		$this->load->language('checkout/payment_method');
 		$this->load->model('checkout/order');
 
@@ -209,14 +221,14 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Agree
 	 *
 	 * @return void
 	 */
-	public function agree(): void {
+	/*public function agree(): void {
 		$this->load->language('checkout/payment_method');
 
 		$json = [];
@@ -229,5 +241,5 @@ class PaymentMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

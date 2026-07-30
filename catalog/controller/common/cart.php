@@ -14,7 +14,8 @@ class Cart extends \Opencart\System\Engine\Controller {
 	 * @return string
 	 */
 	public function index(): string {
-		$this->load->language('common/cart');
+		
+		/*$this->load->language('common/cart');
 
 		$totals = [];
 		$taxes = $this->cart->getTaxes();
@@ -93,7 +94,8 @@ class Cart extends \Opencart\System\Engine\Controller {
 		$data['cart'] = $this->url->link('checkout/cart', 'language=' . $this->config->get('config_language'));
 		$data['checkout'] = $this->url->link('checkout/checkout', 'language=' . $this->config->get('config_language'));
 
-		return $this->load->view('common/cart', $data);
+		return $this->load->view('common/cart', $data);*/
+		return '';
 	}
 
 	/**
@@ -101,16 +103,16 @@ class Cart extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function info(): void {
+	/*public function info(): void {
 		$this->response->setOutput($this->index());
-	}
+	}*/
 
 	/**
 	 * Remove Product
 	 *
 	 * @return void
 	 */
-	public function remove(): void {
+	/*public function remove(): void {
 		$this->load->language('checkout/cart');
 
 		$json = [];
@@ -139,5 +141,5 @@ class Cart extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

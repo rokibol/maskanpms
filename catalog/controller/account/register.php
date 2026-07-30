@@ -215,6 +215,10 @@ class Register extends \Opencart\System\Engine\Controller {
         }
 
         if (!$json) {
+            // Get manager group ID from settings
+            $this->load->helper('pms_settings');
+            $manager_group_id = $this->helper_pms_settings->getManagerGroupId();
+
             // Start transaction
             $this->db->query("START TRANSACTION");
 
@@ -226,7 +230,7 @@ class Register extends \Opencart\System\Engine\Controller {
                     'email'             => $this->request->post['email'],
                     'telephone'         => $this->request->post['telephone'],
                     'password'          => password_hash($this->request->post['password'], PASSWORD_DEFAULT),
-                    'customer_group_id' => 1, // Manager group
+                    'customer_group_id' => $manager_group_id, // Manager group
                     'status'            => 1,
                     'newsletter'        => 0,
                     'safe'              => 1
@@ -242,6 +246,10 @@ class Register extends \Opencart\System\Engine\Controller {
                     'contact_email'     => $this->request->post['email'],
                     'contact_phone'     => $this->request->post['telephone'],
                     'total_shares'      => (int)$this->request->post['project_total_shares'],
+                    'subscription_rate_per_apartment' => 50.00,
+                    'subscription_discount_type' => 'none',
+                    'subscription_discount_value' => 0,
+                    'subscription_discount_reason' => '',
                     'status'            => 'planning',
                     'is_active'         => 1,
                     'theme_color'       => '#0B3C5D',

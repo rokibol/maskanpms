@@ -14,7 +14,19 @@ class Cart extends \Opencart\System\Engine\Controller {
 	 * @return void
 	 */
 	public function index(): void {
-		$this->load->language('checkout/cart');
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('checkout/cart');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -41,7 +53,7 @@ class Cart extends \Opencart\System\Engine\Controller {
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
 
-		$this->response->setOutput($this->load->view('checkout/cart', $data));
+		$this->response->setOutput($this->load->view('checkout/cart', $data));*/
 	}
 
 	/**
@@ -49,18 +61,18 @@ class Cart extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function list(): void {
+	/*public function list(): void {
 		$this->load->language('checkout/cart');
 
 		$this->response->setOutput($this->getList());
-	}
+	}*/
 
 	/**
 	 * Get List
 	 *
 	 * @return string
 	 */
-	public function getList(): string {
+	/*public function getList(): string {
 		if (isset($this->session->data['error'])) {
 			$data['error_warning'] = $this->session->data['error'];
 
@@ -200,14 +212,14 @@ class Cart extends \Opencart\System\Engine\Controller {
 		}
 
 		return $this->load->view('checkout/cart_list', $data);
-	}
+	}*/
 
 	/**
 	 * Add
 	 *
 	 * @return void
 	 */
-	public function add(): void {
+	/*public function add(): void {
 		$this->load->language('checkout/cart');
 
 		$json = [];
@@ -298,14 +310,14 @@ class Cart extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Edit
 	 *
 	 * @return void
 	 */
-	public function edit(): void {
+	/*public function edit(): void {
 		$this->load->language('checkout/cart');
 
 		$json = [];
@@ -339,14 +351,14 @@ class Cart extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Remove
 	 *
 	 * @return void
 	 */
-	public function remove(): void {
+	/*public function remove(): void {
 		$this->load->language('checkout/cart');
 
 		$json = [];
@@ -374,5 +386,5 @@ class Cart extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

@@ -31,8 +31,22 @@ class Theme extends \Opencart\System\Engine\Model {
 	 */
 	public function addTheme(array $data): int {
 		$this->db->query("INSERT INTO `" . DB_PREFIX . "theme` SET `store_id` = '" . (int)$data['store_id'] . "', `route` = '" . $this->db->escape($data['route']) . "', `code` = '" . $this->db->escape($data['code']) . "', `status` = '" . (bool)$data['status'] . "', `date_added` = NOW()");
+		
+		$theme_id = $this->db->getLastId();
+		$this->updateThemeCache($theme_id, $this->db->escape($data['route']));
+		
+		return $theme_id;
+	}
 
-		return $this->db->getLastId();
+	public function updateThemeCache(int $theme_id, string $route) {
+		$theme_data = $this->getTheme($theme_id);
+		$this->cache->set('theme.' . $this->cache->toSafeFilename($this->db->escape($route)), $theme_data);
+	}
+
+	public function deleteThemeCache(int $theme_id) {
+		$theme_data = $this->getTheme($theme_id);
+		
+		$this->cache->delete('theme.' . $this->cache->toSafeFilename($theme_data['route']));
 	}
 
 	/**
@@ -59,6 +73,8 @@ class Theme extends \Opencart\System\Engine\Model {
 	 */
 	public function editTheme(int $theme_id, array $data): void {
 		$this->db->query("UPDATE `" . DB_PREFIX . "theme` SET `store_id` = '" . (int)$data['store_id'] . "', `route` = '" . $this->db->escape($data['route']) . "', `code` = '" . $this->db->escape($data['code']) . "', `status` = '" . (bool)$data['status'] . "', `date_added` = NOW() WHERE `theme_id` = '" . (int)$theme_id . "'");
+		
+		$this->updateThemeCache($theme_id, $this->db->escape($data['route']));
 	}
 
 	/**
@@ -77,6 +93,8 @@ class Theme extends \Opencart\System\Engine\Model {
 	 * $this->model_design_theme->deleteTheme($theme_id);
 	 */
 	public function deleteTheme(int $theme_id): void {
+		$theme_data = $this->getTheme($theme_id);
+
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "theme` WHERE `theme_id` = '" . (int)$theme_id . "'");
 	}
 

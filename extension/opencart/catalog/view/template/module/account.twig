@@ -110,12 +110,7 @@
                         <span>Payment Collection</span>
                     </a>
                 </li>
-                <li class="pms-sidebar-nav-item">
-                    <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
-                        <i class="fas fa-solid fa-receipt"></i>
-                        <span>Expenses</span>
-                    </a>
-                </li>
+                
                 <li class="pms-sidebar-nav-item">
                     <a href="{{ pms_bills }}" class="pms-sidebar-nav-link {{ active_bills|default('') }}">
                         <i class="fas fa-solid fa-file-invoice"></i>
@@ -129,6 +124,12 @@
                         {% if unpaid_bills_count > 0 %}
                             <span class="pms-sidebar-badge">{{ unpaid_bills_count }}</span>
                         {% endif %}
+                    </a>
+                </li>
+                <li class="pms-sidebar-nav-item">
+                    <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
+                        <i class="fas fa-solid fa-receipt"></i>
+                        <span>Expenses</span>
                     </a>
                 </li>
                 <li class="pms-sidebar-nav-item">
@@ -343,12 +344,7 @@
                     <span>Payment Collection</span>
                 </a>
             </li>
-            <li class="pms-sidebar-nav-item">
-                <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
-                    <i class="fas fa-solid fa-receipt"></i>
-                    <span>Expenses</span>
-                </a>
-            </li>
+            
             <li class="pms-sidebar-nav-item">
                 <a href="{{ pms_bills }}" class="pms-sidebar-nav-link {{ active_bills|default('') }}">
                     <i class="fas fa-solid fa-file-invoice"></i>
@@ -362,6 +358,12 @@
                     {% if unpaid_bills_count > 0 %}
                         <span class="pms-sidebar-badge">{{ unpaid_bills_count }}</span>
                     {% endif %}
+                </a>
+            </li>
+            <li class="pms-sidebar-nav-item">
+                <a href="{{ pms_expenses }}" class="pms-sidebar-nav-link {{ active_expenses|default('') }}">
+                    <i class="fas fa-solid fa-receipt"></i>
+                    <span>Expenses</span>
                 </a>
             </li>
             <li class="pms-sidebar-nav-item">

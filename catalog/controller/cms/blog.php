@@ -12,7 +12,19 @@ class Blog extends \Opencart\System\Engine\Controller {
 	 * @return void
 	 */
 	public function index(): void {
-		if (!$this->load->controller('account/login.validate')) {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*if (!$this->load->controller('account/login.validate')) {
 			$this->session->data['redirect'] = $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language'));
 
 			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
@@ -312,7 +324,7 @@ class Blog extends \Opencart\System\Engine\Controller {
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
 
-		$this->response->setOutput($this->load->view('cms/blog', $data));
+		$this->response->setOutput($this->load->view('cms/blog', $data));*/
 	}
 
 	/**
@@ -320,7 +332,7 @@ class Blog extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return \Opencart\System\Engine\Action|null
 	 */
-	public function info(): ?\Opencart\System\Engine\Action {
+	/*public function info(): ?\Opencart\System\Engine\Action {
 		$this->load->language('cms/blog');
 
 		if (isset($this->request->get['article_id'])) {
@@ -443,5 +455,5 @@ class Blog extends \Opencart\System\Engine\Controller {
 		}
 
 		return null;
-	}
+	}*/
 }

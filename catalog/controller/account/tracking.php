@@ -12,7 +12,8 @@ class Tracking extends \Opencart\System\Engine\Controller {
 	 * @return void
 	 */
 	public function index(): void {
-		if (!$this->load->controller('account/login.validate')) {
+		
+		/*if (!$this->load->controller('account/login.validate')) {
 			$this->session->data['redirect'] = $this->url->link('account/tracking', 'language=' . $this->config->get('config_language'));
 
 			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
@@ -69,7 +70,7 @@ class Tracking extends \Opencart\System\Engine\Controller {
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
 
-		$this->response->setOutput($this->load->view('account/tracking', $data));
+		$this->response->setOutput($this->load->view('account/tracking', $data));*/
 	}
 
 	/**
@@ -78,7 +79,7 @@ class Tracking extends \Opencart\System\Engine\Controller {
 	 * @return void
 	 */
 	public function autocomplete(): void {
-		$json = [];
+		/*$json = [];
 
 		if (isset($this->request->get['search'])) {
 			$search = $this->request->get['search'];
@@ -119,6 +120,6 @@ class Tracking extends \Opencart\System\Engine\Controller {
 		}
 
 		$this->response->addHeader('Content-Type: application/json');
-		$this->response->setOutput(json_encode($json));
+		$this->response->setOutput(json_encode($json));*/
 	}
 }

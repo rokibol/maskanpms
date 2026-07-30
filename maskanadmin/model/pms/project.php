@@ -26,6 +26,10 @@ class Project extends \Opencart\System\Engine\Model {
                 `construction_end_date` = '" . $this->db->escape($data['construction_end_date']) . "',
                 `handover_date` = '" . $this->db->escape($data['handover_date']) . "',
                 `is_active` = '" . (int)$data['is_active'] . "',
+                `subscription_rate_per_apartment` = '" . (float)$data['subscription_rate_per_apartment'] . "',
+                `subscription_discount_type` = '" . $this->db->escape($data['subscription_discount_type']) . "',
+                `subscription_discount_value` = '" . (float)$data['subscription_discount_value'] . "',
+                `subscription_discount_reason` = '" . $this->db->escape($data['subscription_discount_reason']) . "',
                 `created_at` = NOW()
         ");
 
@@ -55,6 +59,10 @@ class Project extends \Opencart\System\Engine\Model {
                 `construction_end_date` = '" . $this->db->escape($data['construction_end_date']) . "',
                 `handover_date` = '" . $this->db->escape($data['handover_date']) . "',
                 `is_active` = '" . (int)$data['is_active'] . "',
+                `subscription_rate_per_apartment` = '" . (float)$data['subscription_rate_per_apartment'] . "',
+                `subscription_discount_type` = '" . $this->db->escape($data['subscription_discount_type']) . "',
+                `subscription_discount_value` = '" . (float)$data['subscription_discount_value'] . "',
+                `subscription_discount_reason` = '" . $this->db->escape($data['subscription_discount_reason']) . "',
                 `updated_at` = NOW()
             WHERE `project_id` = '" . (int)$project_id . "'
         ");
@@ -103,7 +111,7 @@ class Project extends \Opencart\System\Engine\Model {
         }
 
         $sort_data = [
-            'name',
+            'project_id',
             'status',
             'store_id',
             'is_active',
@@ -113,7 +121,7 @@ class Project extends \Opencart\System\Engine\Model {
         if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
             $sql .= " ORDER BY `" . $data['sort'] . "`";
         } else {
-            $sql .= " ORDER BY `name`";
+            $sql .= " ORDER BY `project_id`";
         }
 
         if (isset($data['order']) && ($data['order'] == 'DESC')) {

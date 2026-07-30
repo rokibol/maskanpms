@@ -50,10 +50,20 @@ class SubscriptionSettings extends \Opencart\System\Engine\Controller {
         }
         
         $this->load->model('pms/subscription_settings');
+
+        $data['discount_type'] = $this->model_pms_subscription_settings->getSetting('discount_type');
+        $data['discount_value'] = $this->model_pms_subscription_settings->getSetting('discount_value');
+        $data['discount_min_apartments'] = $this->model_pms_subscription_settings->getSetting('discount_min_apartments');
+        $data['apartment_rate'] = $this->model_pms_subscription_settings->getSetting('apartment_rate');
+
         
         // Handle form submission
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
             $this->model_pms_subscription_settings->updateSetting('monthly_rate', $this->request->post['monthly_rate']);
+            $this->model_pms_subscription_settings->updateSetting('apartment_rate', $this->request->post['apartment_rate']);
+            $this->model_pms_subscription_settings->updateSetting('discount_type', $this->request->post['discount_type']);
+            $this->model_pms_subscription_settings->updateSetting('discount_value', $this->request->post['discount_value']);
+            $this->model_pms_subscription_settings->updateSetting('discount_min_apartments', $this->request->post['discount_min_apartments']);
             $this->session->data['success'] = $this->language->get('text_settings_updated');
             $this->response->redirect($this->url->link('pms/subscription_settings', 'user_token=' . $this->session->data['user_token']));
         }

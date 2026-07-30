@@ -16,7 +16,7 @@ class PmsBillPayment extends \Opencart\System\Engine\Controller {
         $shareholder = $this->model_pms_shareholder->getShareholderByCustomerId($this->customer->getId());
         
         if (!$shareholder) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
         
         // Get selected bills from session or URL

@@ -24,8 +24,11 @@ class Theme extends \Opencart\System\Engine\Model {
 	 * $theme_info = $this->model_design_theme->getTheme($route);
 	 */
 	public function getTheme(string $route): array {
-		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "theme` WHERE `store_id` = '" . (int)$this->config->get('config_store_id') . "' AND `route` = '" . $this->db->escape((string)$route) . "' AND `status` = '1'");
+		if((int)$this->config->get('config_store_id') > 0) {
+			$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "theme` WHERE `store_id` = '" . (int)$this->config->get('config_store_id') . "' AND `route` = '" . $this->db->escape((string)$route) . "' AND `status` = '1'");
 
-		return $query->row;
+			return $query->row;
+		}
+		return [];
 	}
 }

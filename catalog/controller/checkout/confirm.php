@@ -13,8 +13,20 @@ class Confirm extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		$this->load->language('checkout/confirm');
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('checkout/confirm');
 
 		// Order Totals
 		$totals = [];
@@ -345,7 +357,7 @@ class Confirm extends \Opencart\System\Engine\Controller {
 		}
 
 		// Validate if payment method has been set.
-		return $this->load->view('checkout/confirm', $data);
+		return $this->load->view('checkout/confirm', $data);*/
 	}
 
 	/**

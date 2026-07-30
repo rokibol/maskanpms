@@ -15,7 +15,7 @@ class PmsMyBills extends \Opencart\System\Engine\Controller {
         $shareholder_group_id = (int)$this->config->get('config_pms_shareholder_group_id');
         
         if ($customer_group_id != $shareholder_group_id) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }*/
         
         $this->load->language('pms/my_bills');

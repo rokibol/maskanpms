@@ -32,7 +32,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 			// Catalog
 			$catalog = [];
 
-			if ($this->user->hasPermission('access', 'catalog/category')) {
+			/*if ($this->user->hasPermission('access', 'catalog/category')) {
 				$catalog[] = [
 					'name'     => $this->language->get('text_category'),
 					'href'     => $this->url->link('catalog/category', 'user_token=' . $this->session->data['user_token']),
@@ -147,7 +147,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => $this->url->link('catalog/review', 'user_token=' . $this->session->data['user_token']),
 					'children' => []
 				];
-			}
+			}*/
 
 			if ($this->user->hasPermission('access', 'catalog/information')) {
 				$catalog[] = [
@@ -183,6 +183,13 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				'children' => []
 			];
 
+			// Add PMS Settings menu
+			$pms[] = [
+				'name' => $this->language->get('text_pms_settings'),
+				'href' => $this->url->link('pms/settings', 'user_token=' . $this->session->data['user_token']),
+				'children' => []
+			];
+
 			if ($pms) {
 				$data['menus'][] = [
 					'id'       => 'menu-pms',
@@ -193,7 +200,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				];
 			}
 
-			$cms = [];
+			/*$cms = [];
 
 			if ($this->user->hasPermission('access', 'cms/topic')) {
 				$cms[] = [
@@ -235,10 +242,10 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $cms
 				];
-			}
+			}*/
 
 			// Extension
-			$marketplace = [];
+			/*$marketplace = [];
 
 			if ($this->user->hasPermission('access', 'marketplace/marketplace')) {
 				$marketplace[] = [
@@ -394,7 +401,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $sale
 				];
-			}
+			}*/
 
 			// Customer
 			$customer = [];
@@ -423,7 +430,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				];
 			}
 
-			if ($this->user->hasPermission('access', 'customer/gdpr')) {
+			/*if ($this->user->hasPermission('access', 'customer/gdpr')) {
 				$customer[] = [
 					'name'     => $this->language->get('text_gdpr'),
 					'href'     => $this->url->link('customer/gdpr', 'user_token=' . $this->session->data['user_token']),
@@ -437,7 +444,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => $this->url->link('customer/custom_field', 'user_token=' . $this->session->data['user_token']),
 					'children' => []
 				];
-			}
+			}*/
 
 			if ($customer) {
 				$data['menus'][] = [
@@ -450,7 +457,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 			}
 
 			// Marketing
-			$marketing = [];
+			/*$marketing = [];
 
 			if ($this->user->hasPermission('access', 'marketing/affiliate')) {
 				$marketing[] = [
@@ -492,10 +499,10 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $marketing
 				];
-			}
+			}*/
 
 			// Anti-Fraud
-			$fraud = [];
+			/*$fraud = [];
 
 			$this->load->model('setting/extension');
 
@@ -521,9 +528,9 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $fraud
 				];
-			}
+			}*/
 
-			$marketing = [];
+			/*$marketing = [];
 
 			if ($this->user->hasPermission('access', 'marketing/affiliate')) {
 				$marketing[] = [
@@ -531,7 +538,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => $this->url->link('marketing/affiliate', 'user_token=' . $this->session->data['user_token']),
 					'children' => []
 				];
-			}
+			}*/
 
 			// System
 			$system = [];
@@ -582,13 +589,13 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 			// Localisation
 			$localisation = [];
 
-			if ($this->user->hasPermission('access', 'localisation/location')) {
+			/*if ($this->user->hasPermission('access', 'localisation/location')) {
 				$localisation[] = [
 					'name'     => $this->language->get('text_location'),
 					'href'     => $this->url->link('localisation/location', 'user_token=' . $this->session->data['user_token']),
 					'children' => []
 				];
-			}
+			}*/
 
 			if ($this->user->hasPermission('access', 'localisation/language')) {
 				$localisation[] = [
@@ -606,7 +613,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				];
 			}
 
-			if ($this->user->hasPermission('access', 'localisation/stock_status')) {
+			/*if ($this->user->hasPermission('access', 'localisation/stock_status')) {
 				$localisation[] = [
 					'name'     => $this->language->get('text_stock_status'),
 					'href'     => $this->url->link('localisation/stock_status', 'user_token=' . $this->session->data['user_token']),
@@ -738,7 +745,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => $this->url->link('localisation/address_format', 'user_token=' . $this->session->data['user_token']),
 					'children' => []
 				];
-			}
+			}*/
 
 			if ($localisation) {
 				$system[] = [
@@ -749,7 +756,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 			}
 
 			// Tools
-			$maintenance = [];
+			/*$maintenance = [];
 
 			if ($this->user->hasPermission('access', 'tool/upgrade')) {
 				$maintenance[] = [
@@ -789,7 +796,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $maintenance
 				];
-			}
+			}*/
 
 			if ($system) {
 				$data['menus'][] = [
@@ -801,7 +808,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				];
 			}
 
-			$report = [];
+			/*$report = [];
 
 			if ($this->user->hasPermission('access', 'report/report')) {
 				$report[] = [
@@ -835,10 +842,10 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 					'href'     => '',
 					'children' => $report
 				];
-			}
+			}*/
 
 			// Stats
-			if ($this->user->hasPermission('access', 'report/statistics')) {
+			/*if ($this->user->hasPermission('access', 'report/statistics')) {
 				$this->load->model('sale/order');
 
 				$order_total = (float)$this->model_sale_order->getTotalOrders();
@@ -872,7 +879,7 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				$data['statistics_status'] = true;
 			} else {
 				$data['statistics_status'] = false;
-			}
+			}*/
 
 			return $this->load->view('common/column_left', $data);
 		} else {

@@ -12,7 +12,19 @@ class Compare extends \Opencart\System\Engine\Controller {
 	 * @return void
 	 */
 	public function index(): void {
-		if (!$this->load->controller('account/login.validate')) {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*if (!$this->load->controller('account/login.validate')) {
 			$this->session->data['redirect'] = $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language'));
 
 			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
@@ -181,7 +193,7 @@ class Compare extends \Opencart\System\Engine\Controller {
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
 
-		$this->response->setOutput($this->load->view('product/compare', $data));
+		$this->response->setOutput($this->load->view('product/compare', $data));*/
 	}
 
 	/**
@@ -189,7 +201,7 @@ class Compare extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function add(): void {
+	/*public function add(): void {
 		$this->load->language('product/compare');
 
 		$json = [];
@@ -235,5 +247,5 @@ class Compare extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

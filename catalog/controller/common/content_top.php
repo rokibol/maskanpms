@@ -48,7 +48,7 @@ class ContentTop extends \Opencart\System\Engine\Controller {
                     $this->load->model('pms/project_subscription');
                     
                     // Check if subscription is active
-                    $is_active = $this->model_pms_project_subscription->isSubscriptionActive($project['project_id']);
+                    $is_active = $this->model_pms_project_subscription->isSubscriptionActiveOptimized($project['project_id']);
 
                     $expiry_days = $this->model_pms_project_subscription->getExpiryDays($project['project_id']);
 					

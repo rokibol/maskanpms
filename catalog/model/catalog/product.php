@@ -271,7 +271,7 @@ class Product extends \Opencart\System\Engine\Model {
 	 * $product_total = $this->model_catalog_product->getTotalProducts();
 	 */
 	public function getTotalProducts(array $data = []): int {
-		$sql = "SELECT COUNT(DISTINCT `p`.`product_id`) AS `total`";
+		/*$sql = "SELECT COUNT(DISTINCT `p`.`product_id`) AS `total`";
 
 		if (!empty($data['filter_category_id'])) {
 			$sql .= " FROM `" . DB_PREFIX . "category_to_store` `c2s`";
@@ -375,7 +375,8 @@ class Product extends \Opencart\System\Engine\Model {
 
 		$query = $this->db->query($sql);
 
-		return (int)$query->row['total'];
+		return (int)$query->row['total'];*/
+		return 0;
 	}
 
 	/**

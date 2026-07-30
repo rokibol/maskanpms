@@ -12,19 +12,21 @@ class PmsSubscriptionExpired extends \Opencart\System\Engine\Controller {
         $this->load->model('pms/project');
         $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
         
-        if ($project) {
-            $data['project_name'] = $project['name'];
-        } else {
-            $data['project_name'] = '';
+        if (!$project) {
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
         }
         
-        // Get subscription details
-        $this->load->model('pms/project_subscription');
-        $subscription = $this->model_pms_project_subscription->getSubscriptionByProject($project['project_id']);
-        $data['expiry_date'] = $subscription ? date('d F Y', strtotime($subscription['end_date'])) : 'N/A';
+        $data['project_id'] = $project['project_id'];
+        $data['project_name'] = $project['name'];
         
-        // Get monthly rate
-        $data['monthly_rate'] = $this->model_pms_project_subscription->getMonthlyRate();
+        // Get subscription calculation
+        $this->load->model('pms/project_subscription');
+        $data['calculation'] = $this->model_pms_project_subscription->getSubscriptionCalculationDisplay($project['project_id']);
+        $data['apartment_count'] = $data['calculation']['apartment_count'];
+        
+        // Get expiry date
+        $subscription = $this->model_pms_project_subscription->getSubscriptionByProject($project['project_id']);
+        $data['expiry_date'] = isset($subscription['end_date']) ? date('d F Y', strtotime($subscription['end_date'])) : 'N/A';
         
         // Duration options
         $data['duration_options'] = [
@@ -35,14 +37,17 @@ class PmsSubscriptionExpired extends \Opencart\System\Engine\Controller {
             24 => '24 Months (2 Years)'
         ];
         
-        // Calculate amounts
+        // Calculate amounts for each duration
         $data['duration_amounts'] = [];
         foreach ($data['duration_options'] as $months => $label) {
-            $data['duration_amounts'][$months] = $months * $data['monthly_rate'];
+            $calculation = $this->model_pms_project_subscription->calculateSubscriptionAmount($project['project_id'], $months);
+            $data['duration_amounts'][$months] = $calculation['final_amount'];
         }
         
         $data['action'] = $this->url->link('account/pms_subscription.activate', 'language=' . $this->config->get('config_language'));
-        $data['back'] = $this->url->link('account/logout', 'language=' . $this->config->get('config_language'));
+        $data['logout'] = $this->url->link('account/logout', 'language=' . $this->config->get('config_language'));
+        $data['support_email'] = $this->config->get('config_email');
+        $data['support_phone'] = $this->config->get('config_telephone');
         
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');

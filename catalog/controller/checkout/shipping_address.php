@@ -11,8 +11,20 @@ class ShippingAddress extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		$this->load->language('checkout/shipping_address');
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('checkout/shipping_address');
 
 		$data['error_upload_size'] = sprintf($this->language->get('error_upload_size'), $this->config->get('config_file_max_size'));
 		$data['config_file_max_size'] = ((int)$this->config->get('config_file_max_size') * 1024 * 1024);
@@ -68,7 +80,7 @@ class ShippingAddress extends \Opencart\System\Engine\Controller {
 
 		$data['language'] = $this->config->get('config_language');
 
-		return $this->load->view('checkout/shipping_address', $data);
+		return $this->load->view('checkout/shipping_address', $data);*/
 	}
 
 	/**
@@ -76,7 +88,7 @@ class ShippingAddress extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function save(): void {
+	/*public function save(): void {
 		$this->load->language('checkout/shipping_address');
 
 		$json = [];
@@ -193,14 +205,14 @@ class ShippingAddress extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Address
 	 *
 	 * @return void
 	 */
-	public function address(): void {
+	/*public function address(): void {
 		$this->load->language('checkout/shipping_address');
 
 		$json = [];
@@ -257,5 +269,5 @@ class ShippingAddress extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

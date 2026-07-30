@@ -11,8 +11,20 @@ class ShippingMethod extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		$this->load->language('checkout/shipping_method');
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('checkout/shipping_method');
 
 		if (isset($this->session->data['shipping_method'])) {
 			$data['shipping_method'] = $this->session->data['shipping_method']['name'];
@@ -24,7 +36,7 @@ class ShippingMethod extends \Opencart\System\Engine\Controller {
 
 		$data['language'] = $this->config->get('config_language');
 
-		return $this->load->view('checkout/shipping_method', $data);
+		return $this->load->view('checkout/shipping_method', $data);*/
 	}
 
 	/**
@@ -32,7 +44,7 @@ class ShippingMethod extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function quote(): void {
+	/*public function quote(): void {
 		$this->load->language('checkout/shipping_method');
 
 		$json = [];
@@ -74,14 +86,14 @@ class ShippingMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Save
 	 *
 	 * @return void
 	 */
-	public function save(): void {
+	/*public function save(): void {
 		$this->load->language('checkout/shipping_method');
 
 		$json = [];
@@ -130,5 +142,5 @@ class ShippingMethod extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

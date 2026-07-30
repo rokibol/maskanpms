@@ -16,7 +16,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
         
         if ($customer_group_id != $accountant_group_id && $customer_group_id != $manager_group_id) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }*/
         
         $this->load->language('pms/payments');
@@ -28,7 +28,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         $project = $this->customer->getProject();
         
         if (!$project) {
-            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+            $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
         
         $data['project_id'] = $project['project_id'];

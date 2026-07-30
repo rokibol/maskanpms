@@ -76,13 +76,13 @@ class Project extends \Opencart\System\Engine\Controller {
         if (isset($this->request->get['sort'])) {
             $sort = $this->request->get['sort'];
         } else {
-            $sort = 'name';
+            $sort = 'project_id';
         }
 
         if (isset($this->request->get['order'])) {
             $order = $this->request->get['order'];
         } else {
-            $order = 'ASC';
+            $order = 'DESC';
         }
 
         if (isset($this->request->get['page'])) {
@@ -471,6 +471,49 @@ class Project extends \Opencart\System\Engine\Controller {
         } else {
             $data['handover_date'] = '';
         }
+
+        // Subscription Rate
+        if (isset($this->request->post['subscription_rate_per_apartment'])) {
+            $data['subscription_rate_per_apartment'] = $this->request->post['subscription_rate_per_apartment'];
+        } elseif (!empty($project_info)) {
+            $data['subscription_rate_per_apartment'] = $project_info['subscription_rate_per_apartment'];
+        } else {
+            $data['subscription_rate_per_apartment'] = 50.00;
+        }
+
+        // Subscription Discount Type
+        if (isset($this->request->post['subscription_discount_type'])) {
+            $data['subscription_discount_type'] = $this->request->post['subscription_discount_type'];
+        } elseif (!empty($project_info)) {
+            $data['subscription_discount_type'] = $project_info['subscription_discount_type'];
+        } else {
+            $data['subscription_discount_type'] = 'none';
+        }
+
+        // Subscription Discount Value
+        if (isset($this->request->post['subscription_discount_value'])) {
+            $data['subscription_discount_value'] = $this->request->post['subscription_discount_value'];
+        } elseif (!empty($project_info)) {
+            $data['subscription_discount_value'] = $project_info['subscription_discount_value'];
+        } else {
+            $data['subscription_discount_value'] = 0;
+        }
+
+        // Subscription Discount Reason
+        if (isset($this->request->post['subscription_discount_reason'])) {
+            $data['subscription_discount_reason'] = $this->request->post['subscription_discount_reason'];
+        } elseif (!empty($project_info)) {
+            $data['subscription_discount_reason'] = $project_info['subscription_discount_reason'];
+        } else {
+            $data['subscription_discount_reason'] = '';
+        }
+
+        // Discount type options
+        $data['discount_types'] = [
+            'none'       => 'No Discount',
+            'percentage' => 'Percentage (%)',
+            'fixed'      => 'Fixed Amount (BDT) per Apartment'
+        ];
 
         $data['user_token'] = $this->session->data['user_token'];
 

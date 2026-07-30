@@ -13,8 +13,20 @@ class Comment extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		$this->load->language('cms/comment');
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*$this->load->language('cms/comment');
 
 		if (isset($this->request->get['article_id'])) {
 			$data['article_id'] = (int)$this->request->get['article_id'];
@@ -97,7 +109,7 @@ class Comment extends \Opencart\System\Engine\Controller {
 
 		$data['language'] = $this->config->get('config_language');
 
-		return $this->load->view('cms/comment', $data);
+		return $this->load->view('cms/comment', $data);*/
 	}
 
 	/**
@@ -105,18 +117,18 @@ class Comment extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function list(): void {
+	/*public function list(): void {
 		$this->load->language('cms/comment');
 
 		$this->response->setOutput($this->load->controller('cms/comment.getList'));
-	}
+	}*/
 
 	/**
 	 * Get List
 	 *
 	 * @return string
 	 */
-	public function getList(): string {
+	/*public function getList(): string {
 		if (isset($this->request->get['article_id'])) {
 			$article_id = (int)$this->request->get['article_id'];
 		} else {
@@ -187,25 +199,25 @@ class Comment extends \Opencart\System\Engine\Controller {
 		$data['login'] = $this->url->link('account/login', 'language=' . $this->config->get('config_language') . '&redirect=' . urlencode($this->url->link('cms/blog.info', 'language=' . $this->config->get('config_language') . '&article_id=' . $article_id, true)));
 
 		return $this->load->view('cms/comment_list', $data);
-	}
+	}*/
 
 	/**
 	 * Reply
 	 *
 	 * @return void
 	 */
-	public function reply(): void {
+	/*public function reply(): void {
 		$this->load->language('cms/comment');
 
 		$this->response->setOutput($this->load->controller('cms/comment.getReplies'));
-	}
+	}*/
 
 	/**
 	 * Get Replies
 	 *
 	 * @return string
 	 */
-	public function getReplies(): string {
+	/*public function getReplies(): string {
 		if (isset($this->request->get['article_id'])) {
 			$article_id = (int)$this->request->get['article_id'];
 		} else {
@@ -262,14 +274,14 @@ class Comment extends \Opencart\System\Engine\Controller {
 		$data['page'] = $page;
 
 		return $this->load->view('cms/comment_reply', $data);
-	}
+	}*/
 
 	/**
 	 * Add
 	 *
 	 * @return void
 	 */
-	public function add(): void {
+	/*public function add(): void {
 		$this->load->language('cms/comment');
 
 		$json = [];
@@ -387,14 +399,14 @@ class Comment extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 
 	/**
 	 * Rating
 	 *
 	 * @return void
 	 */
-	public function rate(): void {
+	/*public function rate(): void {
 		$this->load->language('cms/comment');
 
 		$json = [];
@@ -475,5 +487,5 @@ class Comment extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

@@ -13,8 +13,20 @@ class Review extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return string
 	 */
-	public function index(): string {
-		if (!$this->load->controller('account/login.validate')) {
+	public function index(): void {
+		if ($this->load->controller('account/login.validate')) {
+			if($this->customer->getGroupId() == 1) { //Manager
+				$this->response->redirect($this->url->link('account/manager', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 2) {  //Accountant
+				$this->response->redirect($this->url->link('account/accountant', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			} else if($this->customer->getGroupId() == 3) {  //Shareholders
+				$this->response->redirect($this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . (isset($this->session->data['customer_token']) ? '&customer_token=' . $this->session->data['customer_token'] : '')));
+			}
+		} else {
+			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
+		}
+
+		/*if (!$this->load->controller('account/login.validate')) {
 			$this->session->data['redirect'] = $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language'));
 
 			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language'), true));
@@ -60,7 +72,7 @@ class Review extends \Opencart\System\Engine\Controller {
 
 		$data['language'] = $this->config->get('config_language');
 
-		return $this->load->view('product/review', $data);
+		return $this->load->view('product/review', $data);*/
 	}
 
 	/**
@@ -68,18 +80,18 @@ class Review extends \Opencart\System\Engine\Controller {
 	 *
 	 * @return void
 	 */
-	public function list(): void {
+	/*public function list(): void {
 		$this->load->language('product/review');
 
 		$this->response->setOutput($this->getList());
-	}
+	}*/
 
 	/**
 	 * Get List
 	 *
 	 * @return string
 	 */
-	public function getList(): string {
+	/*public function getList(): string {
 		if (isset($this->request->get['product_id'])) {
 			$product_id = (int)$this->request->get['product_id'];
 		} else {
@@ -121,14 +133,14 @@ class Review extends \Opencart\System\Engine\Controller {
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($review_total) ? (($page - 1) * $limit) + 1 : 0, ((($page - 1) * $limit) > ($review_total - $limit)) ? $review_total : ((($page - 1) * $limit) + $limit), $review_total, ceil($review_total / $limit));
 
 		return $this->load->view('product/review_list', $data);
-	}
+	}*/
 
 	/**
 	 * Write
 	 *
 	 * @return void
 	 */
-	public function write(): void {
+	/*public function write(): void {
 		$this->load->language('product/review');
 
 		$json = [];
@@ -212,5 +224,5 @@ class Review extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
+	}*/
 }

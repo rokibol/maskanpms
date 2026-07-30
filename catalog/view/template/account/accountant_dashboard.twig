@@ -65,7 +65,7 @@
                         <div class="pms-stat-icon primary-bg">
                             <i class="fas fa-regular fa-receipt"></i>
                         </div>
-                        <div class="pms-stat-label">Total Expenses (MTD)</div>
+                        <div class="pms-stat-label">Total Expenses</div>
                         <div class="pms-stat-value">৳ {{ monthly_expenses|default('0') }}</div>
                         <div class="pms-stat-sub">{{ expense_count|default('0') }} transactions this month</div>
                     </div>
@@ -75,7 +75,7 @@
                         <div class="pms-stat-icon green-bg">
                             <i class="fas fa-regular fa-credit-card"></i>
                         </div>
-                        <div class="pms-stat-label">Total Collections (MTD)</div>
+                        <div class="pms-stat-label">Total Collections</div>
                         <div class="pms-stat-value">৳ {{ monthly_collections|default('0') }}</div>
                         <div class="pms-stat-sub">{{ payment_count|default('0') }} payments received</div>
                     </div>

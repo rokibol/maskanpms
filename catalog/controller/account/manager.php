@@ -171,7 +171,7 @@ class Manager extends \Opencart\System\Engine\Controller {
 		$manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
 		
 		if ($customer_group_id != $manager_group_id) {
-			$this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+			$this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
 		}*/
 		
 		$criteria = isset($this->request->get['criteria']) ? $this->request->get['criteria'] : 'ownership';
@@ -182,7 +182,7 @@ class Manager extends \Opencart\System\Engine\Controller {
 		$project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
 		
 		if (!$project) {
-			$this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language')));
+			$this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
 		}
 		
 		$this->load->model('pms/shareholder');

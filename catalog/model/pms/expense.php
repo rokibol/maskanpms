@@ -444,7 +444,7 @@ class Expense extends \Opencart\System\Engine\Model {
                     category_id, 
                     total_amount AS amount 
                 FROM `" . DB_PREFIX . "expenses` 
-                WHERE is_deleted = 0 AND project_id = 14
+                WHERE is_deleted = 0 AND project_id = ".$project_id."
 
                 UNION ALL
 

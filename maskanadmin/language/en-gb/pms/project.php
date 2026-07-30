@@ -32,6 +32,7 @@ $_['text_disabled']          = 'Disabled';
 
 $_['tab_dates']              = 'Dates';
 $_['tab_financial']          = 'Financial';
+$_['tab_subscription']          = 'Subscription';
 
 // Column
 $_['column_name']            = 'Project Name';

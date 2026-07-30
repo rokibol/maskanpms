@@ -99,6 +99,6 @@ $_['text_pms_expenses']      = 'Expenses';
 $_['text_pms_payments']      = 'Payments';
 $_['text_pms_apartments']    = 'Apartments';
 $_['text_pms_reports']       = 'Reports';
-$_['text_pms_settings']      = 'Settings';
-
+//$_['text_pms_settings']      = 'Settings';
+$_['text_pms_settings']      = 'PMS Settings';
 $_['text_pms_subscription_settings'] = 'Subscription Settings';

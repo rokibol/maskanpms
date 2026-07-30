@@ -38,7 +38,7 @@
       {% if logged %}
         <button type="button" id="button-menu" class="btn btn-link d-inline-block d-lg-none"><i class="fa-solid fa-bars"></i></button>
         <ul class="nav navbar-nav">
-          <li id="nav-notification" class="nav-item dropdown">
+          {#<li id="nav-notification" class="nav-item dropdown">
             <a href="#" data-bs-toggle="dropdown" class="nav-link dropdown-toggle"><i class="fa-regular fa-bell"></i>{% if notification_total %} <span class="badge bg-danger">{{ notification_total }}</span>{% endif %}</a>
             <div class="dropdown-menu dropdown-menu-end">
               {% if notifications %}
@@ -51,7 +51,7 @@
               {% endif %}
             </div>
           </li>
-          <li id="nav-language" class="nav-item dropdown">{{ language }}</li>
+          <li id="nav-language" class="nav-item dropdown">{{ language }}</li>#}
           <li id="nav-profile" class="nav-item dropdown">
             <a href="#" data-bs-toggle="dropdown" class="nav-link dropdown-toggle"><img src="{{ image }}" alt="{{ firstname }} {{ lastname }}" title="{{ firstname }} {{ lastname }}" class="rounded-circle"/><span class="d-none d-md-inline d-lg-inline">&nbsp;&nbsp;&nbsp;{{ firstname }} {{ lastname }} <i class="fa-solid fa-caret-down fa-fw"></i></span></a>
             <ul class="dropdown-menu dropdown-menu-end">
