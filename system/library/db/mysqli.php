@@ -96,9 +96,6 @@ class MySQLi {
 	 */
 	public function query(string $sql) {
 		try {
-			$myfile = fopen("sqlquery.txt", "a+");
-			fwrite($myfile, $sql . PHP_EOL);
-			fclose($myfile);
 			
 			$query = $this->connection->query($sql);
 
