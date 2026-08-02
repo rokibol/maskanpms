@@ -3,34 +3,57 @@ namespace Opencart\Catalog\Helper;
 
 class PmsSettings extends \Opencart\System\Engine\Controller {
 
-    /**
-     * Get a setting value
-     */
-    public function getSetting(string $key): string {
-        $query = $this->db->query("
-            SELECT setting_value 
-            FROM `" . DB_PREFIX . "pms_settings`
-            WHERE setting_key = '" . $this->db->escape($key) . "'
-        ");
-        
-        return $query->row['setting_value'] ?? '';
-    }
+    private $settings_cache = [];
+    private $cache_time = 3600; // 1 hour cache
 
     /**
-     * Get all settings
+     * Get all settings with caching
      */
-    public function getSettings(): array {
+    public function getAllSettings(): array {
+        // Check if already loaded in memory
+        if (!empty($this->settings_cache)) {
+            return $this->settings_cache;
+        }
+
+        // Check session cache
+        $cache_key = 'pms_settings_all';
+        if (isset($this->session->data['pms_settings_cache'][$cache_key])) {
+            $cached = $this->session->data['pms_settings_cache'][$cache_key];
+            if ($cached['expires'] > time()) {
+                $this->settings_cache = $cached['data'];
+                return $this->settings_cache;
+            }
+        }
+
+        // Query database (only once)
         $query = $this->db->query("
             SELECT setting_key, setting_value 
             FROM `" . DB_PREFIX . "pms_settings`
         ");
-        
+
         $settings = [];
         foreach ($query->rows as $row) {
             $settings[$row['setting_key']] = $row['setting_value'];
         }
-        
+
+        // Store in memory cache
+        $this->settings_cache = $settings;
+
+        // Store in session cache
+        $this->session->data['pms_settings_cache'][$cache_key] = [
+            'data' => $settings,
+            'expires' => time() + $this->cache_time
+        ];
+
         return $settings;
+    }
+
+    /**
+     * Get a single setting value with caching
+     */
+    public function getSetting(string $key): string {
+        $settings = $this->getAllSettings();
+        return $settings[$key] ?? '';
     }
 
     /**
@@ -52,5 +75,13 @@ class PmsSettings extends \Opencart\System\Engine\Controller {
      */
     public function getShareholderGroupId(): int {
         return (int)$this->getSetting('shareholder_group_id');
+    }
+
+    /**
+     * Clear settings cache
+     */
+    public function clearCache(): void {
+        unset($this->session->data['pms_settings_cache']);
+        $this->settings_cache = [];
     }
 }

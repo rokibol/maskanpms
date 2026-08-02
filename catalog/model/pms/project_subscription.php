@@ -2,11 +2,66 @@
 namespace Opencart\Catalog\Model\Pms;
 
 class ProjectSubscription extends \Opencart\System\Engine\Model {
+    /**
+     * Check if project subscription is active with caching
+     */
+    public function isSubscriptionActive(int $project_id): bool {
+        $cache_key = 'sub_active_' . $project_id;
+        
+        // Check session cache
+        if (isset($this->session->data['pms_model_cache'][$cache_key])) {
+            $cached = $this->session->data['pms_model_cache'][$cache_key];
+            if ($cached['expires'] > time()) {
+                return $cached['status'];
+            }
+        }
+        
+        // Check for admin override
+        $override = $this->db->query("
+            SELECT COUNT(*) as total
+            FROM `" . DB_PREFIX . "pms_project_subscription`
+            WHERE project_id = '" . (int)$project_id . "'
+            AND admin_override = 1
+            AND override_until > NOW()
+        ");
+
+        if ($override->row['total'] > 0) {
+            $status = true;
+        } else {
+            // Check normal subscription
+            $query = $this->db->query("
+                SELECT COUNT(*) as total
+                FROM `" . DB_PREFIX . "pms_project_subscription`
+                WHERE project_id = '" . (int)$project_id . "'
+                AND status = 'active'
+                AND end_date > NOW()
+                AND admin_override = 0
+            ");
+            $status = $query->row['total'] > 0;
+        }
+        
+        // Store in cache
+        $this->session->data['pms_model_cache'][$cache_key] = [
+            'status' => $status,
+            'expires' => time() + 300 // 5 minutes
+        ];
+        
+        return $status;
+    }
 
     /**
-     * Get project subscription settings
+     * Get project subscription settings (project-specific)
      */
     public function getProjectSubscriptionSettings(int $project_id): array {
+        $cache_key = 'project_settings_' . $project_id;
+        
+        if (isset($this->session->data['pms_model_cache'][$cache_key])) {
+            $cached = $this->session->data['pms_model_cache'][$cache_key];
+            if ($cached['expires'] > time()) {
+                return $cached['data'];
+            }
+        }
+        
         $query = $this->db->query("
             SELECT 
                 subscription_rate_per_apartment,
@@ -17,9 +72,16 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
             WHERE project_id = '" . (int)$project_id . "'
         ");
         
-        return $query->row;
+        $data = $query->row;
+        
+        $this->session->data['pms_model_cache'][$cache_key] = [
+            'data' => $data,
+            'expires' => time() + 300
+        ];
+        
+        return $data;
     }
-
+    
     /**
      * Calculate subscription amount based on project settings
      */
@@ -161,16 +223,25 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
     }
 
     /**
-     * Get subscription by project ID
+     * Get subscription by project ID with caching
      */
     public function getSubscriptionByProject(int $project_id): array {
+        $cache_key = 'sub_details_' . $project_id;
+        
+        if (isset($this->session->data['pms_model_cache'][$cache_key])) {
+            $cached = $this->session->data['pms_model_cache'][$cache_key];
+            if ($cached['expires'] > time()) {
+                return $cached['data'];
+            }
+        }
+        
         $query = $this->db->query("
             SELECT s.*, 
-                   p.name as project_name,
-                   p.subscription_rate_per_apartment,
-                   p.subscription_discount_type,
-                   p.subscription_discount_value,
-                   p.subscription_discount_reason
+                p.name as project_name,
+                p.subscription_rate_per_apartment,
+                p.subscription_discount_type,
+                p.subscription_discount_value,
+                p.subscription_discount_reason
             FROM `" . DB_PREFIX . "pms_project_subscription` s
             LEFT JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id
             WHERE s.project_id = '" . (int)$project_id . "'
@@ -178,13 +249,32 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
             LIMIT 1
         ");
 
-        return $query->row;
+        $data = $query->row;
+        
+        $this->session->data['pms_model_cache'][$cache_key] = [
+            'data' => $data,
+            'expires' => time() + 300
+        ];
+        
+        return $data;
     }
 
     /**
-     * Check if project subscription is active
+     * Check if project subscription is active - OPTIMIZED single query
+     * @param int $project_id
+     * @return bool
      */
-    public function isSubscriptionActive(int $project_id): bool {
+    public function isSubscriptionActiveOptimized(int $project_id): bool {
+        $cache_key = 'sub_active_' . $project_id;
+        
+        // Check session cache
+        if (isset($this->session->data['pms_model_cache'][$cache_key])) {
+            $cached = $this->session->data['pms_model_cache'][$cache_key];
+            if ($cached['expires'] > time()) {
+                return $cached['status'];
+            }
+        }
+        
         // Check for admin override
         $override = $this->db->query("
             SELECT COUNT(*) as total
@@ -195,43 +285,27 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
         ");
 
         if ($override->row['total'] > 0) {
-            return true;
+            $status = true;
+        } else {
+            // Check normal subscription
+            $query = $this->db->query("
+                SELECT COUNT(*) as total
+                FROM `" . DB_PREFIX . "pms_project_subscription`
+                WHERE project_id = '" . (int)$project_id . "'
+                AND status = 'active'
+                AND end_date > NOW()
+                AND admin_override = 0
+            ");
+            $status = $query->row['total'] > 0;
         }
-
-        // Check normal subscription
-        $query = $this->db->query("
-            SELECT COUNT(*) as total
-            FROM `" . DB_PREFIX . "pms_project_subscription`
-            WHERE project_id = '" . (int)$project_id . "'
-            AND status = 'active'
-            AND end_date > NOW()
-            AND admin_override = 0
-        ");
-
-        return $query->row['total'] > 0;
-    }
-
-    /**
-     * Check if project subscription is active - OPTIMIZED single query
-     * @param int $project_id
-     * @return bool
-     */
-    public function isSubscriptionActiveOptimized(int $project_id): bool {
-        // Single query to check both override and normal subscription
-        $query = $this->db->query("
-            SELECT 
-                CASE 
-                    WHEN admin_override = 1 AND override_until > NOW() THEN 1
-                    WHEN status = 'active' AND end_date > NOW() THEN 1
-                    ELSE 0
-                END as is_active
-            FROM `" . DB_PREFIX . "pms_project_subscription`
-            WHERE project_id = '" . (int)$project_id . "'
-            ORDER BY subscription_id DESC
-            LIMIT 1
-        ");
         
-        return (int)($query->row['is_active'] ?? 0) === 1;
+        // Store in cache
+        $this->session->data['pms_model_cache'][$cache_key] = [
+            'status' => $status,
+            'expires' => time() + 300 // 5 minutes
+        ];
+        
+        return $status;
     }
 
     /**

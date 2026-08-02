@@ -11,6 +11,9 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $this->load->language('pms/subscription');
         $this->document->setTitle($this->language->get('heading_title'));
 
+        $this->load->model('pms/settings');
+        $settings = $this->model_pms_settings->getAll();
+
         $this->load->model('pms/project');
         $project = $this->customer->getProject();
 
@@ -83,6 +86,16 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
                     $result = $this->model_pms_project_subscription->activateSubscription($project['project_id'], $duration_months);
 
                     if ($result['success']) {
+                        // Clear subscription cache
+                        unset($this->session->data['pms_cache']);
+                        unset($this->session->data['pms_model_cache']);
+                        
+                        // Clear specific subscription cache
+                        $this->session->data['pms_cache']['pms_sub_active_' . $project['project_id']] = [
+                            'status' => true,
+                            'expires' => time() + 3600
+                        ];
+                        
                         $json['success'] = $this->language->get('text_activation_success');
                         $json['total_amount'] = $result['calculation']['final_amount'];
                         $json['end_date'] = date('d M Y', strtotime($result['end_date']));

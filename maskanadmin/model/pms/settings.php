@@ -68,4 +68,12 @@ class Settings extends \Opencart\System\Engine\Model {
             $this->updateSetting($key, $value);
         }
     }
+
+    /**
+     * Clear cache for catalog settings
+     */
+    public function clearCache(): void {
+        // This will be used by catalog model to clear cache
+        // We'll handle it via session
+    }
 }

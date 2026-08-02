@@ -215,9 +215,9 @@ class Register extends \Opencart\System\Engine\Controller {
         }
 
         if (!$json) {
-            // Get manager group ID from settings
-            $this->load->helper('pms_settings');
-            $manager_group_id = $this->helper_pms_settings->getManagerGroupId();
+            // Load settings model to get manager group ID
+            $this->load->model('pms/settings');
+            $manager_group_id = $this->model_pms_settings->getManagerGroupId();
 
             // Start transaction
             $this->db->query("START TRANSACTION");
@@ -230,7 +230,7 @@ class Register extends \Opencart\System\Engine\Controller {
                     'email'             => $this->request->post['email'],
                     'telephone'         => $this->request->post['telephone'],
                     'password'          => password_hash($this->request->post['password'], PASSWORD_DEFAULT),
-                    'customer_group_id' => $manager_group_id, // Manager group
+                    'customer_group_id' => $manager_group_id ?: 1, // Manager group
                     'status'            => 1,
                     'newsletter'        => 0,
                     'safe'              => 1

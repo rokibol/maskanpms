@@ -29,13 +29,19 @@ class Settings extends \Opencart\System\Engine\Controller {
         // Get current settings
         $settings = $this->model_pms_settings->getSettings();
         
-        $data['manager_group_id'] = $settings['manager_group_id'] ?? '';
-        $data['accountant_group_id'] = $settings['accountant_group_id'] ?? '';
-        $data['shareholder_group_id'] = $settings['shareholder_group_id'] ?? '';
+        $data['manager_group_id'] = $settings['manager_group_id'] ?? 1;
+        $data['accountant_group_id'] = $settings['accountant_group_id'] ?? 2;
+        $data['shareholder_group_id'] = $settings['shareholder_group_id'] ?? 3;
         
         // Handle form submission
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
             $this->model_pms_settings->updateSettings($this->request->post);
+            
+            // Clear the cache for all users
+            //$this->load->library('pms/settings');
+            $registry = new \Opencart\System\Engine\Registry();
+            $settings = new \Opencart\System\Library\Pms\Settings($registry);
+            $settings->clearCache();
             
             $this->session->data['success'] = $this->language->get('text_settings_updated');
             $this->response->redirect($this->url->link('pms/settings', 'user_token=' . $this->session->data['user_token']));
