@@ -183,6 +183,13 @@ class ColumnLeft extends \Opencart\System\Engine\Controller {
 				'children' => []
 			];
 
+			// Add to PMS menu
+			$pms[] = [
+				'name' => $this->language->get('text_pms_payment_requests'),
+				'href' => $this->url->link('pms/payment_requests', 'user_token=' . $this->session->data['user_token']),
+				'children' => []
+			];
+
 			// Add PMS Settings menu
 			$pms[] = [
 				'name' => $this->language->get('text_pms_settings'),

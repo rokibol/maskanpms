@@ -102,3 +102,4 @@ $_['text_pms_reports']       = 'Reports';
 //$_['text_pms_settings']      = 'Settings';
 $_['text_pms_settings']      = 'PMS Settings';
 $_['text_pms_subscription_settings'] = 'Subscription Settings';
+$_['text_pms_payment_requests'] = 'Payment Requests';

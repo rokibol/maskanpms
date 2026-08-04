@@ -1,0 +1,98 @@
+{{ header }}
+
+<style>
+    .success-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
+    }
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: #e8f5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+    }
+    .success-icon i {
+        font-size: 50px;
+        color: #1F8A4D;
+    }
+    .success-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0B3C5D;
+        margin-bottom: 15px;
+    }
+    .success-message {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    .success-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    .success-card p {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+    .btn-dashboard {
+        background: #1F8A4D;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    .btn-dashboard:hover {
+        background: #166d3e;
+        color: white;
+        transform: translateY(-2px);
+    }
+    .help-text {
+        margin-top: 20px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+</style>
+
+<div class="container success-container">
+    <div class="success-icon">
+        <i class="fa-regular fa-circle-check"></i>
+    </div>
+    
+    <h1 class="success-title">{{ heading_success }}</h1>
+    
+    <p class="success-message">
+        Your payment request has been submitted successfully!
+    </p>
+    
+    <div class="success-card">
+        <p><strong>📋 What happens next?</strong></p>
+        <p>1. Our admin team will verify your payment</p>
+        <p>2. You will receive a confirmation email once approved</p>
+        <p>3. Your subscription will be activated immediately after approval</p>
+        <p>4. You can continue using the system during the verification process</p>
+    </div>
+    
+    <a href="{{ dashboard }}" class="btn-dashboard">
+        <i class="fa-solid fa-chart-line"></i> Go to Dashboard
+    </a>
+    
+    <div class="help-text">
+        <i class="fa-regular fa-circle-info"></i>
+        Verification typically takes 24 hours. For urgent requests, contact support.
+    </div>
+</div>
+
+{{ footer }}

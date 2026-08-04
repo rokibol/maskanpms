@@ -385,4 +385,54 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
             'effective_rate' => $final_monthly / $apartment_count
         ];
     }
+
+    /**
+     * Check if there's a pending payment request for this project
+     */
+    public function hasPendingPaymentRequest(int $project_id): bool {
+        $query = $this->db->query("
+            SELECT COUNT(*) as total
+            FROM `" . DB_PREFIX . "pms_subscription_payment_request`
+            WHERE project_id = '" . (int)$project_id . "'
+            AND status = 'pending'
+            AND is_deleted = 0
+        ");
+        
+        return $query->row['total'] > 0;
+    }
+
+    /**
+     * Get pending payment request details
+     */
+    public function getPendingPaymentRequest(int $project_id): array {
+        $query = $this->db->query("
+            SELECT * 
+            FROM `" . DB_PREFIX . "pms_subscription_payment_request`
+            WHERE project_id = '" . (int)$project_id . "'
+            AND status = 'pending'
+            AND is_deleted = 0
+            ORDER BY request_id DESC
+            LIMIT 1
+        ");
+        
+        return $query->row;
+    }
+
+    /**
+     * Get subscription status with pending check
+     */
+    public function getSubscriptionStatus(int $project_id): string {
+        // Check if subscription is active
+        if ($this->isSubscriptionActive($project_id)) {
+            return 'active';
+        }
+        
+        // Check if there's a pending payment request
+        if ($this->hasPendingPaymentRequest($project_id)) {
+            return 'pending_approval';
+        }
+        
+        // No subscription and no pending request
+        return 'expired';
+    }
 }

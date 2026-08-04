@@ -440,3 +440,40 @@ footer h5 {
   font-size: 16px;
   color: #FFFFFF;
 }
+.filter-bar {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.badge-pending {
+    background: #ffc107;
+    color: #212529;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+}
+.badge-approved {
+    background: #28a745;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+}
+.badge-rejected {
+    background: #dc3545;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+}
+.bulk-bar {
+    background: #fff3cd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}

@@ -1,0 +1,402 @@
+{{ header }}
+
+<style>
+    .payment-request-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .payment-request-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .payment-request-header {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        padding: 25px 30px;
+        color: white;
+    }
+    .payment-request-header h2 {
+        margin: 0;
+        font-size: 22px;
+        color: #FFFFFF;
+    }
+    .payment-request-header p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+    .payment-request-body {
+        padding: 25px 30px;
+    }
+    .info-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #e0e0e0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        color: #555;
+    }
+    .info-value {
+        font-weight: 600;
+        color: #333;
+    }
+    .bkash-info {
+        background: #e8f0fe;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+        border: 1px solid #d1e0f5;
+    }
+    .bkash-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0B3C5D;
+    }
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 14px;
+    }
+    .form-group .required {
+        color: #dc3545;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #1F8A4D;
+        box-shadow: 0 0 0 3px rgba(31, 138, 77, 0.1);
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+    .form-control.is-valid {
+        border-color: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    .valid-feedback {
+        display: block;
+        color: #28a745;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: #1F8A4D;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover {
+        background: #166d3e;
+    }
+    .btn-submit:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    .btn-back {
+        width: 100%;
+        padding: 12px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .btn-back:hover {
+        background: #5a6268;
+    }
+    .note-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 15px;
+        text-align: center;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px 15px;
+        border-radius: 6px;
+        border-left: 4px solid #dc3545;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .alert-danger i {
+        font-size: 18px;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px 15px;
+        border-radius: 6px;
+        border-left: 4px solid #28a745;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .alert-success i {
+        font-size: 18px;
+    }
+    .spinner-border-sm {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+</style>
+
+<div class="container payment-request-container">
+    <div class="payment-request-card">
+        <div class="payment-request-header">
+            <h2><i class="fa-regular fa-credit-card"></i> Confirm Payment</h2>
+            <p>Submit your payment details for verification</p>
+        </div>
+        
+        <div class="payment-request-body">
+            
+            <!-- Error Alert -->
+            <div id="error-alert" class="alert-danger" style="display: none;">
+                <i class="fa-regular fa-circle-exclamation"></i>
+                <span id="error-message"></span>
+            </div>
+            
+            <!-- Success Alert -->
+            <div id="success-alert" class="alert-success" style="display: none;">
+                <i class="fa-regular fa-circle-check"></i>
+                <span id="success-message"></span>
+            </div>
+            
+            <!-- Summary -->
+            <div class="info-summary">
+                <div class="info-row">
+                    <span class="info-label">Project</span>
+                    <span class="info-value">{{ project_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value">{{ duration_months }} month(s)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Apartments</span>
+                    <span class="info-value">{{ apartment_count }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rate per Apartment</span>
+                    <span class="info-value">৳ {{ rate_per_apartment|number_format(2) }}</span>
+                </div>
+                <div class="info-row" style="border-top: 2px solid #ddd; padding-top: 12px;">
+                    <span class="info-label" style="font-weight: 700;">Total Amount</span>
+                    <span class="info-value" style="font-size: 20px; color: #1F8A4D;">৳ {{ amount|number_format(2) }}</span>
+                </div>
+            </div>
+            
+            <!-- bKash Info -->
+            <div class="bkash-info">
+                <div style="font-size: 14px; color: #555;">Send payment to this bKash number:</div>
+                <div class="bkash-number">{{ bkash_number }}</div>
+                <div style="font-size: 12px; color: #666;">Reference: <strong>{{ project_name|slice(0, 10) }}</strong></div>
+            </div>
+            
+            <!-- Payment Form -->
+            <form id="form-payment-request" action="{{ action }}" method="post" data-oc-toggle="ajax">
+                
+                <input type="hidden" name="duration_months" value="{{ duration_months }}">
+                <input type="hidden" name="amount" value="{{ amount }}">
+                
+                <div class="form-group required">
+                    <label for="input-bkash">Your bKash Number <span class="required">*</span></label>
+                    <input type="tel" name="bkash_number" id="input-bkash" class="form-control" 
+                           placeholder="01XXXXXXXXX" required>
+                    <div class="invalid-feedback" id="bkash-error"></div>
+                    <small class="text-muted">The bKash number you used to send the payment</small>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="input-transaction">Transaction ID <span class="required">*</span></label>
+                    <input type="text" name="transaction_id" id="input-transaction" class="form-control" 
+                           placeholder="Enter bKash transaction ID" required>
+                    <div class="invalid-feedback" id="transaction-error"></div>
+                    <small class="text-muted">Example: BKASH1234567890</small>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    <i class="fa-regular fa-paper-plane"></i> Submit Payment Request
+                </button>
+                
+                <button type="button" class="btn-back" onclick="window.location.href='{{ back }}'">
+                    <i class="fa-solid fa-arrow-left"></i> Cancel
+                </button>
+                
+                <div class="note-text">
+                    <i class="fa-regular fa-clock"></i>
+                    Your subscription will be activated after admin verification (typically within 24 hours).
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var form = $('#form-payment-request');
+    
+    // Real-time validation for transaction ID (check duplicate on blur)
+    $('#input-transaction').on('blur', function() {
+        var transactionId = $(this).val().trim();
+        
+        if (transactionId.length > 0) {
+            $.ajax({
+                url: 'index.php?route=account/pms_subscription_payment_request.checkTransaction&language={{ language }}',
+                type: 'GET',
+                data: { transaction_id: transactionId },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.exists) {
+                        $('#input-transaction').addClass('is-invalid').removeClass('is-valid');
+                        $('#transaction-error').text(data.message || 'This transaction ID has already been used.');
+                        $('#submit-btn').prop('disabled', true);
+                    } else {
+                        $('#input-transaction').removeClass('is-invalid').addClass('is-valid');
+                        $('#transaction-error').text('');
+                        $('#submit-btn').prop('disabled', false);
+                    }
+                }
+            });
+        } else {
+            $('#input-transaction').removeClass('is-invalid is-valid');
+            $('#transaction-error').text('');
+            $('#submit-btn').prop('disabled', false);
+        }
+    });
+    
+    // Form submit handler
+    form.on('submit', function(e) {
+        // Show loading state
+        $('#submit-btn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Submitting...');
+        
+        // Let the form submit via AJAX (data-oc-toggle="ajax")
+        // The response will be handled by OpenCart's built-in AJAX handler
+        return true;
+    });
+    
+    // OpenCart's AJAX response handling
+    // This listens for the AJAX response and shows errors properly
+    $(document).ajaxComplete(function(event, xhr, settings) {
+        // Check if this is our form submission
+        if (settings.url && settings.url.indexOf('pms_subscription_payment_request.submit') !== -1) {
+            try {
+                var response = JSON.parse(xhr.responseText);
+                
+                if (response.error) {
+                    // Show error
+                    if (typeof response.error === 'object') {
+                        // Field-specific errors
+                        if (response.error.transaction_id) {
+                            $('#input-transaction').addClass('is-invalid');
+                            $('#transaction-error').text(response.error.transaction_id);
+                        }
+                        if (response.error.bkash_number) {
+                            $('#input-bkash').addClass('is-invalid');
+                            $('#bkash-error').text(response.error.bkash_number);
+                        }
+                        if (response.error.amount) {
+                            showError(response.error.amount);
+                        }
+                        if (response.error.duration) {
+                            showError(response.error.duration);
+                        }
+                    } else {
+                        // General error
+                        showError(response.error);
+                    }
+                    
+                    $('#submit-btn').prop('disabled', false).html('<i class="fa-regular fa-paper-plane"></i> Submit Payment Request');
+                    
+                } else if (response.success) {
+                    // Success - redirect
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                    }
+                }
+            } catch (e) {
+                // If response is not JSON
+                console.log('Error parsing response:', e);
+            }
+        }
+    });
+    
+    // Show error function
+    function showError(message) {
+        $('#error-alert').show();
+        $('#error-message').text(message);
+        
+        // Auto-hide after 10 seconds
+        setTimeout(function() {
+            $('#error-alert').fadeOut();
+        }, 10000);
+    }
+    
+    // Show success function
+    function showSuccess(message) {
+        $('#success-alert').show();
+        $('#success-message').text(message);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(function() {
+            $('#success-alert').fadeOut();
+        }, 5000);
+    }
+    
+    // Clear errors on input change
+    $('#input-transaction, #input-bkash').on('input', function() {
+        $(this).removeClass('is-invalid is-valid');
+        $(this).siblings('.invalid-feedback').text('');
+        $('#error-alert').hide();
+        $('#submit-btn').prop('disabled', false);
+    });
+});
+</script>
+
+{{ footer }}

@@ -293,7 +293,7 @@
                     <input type="hidden" id="selected-duration" value="">
                     
                     <button type="button" id="btn-activate" class="btn-activate" disabled>
-                        <i class="fa-regular fa-credit-card"></i> Activate Subscription
+                        <i class="fa-regular fa-credit-card"></i> Continue to Payment
                     </button>
                 </div>
             </div>
@@ -306,7 +306,7 @@
 </div>
 
 <!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1">
+{#<div class="modal fade" id="paymentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -331,9 +331,10 @@
             </form>
         </div>
     </div>
-</div>
+</div>#}
 
 <script>
+// Replace the existing payment modal script with this
 $(document).ready(function() {
     var selectedMonths = null;
     var selectedAmount = null;
@@ -353,10 +354,8 @@ $(document).ready(function() {
     
     $('#btn-activate').on('click', function() {
         if (selectedMonths) {
-            $('#modal-duration').text(selectedLabel);
-            $('#modal-amount').text(selectedAmount);
-            $('#modal-duration-months').val(selectedMonths);
-            $('#paymentModal').modal('show');
+            // Direct redirect to payment request form
+            window.location.href = 'index.php?route=account/pms_subscription_payment_request&duration=' + selectedMonths;
         }
     });
 });

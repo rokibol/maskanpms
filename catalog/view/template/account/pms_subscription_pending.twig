@@ -1,0 +1,301 @@
+{{ header }}
+
+<style>
+    .pending-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .pending-card {
+        max-width: 600px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+    }
+    .pending-header {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        padding: 40px 20px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .pending-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+    .icon-wrapper {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(4px);
+    }
+    .icon-wrapper i {
+        font-size: 50px;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .pending-header h2 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .pending-body {
+        padding: 30px;
+    }
+    .message-box {
+        background: #FFFBEB;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-left: 4px solid #F59E0B;
+        text-align: left;
+    }
+    .message-box p {
+        margin: 0;
+        color: #78350F;
+        line-height: 1.6;
+    }
+    .pending-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        text-align: left;
+        border: 1px solid #e0e0e0;
+    }
+    .pending-info .row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .pending-info .row:last-child {
+        border-bottom: none;
+    }
+    .pending-info .label {
+        font-weight: 600;
+        color: #555;
+    }
+    .pending-info .value {
+        font-weight: 600;
+        color: #333;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: #F59E0B;
+        color: white;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+    }
+    .btn-refresh {
+        background: #0B3C5D;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        text-decoration: none;
+    }
+    .btn-refresh:hover {
+        background: #1F8A4D;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .btn-logout {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-left: 10px;
+    }
+    .btn-logout:hover {
+        background: #5a6268;
+        color: white;
+    }
+    .help-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 13px;
+        color: #6c757d;
+    }
+    .help-section a {
+        color: #1F8A4D;
+        text-decoration: none;
+    }
+    .help-section a:hover {
+        text-decoration: underline;
+    }
+    .spinner-container {
+        margin: 15px 0;
+    }
+    .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #F59E0B;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 576px) {
+        .pending-body {
+            padding: 20px;
+        }
+        .pending-header h2 {
+            font-size: 22px;
+        }
+        .btn-refresh, .btn-logout {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            text-align: center;
+        }
+        .btn-logout {
+            margin-left: 0;
+        }
+    }
+</style>
+
+<div class="container pending-container">
+    <div class="pending-card">
+        <div class="pending-header">
+            <div class="icon-wrapper">
+                <i class="fas fa-regular fa-clock"></i>
+            </div>
+            <h2>{{ heading_title }}</h2>
+        </div>
+        
+        <div class="pending-body">
+            
+            <!-- Status Badge -->
+            <div style="margin-bottom: 20px;">
+                <span class="status-badge">
+                    <i class="fas fa-regular fa-spinner fa-spin"></i> PENDING APPROVAL
+                </span>
+            </div>
+            
+            <!-- Message -->
+            <div class="message-box">
+                <p>
+                    <i class="fas fa-regular fa-circle-info" style="color: #F59E0B;"></i>
+                    <strong>{{ text_pending_message }}</strong>
+                </p>
+            </div>
+            
+            <!-- Submission Details -->
+            <div class="pending-info">
+                <div class="row">
+                    <span class="label">Project</span>
+                    <span class="value">{{ project_name }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Submitted On</span>
+                    <span class="value">{{ submitted_at }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Transaction ID</span>
+                    <span class="value" style="font-family: monospace; color: #0B3C5D;">{{ transaction_id }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Amount</span>
+                    <span class="value" style="color: #1F8A4D; font-size: 18px;">৳ {{ amount|number_format(2) }}</span>
+                </div>
+            </div>
+            
+            <!-- What to expect -->
+            <div style="text-align: left; margin-bottom: 25px;">
+                <p style="font-size: 13px; color: #6c757d; margin: 0;">
+                    <i class="fas fa-regular fa-clock"></i>
+                    {{ text_waiting_note }}
+                </p>
+            </div>
+            
+            <!-- Spinner -->
+            <div class="spinner-container">
+                <div class="spinner"></div>
+            </div>
+            
+            <!-- Buttons -->
+            <div style="margin-top: 10px;">
+                <a href="{{ refresh }}" class="btn-refresh">
+                    <i class="fas fa-regular fa-rotate"></i> Check Status
+                </a>
+                <a href="{{ logout }}" class="btn-logout">
+                    <i class="fas fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="help-section">
+                <i class="fas fa-regular fa-circle-info"></i>
+                Need immediate assistance? Contact us at 
+                <a href="mailto:{{ support_email }}">{{ support_email }}</a> 
+                or call <a href="tel:{{ support_phone }}">{{ support_phone }}</a>
+            </div>
+            
+            <!-- Auto-refresh script -->
+            <script>
+                // Auto check status every 60 seconds
+                var checkInterval = setInterval(function() {
+                    $.ajax({
+                        url: '{{ refresh }}',
+                        type: 'GET',
+                        success: function() {
+                            // Reload the page to check if status changed
+                            location.reload();
+                        }
+                    });
+                }, 60000); // 60 seconds
+                
+                // Clear interval when page is unloaded
+                $(window).on('beforeunload', function() {
+                    clearInterval(checkInterval);
+                });
+            </script>
+            
+        </div>
+    </div>
+</div>
+
+{{ footer }}

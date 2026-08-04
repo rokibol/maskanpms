@@ -96,6 +96,16 @@
                         <span>Subscription</span>
                     </a>
                 </li>
+
+                {# In the sidebar, if subscription is pending #}
+                {% if subscription_pending %}
+                    <li class="pms-sidebar-nav-item">
+                        <a href="{{ pms_subscription_pending }}" class="pms-sidebar-nav-link active">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>⏳ Pending Approval</span>
+                        </a>
+                    </li>
+                {% endif %}
                 
             {% elseif customer_group_id == 2 %} {# Accountant #}
                 <li class="pms-sidebar-nav-item">

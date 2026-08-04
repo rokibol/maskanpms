@@ -924,3 +924,149 @@ td {
     color: #6c757d;
     margin-top: 4px;
 }
+
+
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .badge-pending {
+        background: #ffc107;
+        color: #212529;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-approved {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-rejected {
+        background: #dc3545;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 10px 20px;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0B3C5D;
+        border-bottom: 3px solid #1F8A4D;
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        border-bottom: 3px solid #1F8A4D;
+        color: #0B3C5D;
+    }
+    .tab-badge {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 1px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 5px;
+    }
+    .tab-badge.pending { background: #fff3cd; color: #856404; }
+    .tab-badge.approved { background: #d4edda; color: #155724; }
+    .tab-badge.rejected { background: #f8d7da; color: #721c24; }
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        justify-content: flex-end;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-approved { background: #d4edda; color: #155724; }
+    .status-rejected { background: #f8d7da; color: #721c24; }
+    .transaction-id {
+        font-family: monospace;
+        font-size: 13px;
+        color: #0B3C5D;
+        font-weight: 600;
+    }
+    .amount-text {
+        font-weight: 700;
+        color: #1F8A4D;
+    }
+    /* Bulk Action Bar */
+    .bulk-bar {
+        background: #fff3cd;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ffc107;
+    }
+    .bulk-bar .bulk-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .bulk-bar .bulk-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .bulk-bar .bulk-controls select {
+        width: auto;
+        min-width: 150px;
+    }
+    
+    @media (max-width: 576px) {
+        .bulk-bar .d-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .bulk-bar .bulk-controls {
+            flex-wrap: wrap !important;
+        }
+        .bulk-bar .bulk-controls select,
+        .bulk-bar .bulk-controls .btn {
+            flex: 1;
+            min-width: 100px;
+        }
+    }
+    .modal-confirm .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal-confirm .modal-header {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        border-bottom: none;
+    }
+    .modal-confirm .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    .modal-confirm .modal-body {
+        padding: 25px;
+    }
+    .modal-confirm .modal-footer {
+        border-top: none;
+        padding: 0 25px 25px;
+    }

@@ -62,7 +62,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $this->response->setOutput($this->load->view('account/pms_subscription', $data));
     }
 
-    public function activate(): void {
+    /*public function activate(): void {
         $this->load->language('pms/subscription');
 
         $json = [];
@@ -105,6 +105,38 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
                     } else {
                         $json['error'] = $result['message'];
                     }
+                }
+            } else {
+                $json['error'] = 'Project not found';
+            }
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }*/
+
+    public function activate(): void {
+        $this->load->language('pms/subscription');
+
+        $json = [];
+
+        if (!$this->customer->isLogged()) {
+            $json['error'] = $this->language->get('error_permission');
+        }
+
+        if (!$json) {
+            $this->load->model('pms/project');
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+
+            if ($project) {
+                $duration_months = (int)$this->request->post['duration_months'];
+
+                if ($duration_months <= 0) {
+                    $json['error'] = 'Invalid duration selected';
+                } else {
+                    // Redirect to payment request form instead of direct activation
+                    $json['success'] = true;
+                    $json['redirect'] = $this->url->link('account/pms_subscription_payment_request', 'language=' . $this->config->get('config_language') . '&duration=' . $duration_months);
                 }
             } else {
                 $json['error'] = 'Project not found';
