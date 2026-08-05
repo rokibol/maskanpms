@@ -1,6 +1,6 @@
-# 🏢 Sky View PMS - Property Management System
+# 🏢 Maskan PMS - Property Management System
 
-**Sky View PMS** is a comprehensive web-based Property Management System designed for Bangladeshi real estate developers, building managers, and shareholders. It streamlines the entire property management lifecycle from construction to operation.
+**Maskan PMS** is a comprehensive web-based Property Management System designed for Bangladeshi real estate developers, building managers, and shareholders. It streamlines the entire property management lifecycle from construction to operation.
 
 ---
 
