@@ -130,7 +130,7 @@ class SubscriptionCheck {
                 MAX(CASE WHEN setting_key = 'manager_group_id' THEN setting_value END) as manager_group_id,
                 MAX(CASE WHEN setting_key = 'accountant_group_id' THEN setting_value END) as accountant_group_id,
                 MAX(CASE WHEN setting_key = 'shareholder_group_id' THEN setting_value END) as shareholder_group_id
-            FROM `" . DB_PREFIX . "pms_settings`
+            FROM `" . DB_PREFIX . "setting`
             WHERE setting_key IN ('manager_group_id', 'accountant_group_id', 'shareholder_group_id')
         ");
 

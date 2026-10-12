@@ -8,14 +8,14 @@ class Settings extends \Opencart\System\Engine\Model {
      */
     public function getSettings(): array {
         $query = $this->db->query("
-            SELECT setting_key, setting_value 
-            FROM `" . DB_PREFIX . "pms_settings`
-            ORDER BY setting_key ASC
+            SELECT `key`, value 
+            FROM `" . DB_PREFIX . "setting`
+            ORDER BY `key` ASC
         ");
         
         $settings = [];
         foreach ($query->rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+            $settings[$row['key']] = $row['value'];
         }
         
         return $settings;
@@ -26,12 +26,12 @@ class Settings extends \Opencart\System\Engine\Model {
      */
     public function getSetting(string $key): string {
         $query = $this->db->query("
-            SELECT setting_value 
-            FROM `" . DB_PREFIX . "pms_settings`
-            WHERE setting_key = '" . $this->db->escape($key) . "'
+            SELECT value 
+            FROM `" . DB_PREFIX . "setting`
+            WHERE key = '" . $this->db->escape($key) . "'
         ");
         
-        return $query->row['setting_value'] ?? '';
+        return $query->row['value'] ?? '';
     }
 
     /**
@@ -40,22 +40,22 @@ class Settings extends \Opencart\System\Engine\Model {
     public function updateSetting(string $key, string $value): void {
         $exists = $this->db->query("
             SELECT COUNT(*) as total 
-            FROM `" . DB_PREFIX . "pms_settings` 
-            WHERE setting_key = '" . $this->db->escape($key) . "'
+            FROM `" . DB_PREFIX . "setting` 
+            WHERE key = '" . $this->db->escape($key) . "'
         ");
         
         if ($exists->row['total'] > 0) {
             $this->db->query("
-                UPDATE `" . DB_PREFIX . "pms_settings` 
-                SET setting_value = '" . $this->db->escape($value) . "',
+                UPDATE `" . DB_PREFIX . "setting` 
+                SET value = '" . $this->db->escape($value) . "',
                     updated_at = NOW()
-                WHERE setting_key = '" . $this->db->escape($key) . "'
+                WHERE key = '" . $this->db->escape($key) . "'
             ");
         } else {
             $this->db->query("
-                INSERT INTO `" . DB_PREFIX . "pms_settings` 
-                SET setting_key = '" . $this->db->escape($key) . "',
-                    setting_value = '" . $this->db->escape($value) . "'
+                INSERT INTO `" . DB_PREFIX . "setting` 
+                SET key = '" . $this->db->escape($key) . "',
+                    value = '" . $this->db->escape($value) . "'
             ");
         }
     }

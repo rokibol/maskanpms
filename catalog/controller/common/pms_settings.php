@@ -36,13 +36,13 @@ class PmsSettings extends \Opencart\System\Engine\Controller {
         $registry = new \Opencart\System\Engine\Registry();
         $db = $registry->get('db');
         $query = $db->query("
-            SELECT setting_key, setting_value 
-            FROM `" . DB_PREFIX . "pms_settings`
+            SELECT `key`, value 
+            FROM `" . DB_PREFIX . "setting`
         ");
 
         $settings = [];
         foreach ($query->rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+            $settings[$row['key']] = $row['value'];
         }
 
         self::$settings = $settings;

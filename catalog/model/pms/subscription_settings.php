@@ -30,13 +30,13 @@ class SubscriptionSettings extends \Opencart\System\Engine\Model {
      */
     public function getAllSettings(): array {
         $query = $this->db->query("
-            SELECT setting_key, setting_value 
+            SELECT `key`, value 
             FROM `" . DB_PREFIX . "pms_subscription_settings`
         ");
         
         $settings = [];
         foreach ($query->rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+            $settings[$row['key']] = $row['value'];
         }
         
         // Merge with defaults
