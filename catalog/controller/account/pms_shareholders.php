@@ -244,11 +244,11 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             $data['lastname'] = '';
         }
         
-        if (isset($this->request->post['email'])) {
+        /*if (isset($this->request->post['email'])) {
             $data['email'] = $this->request->post['email'];
         } else {
             $data['email'] = '';
-        }
+        }*/
         
         if (isset($this->request->post['phone'])) {
             $data['phone'] = $this->request->post['phone'];
@@ -382,13 +382,13 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             $data['lastname'] = '';
         }
         
-        if (isset($this->request->post['email'])) {
+        /*if (isset($this->request->post['email'])) {
             $data['email'] = $this->request->post['email'];
         } elseif (!empty($shareholder_info)) {
             $data['email'] = $shareholder_info['email'];
         } else {
             $data['email'] = '';
-        }
+        }*/
         
         if (isset($this->request->post['phone'])) {
             $data['phone'] = $this->request->post['phone'];
@@ -550,60 +550,70 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         
         $json = [];
         
-        // Check permission
-        /*$customer_group_id = $this->customer->getGroupId();
-        $manager_group_id = (int)$this->config->get('config_pms_manager_group_id');
-        
-        if ($customer_group_id != $manager_group_id) {
+        if (!$this->customer->isLogged()) {
             $json['error'] = $this->language->get('error_permission');
-        }*/
+        }
         
-        // Validation
         if (!$json) {
-            if (empty($this->request->post['firstname']) || !oc_validate_length((string)$this->request->post['firstname'], 1, 32)) {
+            $this->load->model('pms/project');
+            $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+            
+            $this->load->model('pms/shareholder');
+            
+            $phone = $this->request->post['phone'] ?? '';
+            
+            // Validate
+            if (empty($this->request->post['firstname']) || utf8_strlen($this->request->post['firstname']) < 1) {
                 $json['error']['firstname'] = $this->language->get('error_firstname');
             }
             
-            if (empty($this->request->post['lastname']) || !oc_validate_length((string)$this->request->post['lastname'], 1, 32)) {
+            if (empty($this->request->post['lastname']) || utf8_strlen($this->request->post['lastname']) < 1) {
                 $json['error']['lastname'] = $this->language->get('error_lastname');
             }
             
-            if (empty($this->request->post['email']) ||  !oc_validate_length((string)$this->request->post['email'], 1, 96) || !filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL)) {
-                $json['error']['email'] = $this->language->get('error_email');
+            // Validate phone number (Bangladesh format)
+            if (empty($phone) || !preg_match('/^01[3-9]\d{8}$/', preg_replace('/[\s\-\(\)]/', '', $phone))) {
+                $json['error']['phone'] = 'Valid mobile number is required (11 digits starting with 01)';
+            }
+            
+            // Generate email from phone number
+            $clean_phone = preg_replace('/[\s\-\(\)]/', '', $phone);
+            $email = $clean_phone . '@gmail.com';
+            
+            // Check if email already exists
+            $email_check = $this->db->query("
+                SELECT COUNT(*) as total 
+                FROM `" . DB_PREFIX . "customer` 
+                WHERE email = '" . $this->db->escape($email) . "'
+                AND customer_id != '" . (isset($this->request->get['shareholder_id']) ? (int)$this->request->get['shareholder_id'] : 0) . "'
+            ");
+            
+            if ($email_check->row['total'] > 0) {
+                $json['error']['phone'] = 'This mobile number is already registered!';
             }
             
             if (empty($this->request->post['ownership_units']) || $this->request->post['ownership_units'] < 1) {
                 $json['error']['ownership_units'] = $this->language->get('error_ownership_units');
             }
             
-            // Check if email already exists in customer table
-            $email_check = $this->db->query("
-                SELECT COUNT(*) as total 
-                FROM `" . DB_PREFIX . "customer` 
-                WHERE email = '" . $this->db->escape($this->request->post['email']) . "'
-            ");
-            
-            if ($email_check->row['total'] > 0 && !isset($this->request->get['id'])) {
-                $json['error']['email'] = $this->language->get('error_email_exists');
-            }
-            
             // Password validation for new shareholder
-            if (!isset($this->request->get['id'])) {
-                if (empty($this->request->post['password']) || oc_validate_length((string)$this->request->post['password'], 1, 4)) {
+            if (!isset($this->request->get['shareholder_id'])) {
+                if (empty($this->request->post['password']) || utf8_strlen($this->request->post['password']) < 4) {
                     $json['error']['password'] = $this->language->get('error_password');
                 }
             }
         }
-
+        
         if (!$json) {
-            $this->load->model('pms/shareholder');
+            // Add generated email to post data
+            $this->request->post['email'] = $email;
             
-            if (isset($this->request->get['id'])) {
-                $this->model_pms_shareholder->updateShareholder($this->request->get['id'], $this->request->post);
+            if (isset($this->request->get['shareholder_id'])) {
+                $this->model_pms_shareholder->updateShareholder($this->request->get['shareholder_id'], $this->request->post);
                 
                 // Update password if provided
                 if (!empty($this->request->post['password'])) {
-                    $shareholder = $this->model_pms_shareholder->getShareholder($this->request->get['id']);
+                    $shareholder = $this->model_pms_shareholder->getShareholder($this->request->get['shareholder_id']);
                     $this->db->query("
                         UPDATE `" . DB_PREFIX . "customer` 
                         SET password = '" . $this->db->escape(password_hash($this->request->post['password'], PASSWORD_DEFAULT)) . "'
@@ -617,7 +627,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
                 $json['success'] = $this->language->get('text_add_success');
             }
             
-            $json['redirect'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+            $json['redirect'] = $this->url->link('account/pms_shareholders', 'language=' . $this->config->get('config_language'));
         }
         
         $this->response->addHeader('Content-Type: application/json');

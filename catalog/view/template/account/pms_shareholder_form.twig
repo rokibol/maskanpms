@@ -1,180 +1,1000 @@
 {{ header }}
+
+<style>
+    /* ======================================================
+       MULTI-STEP SHAREHOLDER FORM
+       Mobile-First Design
+       ====================================================== */
+    
+    .pms-wizard-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 15px;
+    }
+    
+    /* Progress Bar */
+    .pms-wizard-progress {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .pms-progress-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 10px;
+    }
+    
+    .pms-progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+    
+    .pms-progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .pms-progress-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border: 3px solid white;
+        box-shadow: 0 0 0 1px #e0e0e0;
+    }
+    
+    .pms-progress-step.active .pms-progress-circle {
+        background: #1F8A4D;
+        color: white;
+        box-shadow: 0 0 0 1px #1F8A4D;
+    }
+    
+    .pms-progress-step.completed .pms-progress-circle {
+        background: #0B3C5D;
+        color: white;
+        box-shadow: 0 0 0 1px #0B3C5D;
+    }
+    
+    .pms-progress-label {
+        font-size: 10px;
+        color: #999;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .pms-progress-step.active .pms-progress-label {
+        color: #1F8A4D;
+        font-weight: 600;
+    }
+    
+    .pms-progress-step.completed .pms-progress-label {
+        color: #0B3C5D;
+    }
+    
+    /* Progress Text */
+    .pms-progress-text {
+        text-align: center;
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .pms-progress-text strong {
+        color: #1F8A4D;
+    }
+    
+    /* Step Content */
+    .pms-step-content {
+        display: none;
+        background: white;
+        border-radius: 12px;
+        padding: 25px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .pms-step-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pms-step-header {
+        text-align: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .pms-step-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(11, 60, 93, 0.1) 0%, rgba(31, 138, 77, 0.1) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 26px;
+        color: #1F8A4D;
+    }
+    
+    .pms-step-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0B3C5D;
+        margin: 0 0 5px;
+    }
+    
+    .pms-step-subtitle {
+        font-size: 13px;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    /* Form Fields */
+    .pms-form-group {
+        margin-bottom: 18px;
+    }
+    
+    .pms-form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    
+    .pms-form-label .required {
+        color: #EF4444;
+    }
+    
+    .pms-form-control {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 15px;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        background: white;
+        color: #374151;
+    }
+    
+    .pms-form-control:focus {
+        outline: none;
+        border-color: #1F8A4D;
+        box-shadow: 0 0 0 3px rgba(31, 138, 77, 0.1);
+    }
+    
+    .pms-form-control.is-invalid {
+        border-color: #EF4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .pms-form-help {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+    
+    .pms-form-error {
+        font-size: 12px;
+        color: #EF4444;
+        margin-top: 4px;
+        display: none;
+    }
+    
+    /* Buttons */
+    .pms-wizard-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .pms-btn {
+        padding: 14px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .pms-btn-prev {
+        background: #f3f4f6;
+        color: #374151;
+        flex: 1;
+    }
+    
+    .pms-btn-prev:hover {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    
+    .pms-btn-next {
+        background: #1F8A4D;
+        color: white;
+        flex: 2;
+    }
+    
+    .pms-btn-next:hover {
+        background: #166d3e;
+        color: white;
+    }
+    
+    .pms-btn-submit {
+        background: linear-gradient(135deg, #0B3C5D 0%, #1F8A4D 100%);
+        color: white;
+        flex: 2;
+    }
+    
+    .pms-btn-submit:hover {
+        background: linear-gradient(135deg, #0a3250 0%, #166d3e 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(11, 60, 93, 0.3);
+    }
+    
+    .pms-btn-cancel {
+        background: #f3f4f6;
+        color: #6b7280;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    /* Review Section */
+    .pms-review-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+    
+    .pms-review-item:last-child {
+        border-bottom: none;
+    }
+    
+    .pms-review-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .pms-review-value {
+        color: #374151;
+        font-weight: 600;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+    
+    .pms-review-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .pms-review-section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0B3C5D;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 576px) {
+        .pms-wizard-container {
+            padding: 10px;
+        }
+        
+        .pms-wizard-progress {
+            padding: 15px 10px;
+        }
+        
+        .pms-progress-circle {
+            width: 34px;
+            height: 34px;
+            font-size: 12px;
+        }
+        
+        .pms-progress-label {
+            font-size: 9px;
+        }
+        
+        .pms-step-content {
+            padding: 20px 15px;
+        }
+        
+        .pms-step-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+        }
+        
+        .pms-step-title {
+            font-size: 16px;
+        }
+        
+        .pms-form-control {
+            padding: 11px 12px;
+            font-size: 14px;
+        }
+        
+        .pms-btn {
+            padding: 13px 18px;
+            font-size: 14px;
+        }
+    }
+</style>
+
 <div class="container-fluid">
     {#<ul class="breadcrumb">
         {% for breadcrumb in breadcrumbs %}
             <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
         {% endfor %}
     </ul>#}
-    
     <div class="row">
-        <div class="col-lg-3 col-md-4">
-            {{ column_left }}
+    <div class="col-lg-3 col-md-4">
+        {{ column_left }}
+    </div>
+    <div class="pms-wizard-container col">
+        
+        {# ==================== PROGRESS BAR ==================== #}
+        <div class="pms-wizard-progress">
+            <div class="pms-progress-steps">
+                <div class="pms-progress-step active" data-step="1">
+                    <div class="pms-progress-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="pms-progress-label">Personal</div>
+                </div>
+                <div class="pms-progress-step" data-step="2">
+                    <div class="pms-progress-circle">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div class="pms-progress-label">Ownership</div>
+                </div>
+                <div class="pms-progress-step" data-step="3">
+                    <div class="pms-progress-circle">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="pms-progress-label">Nominee</div>
+                </div>
+                <div class="pms-progress-step" data-step="4">
+                    <div class="pms-progress-circle">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <div class="pms-progress-label">Banking</div>
+                </div>
+                <div class="pms-progress-step" data-step="5">
+                    <div class="pms-progress-circle">
+                        <i class="fa-solid fa-note-sticky"></i>
+                    </div>
+                    <div class="pms-progress-label">Additional</div>
+                </div>
+            </div>
+            <div class="pms-progress-text">
+                Step <strong id="current-step-num">1</strong> of 5
+            </div>
         </div>
         
-        <div id="content" class="col">
-            {{ content_top }}
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ text_form }}</h1>
-                <div>
-                    <button type="submit" form="form-shareholder" class="btn btn-primary">
-                        <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
+        {# ==================== FORM ==================== #}
+        <form id="form-shareholder" action="{{ action }}" method="post" data-oc-toggle="ajax">
+            {# ======================================================
+            STEP 1: PERSONAL INFORMATION
+            ====================================================== #}
+            <div class="pms-step-content active" id="step-1">
+                <div class="pms-step-header">
+                    <div class="pms-step-icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h3 class="pms-step-title">Personal Information</h3>
+                    <p class="pms-step-subtitle">Enter the shareholder's basic details</p>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">First Name <span class="required">*</span></label>
+                    <input type="text" name="firstname" value="{{ firstname }}" 
+                        class="pms-form-control" id="input-firstname" required>
+                    <div class="pms-form-error" id="error-firstname"></div>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Last Name <span class="required">*</span></label>
+                    <input type="text" name="lastname" value="{{ lastname }}" 
+                        class="pms-form-control" id="input-lastname" required>
+                    <div class="pms-form-error" id="error-lastname"></div>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Mobile Number <span class="required">*</span></label>
+                    <input type="tel" name="phone" value="{{ phone }}" 
+                        class="pms-form-control" id="input-phone" 
+                        placeholder="01XXXXXXXXX" required>
+                    <div class="pms-form-help">
+                        <i class="fas fa-regular fa-circle-info"></i>
+                        This will be used as login ID
+                    </div>
+                    <div class="pms-form-error" id="error-phone"></div>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Password {% if not shareholder_id %}<span class="required">*</span>{% endif %}</label>
+                    <input type="password" name="password" value="{{ password }}" 
+                        class="pms-form-control" id="input-password"
+                        {% if not shareholder_id %}required{% endif %}>
+                    <div class="pms-form-help">
+                        {% if shareholder_id %}
+                            Leave empty to keep current password
+                        {% else %}
+                            Minimum 4 characters
+                        {% endif %}
+                    </div>
+                    <div class="pms-form-error" id="error-password"></div>
+                </div>
+                
+                <div class="pms-wizard-buttons">
+                    <button type="button" class="pms-btn pms-btn-next" onclick="nextStep(1)">
+                        Next <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <a href="{{ back }}" class="btn btn-secondary">
-                        <i class="fas fa-solid fa-reply"></i> {{ button_back }}
-                    </a>
                 </div>
             </div>
             
-            <form id="form-shareholder" action="{{ action }}" method="post" data-oc-toggle="ajax">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-solid fa-user"></i> Personal Information
+            {# ======================================================
+               STEP 2: OWNERSHIP INFORMATION
+               ====================================================== #}
+            <div class="pms-step-content" id="step-2">
+                <div class="pms-step-header">
+                    <div class="pms-step-icon">
+                        <i class="fa-solid fa-chart-pie"></i>
                     </div>
-                    <div class="card-body">
-                        <div class="row mb-3 required">
-                            <label class="col-sm-3 col-form-label">First Name</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="firstname" value="{{ firstname }}" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3 required">
-                            <label class="col-sm-3 col-form-label">Last Name</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="lastname" value="{{ lastname }}" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3 required">
-                            <label class="col-sm-3 col-form-label">Email Address</label>
-                            <div class="col-sm-9">
-                                <input type="email" name="email" value="{{ email }}" class="form-control" required>
-                                <small class="text-muted">This will be used for login</small>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Phone Number</label>
-                            <div class="col-sm-9">
-                                <input type="tel" name="phone" value="{{ phone }}" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3 {% if not shareholder_id %}required{% endif %}">
-                            <label class="col-sm-3 col-form-label">Password</label>
-                            <div class="col-sm-9">
-                                <input type="password" name="password" value="{{ password }}" class="form-control" {% if not shareholder_id %}required{% endif %}>
-                                {% if shareholder_id %}
-                                    <small class="text-muted">Leave empty to keep current password</small>
-                                {% else %}
-                                    <small class="text-muted">Minimum 4 characters</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                    <h3 class="pms-step-title">Ownership Information</h3>
+                    <p class="pms-step-subtitle">Enter the shareholder's ownership details</p>
                 </div>
                 
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-solid fa-chart-pie"></i> Ownership Information
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3 required">
-                            <label class="col-sm-3 col-form-label">Ownership Units</label>
-                            <div class="col-sm-9">
-                                <input type="number" name="ownership_units" value="{{ ownership_units }}" class="form-control" min="1" required>
-                                <small class="text-muted">Total shares available: {{ total_shares }}</small>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Address</label>
-                            <div class="col-sm-9">
-                                <textarea name="address" rows="3" class="form-control">{{ address }}</textarea>
-                            </div>
-                        </div>
-                    </div>
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Ownership Units <span class="required">*</span></label>
+                    <input type="number" name="ownership_units" value="{{ ownership_units }}" 
+                           class="pms-form-control" id="input-ownership" min="1" required>
+                    <div class="pms-form-help">Total shares available: <strong>{{ total_shares }}</strong></div>
+                    <div class="pms-form-error" id="error-ownership"></div>
                 </div>
                 
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-solid fa-users"></i> Nominee Information
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Nominee Name</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="nominee_name" value="{{ nominee_name }}" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Nominee Relation</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="nominee_relation" value="{{ nominee_relation }}" class="form-control" placeholder="e.g., Spouse, Son, Daughter">
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Nominee Phone</label>
-                            <div class="col-sm-9">
-                                <input type="tel" name="nominee_phone" value="{{ nominee_phone }}" class="form-control">
-                            </div>
-                        </div>
-                    </div>
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Address</label>
+                    <textarea name="address" rows="3" class="pms-form-control" 
+                              id="input-address">{{ address }}</textarea>
                 </div>
                 
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-solid fa-building-columns"></i> Banking Information
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Bank Account No</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="bank_account_no" value="{{ bank_account_no }}" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Bank Name</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="bank_name" value="{{ bank_name }}" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">TIN Number</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="tin_number" value="{{ tin_number }}" class="form-control">
-                            </div>
-                        </div>
-                    </div>
+                <div class="pms-wizard-buttons">
+                    <button type="button" class="pms-btn pms-btn-prev" onclick="prevStep(2)">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="pms-btn pms-btn-next" onclick="nextStep(2)">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
-                
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-solid fa-note-sticky"></i> Additional Information
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">Notes</label>
-                            <div class="col-sm-9">
-                                <textarea name="notes" rows="4" class="form-control" placeholder="Any additional notes about this shareholder...">{{ notes }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <input type="hidden" name="project_id" value="{{ project_id }}">
-                <input type="hidden" name="user_token" value="{{ user_token }}">
-            </form>
+            </div>
             
-            {{ content_bottom }}
-        </div>
+            {# ======================================================
+               STEP 3: NOMINEE INFORMATION
+               ====================================================== #}
+            <div class="pms-step-content" id="step-3">
+                <div class="pms-step-header">
+                    <div class="pms-step-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3 class="pms-step-title">Nominee Information</h3>
+                    <p class="pms-step-subtitle">Add nominee details (optional)</p>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Nominee Name</label>
+                    <input type="text" name="nominee_name" value="{{ nominee_name }}" 
+                           class="pms-form-control" id="input-nominee-name">
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Nominee Relation</label>
+                    <input type="text" name="nominee_relation" value="{{ nominee_relation }}" 
+                           class="pms-form-control" id="input-nominee-relation"
+                           placeholder="e.g., Spouse, Son, Daughter">
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Nominee Phone</label>
+                    <input type="tel" name="nominee_phone" value="{{ nominee_phone }}" 
+                           class="pms-form-control" id="input-nominee-phone">
+                </div>
+                
+                <div class="pms-wizard-buttons">
+                    <button type="button" class="pms-btn pms-btn-prev" onclick="prevStep(3)">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="pms-btn pms-btn-next" onclick="nextStep(3)">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {# ======================================================
+               STEP 4: BANKING INFORMATION
+               ====================================================== #}
+            <div class="pms-step-content" id="step-4">
+                <div class="pms-step-header">
+                    <div class="pms-step-icon">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <h3 class="pms-step-title">Banking Information</h3>
+                    <p class="pms-step-subtitle">Add banking details (optional)</p>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Bank Name</label>
+                    <input type="text" name="bank_name" value="{{ bank_name }}" 
+                           class="pms-form-control" id="input-bank-name">
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Bank Account Number</label>
+                    <input type="text" name="bank_account_no" value="{{ bank_account_no }}" 
+                           class="pms-form-control" id="input-bank-account">
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">TIN Number</label>
+                    <input type="text" name="tin_number" value="{{ tin_number }}" 
+                           class="pms-form-control" id="input-tin">
+                </div>
+                
+                <div class="pms-wizard-buttons">
+                    <button type="button" class="pms-btn pms-btn-prev" onclick="prevStep(4)">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="pms-btn pms-btn-next" onclick="nextStep(4)">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {# ======================================================
+               STEP 5: ADDITIONAL INFORMATION & REVIEW
+               ====================================================== #}
+            <div class="pms-step-content" id="step-5">
+                <div class="pms-step-header">
+                    <div class="pms-step-icon">
+                        <i class="fa-solid fa-note-sticky"></i>
+                    </div>
+                    <h3 class="pms-step-title">Additional Information</h3>
+                    <p class="pms-step-subtitle">Review and submit</p>
+                </div>
+                
+                <div class="pms-form-group">
+                    <label class="pms-form-label">Notes</label>
+                    <textarea name="notes" rows="3" class="pms-form-control" 
+                              id="input-notes" placeholder="Any additional notes about this shareholder...">{{ notes }}</textarea>
+                </div>
+                
+                {# ======================================================
+                   REVIEW SECTION
+                   ====================================================== #}
+                <div class="pms-review-section">
+                    <div class="pms-review-section-title">
+                        <i class="fa-solid fa-user"></i> Personal Information
+                    </div>
+                    <div class="pms-review-item">
+                        <span class="pms-review-label">Name</span>
+                        <span class="pms-review-value" id="review-name">-</span>
+                    </div>
+                    <div class="pms-review-item">
+                        <span class="pms-review-label">Phone</span>
+                        <span class="pms-review-value" id="review-phone">-</span>
+                    </div>
+                </div>
+                
+                <div class="pms-review-section">
+                    <div class="pms-review-section-title">
+                        <i class="fa-solid fa-chart-pie"></i> Ownership
+                    </div>
+                    <div class="pms-review-item">
+                        <span class="pms-review-label">Units</span>
+                        <span class="pms-review-value" id="review-units">-</span>
+                    </div>
+                </div>
+                
+                <div class="pms-review-section">
+                    <div class="pms-review-section-title">
+                        <i class="fa-solid fa-users"></i> Nominee
+                    </div>
+                    <div class="pms-review-item">
+                        <span class="pms-review-label">Name</span>
+                        <span class="pms-review-value" id="review-nominee">-</span>
+                    </div>
+                </div>
+                
+                <div class="pms-review-section">
+                    <div class="pms-review-section-title">
+                        <i class="fa-solid fa-building-columns"></i> Banking
+                    </div>
+                    <div class="pms-review-item">
+                        <span class="pms-review-label">Bank</span>
+                        <span class="pms-review-value" id="review-bank">-</span>
+                    </div>
+                </div>
+                
+                <div class="pms-wizard-buttons">
+                    <button type="button" class="pms-btn pms-btn-prev" onclick="prevStep(5)">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="pms-btn pms-btn-submit" id="submit-btn">
+                        <i class="fa-regular fa-circle-check"></i> Save Shareholder
+                    </button>
+                </div>
+            </div>
+            
+            {# Hidden fields #}
+            <input type="hidden" name="project_id" value="{{ project_id }}">
+            <input type="hidden" name="user_token" value="{{ user_token }}">
+            
+        </form>
         
-        {{ column_right }}
+        {# Cancel Button #}
+        <a href="{{ back }}" class="pms-btn pms-btn-cancel">
+            <i class="fa-solid fa-xmark"></i> Cancel
+        </a>
+        
+    </div>
     </div>
 </div>
+
+<script>
+// ======================================================
+// MULTI-STEP WIZARD JAVASCRIPT
+// ======================================================
+
+var currentStep = 1;
+var totalSteps = 5;
+
+/**
+ * Navigate to next step
+ */
+function nextStep(fromStep) {
+    // Validate current step before proceeding
+    if (!validateStep(fromStep)) {
+        return;
+    }
+    
+    if (currentStep < totalSteps) {
+        // Hide current step
+        document.getElementById('step-' + currentStep).classList.remove('active');
+        
+        // Update progress
+        updateProgress(currentStep, currentStep + 1);
+        
+        // Show next step
+        currentStep++;
+        document.getElementById('step-' + currentStep).classList.add('active');
+        
+        // Update step counter
+        document.getElementById('current-step-num').textContent = currentStep;
+        
+        // Update review if going to step 5
+        if (currentStep === 5) {
+            updateReview();
+        }
+        
+        // Scroll to top of form
+        scrollToTop();
+    }
+}
+
+/**
+ * Navigate to previous step
+ */
+function prevStep(fromStep) {
+    if (currentStep > 1) {
+        // Hide current step
+        document.getElementById('step-' + currentStep).classList.remove('active');
+        
+        // Update progress
+        updateProgress(currentStep, currentStep - 1);
+        
+        // Show previous step
+        currentStep--;
+        document.getElementById('step-' + currentStep).classList.add('active');
+        
+        // Update step counter
+        document.getElementById('current-step-num').textContent = currentStep;
+        
+        // Scroll to top of form
+        scrollToTop();
+    }
+}
+
+/**
+ * Update progress bar
+ */
+function updateProgress(oldStep, newStep) {
+    var steps = document.querySelectorAll('.pms-progress-step');
+    
+    steps.forEach(function(step, index) {
+        var stepNum = index + 1;
+        
+        step.classList.remove('active', 'completed');
+        
+        if (stepNum < newStep) {
+            step.classList.add('completed');
+        } else if (stepNum === newStep) {
+            step.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Validate current step
+ */
+function validateStep(step) {
+    var isValid = true;
+    
+    // Clear previous errors
+    clearErrors();
+    
+    if (step === 1) {
+        // Validate personal information
+        var firstname = document.getElementById('input-firstname').value.trim();
+        var lastname = document.getElementById('input-lastname').value.trim();
+        var phone = document.getElementById('input-phone').value.trim();
+        var password = document.getElementById('input-password').value;
+        var isNew = {% if not shareholder_id %}true{% else %}false{% endif %};
+        
+        if (firstname.length < 1) {
+            showError('input-firstname', 'error-firstname', 'First name is required');
+            isValid = false;
+        }
+        
+        if (lastname.length < 1) {
+            showError('input-lastname', 'error-lastname', 'Last name is required');
+            isValid = false;
+        }
+        
+        if (phone.length < 11 || !isValidPhone(phone)) {
+            showError('input-phone', 'error-phone', 'Valid mobile number is required (11 digits)');
+            isValid = false;
+        }
+        
+        if (isNew && password.length < 4) {
+            showError('input-password', 'error-password', 'Password must be at least 4 characters');
+            isValid = false;
+        }
+    }
+    
+    if (step === 2) {
+        // Validate ownership information
+        var ownership = document.getElementById('input-ownership').value;
+        
+        if (!ownership || parseInt(ownership) < 1) {
+            showError('input-ownership', 'error-ownership', 'Ownership units must be at least 1');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+/**
+ * Validate phone number (Bangladesh format)
+ */
+function isValidPhone(phone) {
+    // Remove any spaces, dashes, or special characters
+    var cleaned = phone.replace(/[\s\-\(\)]/g, '');
+    
+    // Bangladesh phone: 11 digits starting with 01
+    var regex = /^01[3-9]\d{8}$/;
+    return regex.test(cleaned);
+}
+
+/**
+ * Show error message
+ */
+function showError(inputId, errorId, message) {
+    var input = document.getElementById(inputId);
+    var error = document.getElementById(errorId);
+    
+    if (input) {
+        input.classList.add('is-invalid');
+    }
+    
+    if (error) {
+        error.textContent = message;
+        error.style.display = 'block';
+    }
+}
+
+/**
+ * Clear all errors
+ */
+function clearErrors() {
+    document.querySelectorAll('.pms-form-control').forEach(function(input) {
+        input.classList.remove('is-invalid');
+    });
+    
+    document.querySelectorAll('.pms-form-error').forEach(function(error) {
+        error.style.display = 'none';
+        error.textContent = '';
+    });
+}
+
+/**
+ * Validate email format
+ */
+function isValidEmail(email) {
+    var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+/**
+ * Update review section with entered data
+ */
+function updateReview() {
+    // Personal
+    var firstname = document.getElementById('input-firstname').value;
+    var lastname = document.getElementById('input-lastname').value;
+    var phone = document.getElementById('input-phone').value;
+    
+    document.getElementById('review-name').textContent = firstname + ' ' + lastname;
+    document.getElementById('review-email').textContent = phone ? phone + '@gmail.com' : '-';
+    document.getElementById('review-phone').textContent = phone || '-';
+    
+    // Ownership
+    var ownership = document.getElementById('input-ownership').value;
+    document.getElementById('review-units').textContent = ownership ? ownership + ' units' : '-';
+    
+    // Nominee
+    var nominee = document.getElementById('input-nominee-name').value;
+    document.getElementById('review-nominee').textContent = nominee || '-';
+    
+    // Banking
+    var bank = document.getElementById('input-bank-name').value;
+    document.getElementById('review-bank').textContent = bank || '-';
+}
+
+/**
+ * Scroll to top of form
+ */
+function scrollToTop() {
+    var container = document.querySelector('.pms-wizard-container');
+    if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// ======================================================
+// FORM SUBMISSION
+// ======================================================
+document.getElementById('form-shareholder').addEventListener('submit', function(e) {
+    // Validate all steps before submit
+    if (!validateStep(1) || !validateStep(2)) {
+        e.preventDefault();
+        
+        // Go to first invalid step
+        if (!validateStep(1)) {
+            goToStep(1);
+        } else if (!validateStep(2)) {
+            goToStep(2);
+        }
+        
+        return false;
+    }
+    
+    // Show loading state
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    
+    return true;
+});
+
+/**
+ * Jump to specific step
+ */
+function goToStep(step) {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep = step;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('current-step-num').textContent = currentStep;
+    updateProgress(1, step);
+    scrollToTop();
+}
+
+// ======================================================
+// CLEAR ERRORS ON INPUT
+// ======================================================
+document.querySelectorAll('.pms-form-control').forEach(function(input) {
+    input.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        
+        var errorId = 'error-' + this.name;
+        var error = document.getElementById(errorId);
+        if (error) {
+            error.style.display = 'none';
+        }
+    });
+});
+
+// ======================================================
+// HANDLE AJAX ERRORS FROM SERVER
+// ======================================================
+$(document).ajaxComplete(function(event, xhr, settings) {
+    if (settings.url && settings.url.indexOf('pms_shareholders.save') !== -1) {
+        try {
+            var response = JSON.parse(xhr.responseText);
+            
+            if (response.error) {
+                // Re-enable submit button
+                var submitBtn = document.getElementById('submit-btn');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Save Shareholder';
+                
+                // Show errors and go to appropriate step
+                if (typeof response.error === 'object') {
+                    // Field errors - go to step 1 or 2
+                    if (response.error.firstname || response.error.lastname || 
+                        response.error.email || response.error.password) {
+                        goToStep(1);
+                    } else if (response.error.ownership_units) {
+                        goToStep(2);
+                    }
+                    
+                    // Show field errors
+                    Object.keys(response.error).forEach(function(field) {
+                        var input = document.querySelector('[name="' + field + '"]');
+                        if (input) {
+                            input.classList.add('is-invalid');
+                        }
+                    });
+                } else {
+                    alert(response.error);
+                }
+            }
+        } catch (e) {
+            console.log('Error parsing response:', e);
+        }
+    }
+});
+</script>
+
 {{ footer }}

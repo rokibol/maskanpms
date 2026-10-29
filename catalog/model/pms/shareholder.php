@@ -289,24 +289,24 @@ class Shareholder extends \Opencart\System\Engine\Model {
      * Add new shareholder (creates both customer and shareholder record)
      */
     public function addShareholder(array $data): int {
-        // Start transaction
         $this->db->query("START TRANSACTION");
         
         try {
-            // First, create customer account
+            // Use the email provided (generated from phone)
+            $email = $data['email'];
+            $phone = $data['phone'];
+            
             $customer_data = [
-                'firstname'      => $data['firstname'],
-                'lastname'       => $data['lastname'],
-                'email'          => $data['email'],
-                'telephone'      => $data['phone'],
-                'password'       => password_hash($data['password'], PASSWORD_DEFAULT),
-                'customer_group_id' => 3, //Share holder customer group id
-                'status'         => 1,
-                'newsletter'     => 0,
-                'safe'           => 1
+                'firstname'         => $data['firstname'],
+                'lastname'          => $data['lastname'],
+                'email'             => $email,
+                'telephone'         => $phone,
+                'password'          => password_hash($data['password'], PASSWORD_DEFAULT),
+                'customer_group_id' => (int)$this->config->get('config_customer_group_id'),
+                'status'            => 1,
+                'approved'          => 1
             ];
             
-            // Insert customer
             $this->db->query("
                 INSERT INTO `" . DB_PREFIX . "customer` 
                 SET `firstname` = '" . $this->db->escape($customer_data['firstname']) . "',
@@ -316,19 +316,15 @@ class Shareholder extends \Opencart\System\Engine\Model {
                     `password` = '" . $this->db->escape($customer_data['password']) . "',
                     `customer_group_id` = '" . (int)$customer_data['customer_group_id'] . "',
                     `status` = '" . (int)$customer_data['status'] . "',
-                    `newsletter` = '" . (int)$customer_data['newsletter'] . "',
-                    `safe` = '" . (int)$customer_data['safe'] . "',
+                    `approved` = '" . (int)$customer_data['approved'] . "',
                     `date_added` = NOW()
             ");
             
             $customer_id = $this->db->getLastId();
-            
-            // Generate unique shareholder code
             $shareholder_code = $this->generateShareholderCode();
             
-            // Insert shareholder record
             $this->db->query("
-                INSERT INTO `" . DB_PREFIX . "shareholders` 
+                INSERT INTO `" . DB_PREFIX . "pms_shareholder` 
                 SET `shareholder_code` = '" . $this->db->escape($shareholder_code) . "',
                     `user_id` = '" . (int)$customer_id . "',
                     `project_id` = '" . (int)$data['project_id'] . "',
@@ -348,7 +344,6 @@ class Shareholder extends \Opencart\System\Engine\Model {
             
             $shareholder_id = $this->db->getLastId();
             
-            // Update customer with project_id
             $this->db->query("
                 UPDATE `" . DB_PREFIX . "customer` 
                 SET `project_id` = '" . (int)$data['project_id'] . "'
@@ -369,9 +364,8 @@ class Shareholder extends \Opencart\System\Engine\Model {
      * Update shareholder information
      */
     public function updateShareholder(int $shareholder_id, array $data): void {
-        // Update shareholder record
         $this->db->query("
-            UPDATE `" . DB_PREFIX . "shareholders` 
+            UPDATE `" . DB_PREFIX . "pms_shareholder` 
             SET `ownership_units` = '" . (int)$data['ownership_units'] . "',
                 `phone` = '" . $this->db->escape($data['phone']) . "',
                 `address` = '" . $this->db->escape($data['address']) . "',
@@ -382,23 +376,19 @@ class Shareholder extends \Opencart\System\Engine\Model {
                 `bank_name` = '" . $this->db->escape($data['bank_name']) . "',
                 `tin_number` = '" . $this->db->escape($data['tin_number']) . "',
                 `notes` = '" . $this->db->escape($data['notes']) . "'
-            WHERE `id` = '" . (int)$shareholder_id . "'
+            WHERE `shareholder_id` = '" . (int)$shareholder_id . "'
         ");
         
-        // Update customer information if needed
-        if (!empty($data['firstname']) && !empty($data['lastname'])) {
-            // Get user_id from shareholder
-            $shareholder = $this->getShareholder($shareholder_id);
-            
-            if ($shareholder) {
-                $this->db->query("
-                    UPDATE `" . DB_PREFIX . "customer` 
-                    SET `firstname` = '" . $this->db->escape($data['firstname']) . "',
-                        `lastname` = '" . $this->db->escape($data['lastname']) . "',
-                        `telephone` = '" . $this->db->escape($data['phone']) . "'
-                    WHERE `customer_id` = '" . (int)$shareholder['user_id'] . "'
-                ");
-            }
+        $shareholder = $this->getShareholder($shareholder_id);
+        
+        if ($shareholder && (!empty($data['firstname']) || !empty($data['lastname']))) {
+            $this->db->query("
+                UPDATE `" . DB_PREFIX . "customer` 
+                SET `firstname` = '" . $this->db->escape($data['firstname']) . "',
+                    `lastname` = '" . $this->db->escape($data['lastname']) . "',
+                    `telephone` = '" . $this->db->escape($data['phone']) . "'
+                WHERE `customer_id` = '" . (int)$shareholder['user_id'] . "'
+            ");
         }
     }
     
