@@ -77,12 +77,9 @@ class RegisterAccountant extends \Opencart\System\Engine\Controller {
                 $json['error']['lastname'] = $this->language->get('error_lastname');
             }
             
-            /*if (empty($this->request->post['email']) || !oc_validate_length((string)$this->request->post['email'], 1, 32) || !filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL)) {
-                $json['error']['email'] = $this->language->get('error_email');
-            }*/
             // Validate phone number (Bangladesh format)
             if (empty($phone) || !preg_match('/^01[3-9]\d{8}$/', preg_replace('/[\s\-\(\)]/', '', $phone))) {
-                $json['error']['phone'] = 'Valid mobile number is required (11 digits starting with 01)';
+                $json['error']['telephone'] = 'Valid mobile number is required (11 digits starting with 01)';
             }
 
             // Generate email from phone number
@@ -98,7 +95,7 @@ class RegisterAccountant extends \Opencart\System\Engine\Controller {
             ");
             
             if ($email_check->row['total'] > 0) {
-                $json['error']['phone'] = 'This mobile number is already registered!';
+                $json['error']['telephone'] = 'This mobile number is already registered!';
             }
             
             // Password validation for new customer
@@ -122,12 +119,12 @@ class RegisterAccountant extends \Opencart\System\Engine\Controller {
                 }
             }
         }
-        
+
         if (!$json) {
             $customer_data = [
                 'firstname' => $this->request->post['firstname'],
                 'lastname'  => $this->request->post['lastname'],
-                'email'     => $this->request->post['email'],
+                'email'     => $email,
                 'telephone' => $this->request->post['telephone'],
                 'customer_group_id' => 2, // Accountant group
                 'status'    => 1,
@@ -135,10 +132,6 @@ class RegisterAccountant extends \Opencart\System\Engine\Controller {
                 'project_id' => $project_id
             ];
             
-            $myfile = fopen("customer_account.txt", "a+");
-            fwrite($myfile, print_r($customer_data, true) . PHP_EOL);
-            fclose($myfile);
-
             if (!empty($this->request->post['password'])) {
                 $customer_data['password'] = $this->request->post['password'];
             }

@@ -122,7 +122,7 @@
                                     {% for shareholder in shareholders %}
                                         <option value="{{ shareholder.shareholder_id }}">
                                             {{ shareholder.firstname }} {{ shareholder.lastname }} 
-                                            ({{ shareholder.phone }}) - {{ shareholder.ownership_percentage|round(2) }}% ownership
+                                            ({{ shareholder.phone }}) - {{ shareholder.ownership_percentage|round(2) }} ownership
                                         </option>
                                     {% endfor %}
                                 </select>
@@ -198,7 +198,7 @@
 <script>
 $(document).ready(function() {
     // Initialize Select2 with AJAX
-    $('#shareholder-select').select2({
+    /*$('#shareholder-select').select2({
         placeholder: 'Search for a shareholder...',
         allowClear: true,
         width: '100%',
@@ -270,7 +270,7 @@ $(document).ready(function() {
                 return 'Searching...';
             }
         }
-    });
+    });*/
 });
 </script>
 {{ footer }}

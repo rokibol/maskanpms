@@ -29,7 +29,7 @@ class Shareholder extends \Opencart\System\Engine\Model {
             SELECT s.*, 
                    c.firstname, c.lastname, c.email, c.status as user_status,
                    c.date_added as registered_date,
-                   (s.ownership_units / p.total_shares * 100) as ownership_percentage
+                   s.ownership_units as ownership_percentage
             FROM `" . DB_PREFIX . "shareholders` s
             INNER JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
             INNER JOIN `" . DB_PREFIX . "pms_project` p ON s.project_id = p.project_id

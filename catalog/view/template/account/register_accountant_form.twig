@@ -212,7 +212,7 @@
                             This accountant will be assigned to the project: <strong>{{ project_name }}</strong>
                         </div>
                         <div class="pms-save-actions">
-                            <button type="submit" form="form-customer" class="btn btn-primary">
+                            <button type="submit" form="form-customer" class="btn btn-primary" id="submit-btn">
                                 <i class="fas fa-regular fa-floppy-disk"></i> {{ button_save }}
                             </button>
                         </div>
@@ -231,7 +231,8 @@
 // HANDLE AJAX ERRORS FROM SERVER
 // ======================================================
 $(document).ajaxComplete(function(event, xhr, settings) {
-    if (settings.url && settings.url.indexOf('register_shareholder.save') !== -1) {
+    
+    if (settings.url && settings.url.indexOf('register_accountant.save') !== -1) {
         try {
             var response = JSON.parse(xhr.responseText);
             
@@ -239,23 +240,30 @@ $(document).ajaxComplete(function(event, xhr, settings) {
                 // Re-enable submit button
                 var submitBtn = document.getElementById('submit-btn');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Save Shareholder';
+                submitBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Save';
                 
                 // Show errors and go to appropriate step
                 if (typeof response.error === 'object') {
-                    // Field errors - go to step 1 or 2
-                    if (response.error.firstname || response.error.lastname || 
-                        response.error.email || response.error.password) {
-                        goToStep(1);
-                    } else if (response.error.ownership_units) {
-                        goToStep(2);
-                    }
-                    
                     // Show field errors
                     Object.keys(response.error).forEach(function(field) {
                         var input = document.querySelector('[name="' + field + '"]');
                         if (input) {
                             input.classList.add('is-invalid');
+                            // 2. Remove any existing error message first to avoid duplicates
+                            var existingError = input.parentNode.querySelector('.invalid-feedback, .error-message');
+                            if (existingError) {
+                                existingError.remove();
+                            }
+                            
+                            // 3. Create the error message element
+                            var errorDiv = document.createElement('div');
+                            
+                            // Use 'invalid-feedback' if you are using Bootstrap, or your own custom CSS class
+                            errorDiv.className = 'invalid-feedback'; 
+                            errorDiv.innerText = response.error[field];
+                            
+                            // 4. Insert the message immediately after the input field
+                            input.parentNode.insertBefore(errorDiv, input.nextSibling);
                         }
                     });
                 } else {
