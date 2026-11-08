@@ -1,43 +1,8 @@
 {{ header }}
-<style>
-/* Clickable Stat Card with View Button */
-.pms-stat-card.clickable {
-    cursor: pointer;
-    transition: all 0.25s ease;
-    position: relative;
-}
-.pms-stat-card.clickable:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    border-color: #1F8A4D;
-}
-.pms-stat-card.clickable .btn-outline-primary {
-    border-color: #2F80ED;
-    color: #2F80ED;
-    font-size: 11px;
-    padding: 4px 12px;
-    transition: all 0.2s ease;
-}
-.pms-stat-card.clickable .btn-outline-primary:hover {
-    background: #2F80ED;
-    color: white;
-}
-.pms-stat-card.clickable .btn-outline-primary i {
-    font-size: 11px;
-}
-</style>
+
 {# ==================== MAIN CONTAINER ==================== #}
-<div id="account-account" class="container-fluid">
-    
-    {# Breadcrumbs #}
-    {#<ul class="breadcrumb">
-        {% for breadcrumb in breadcrumbs %}
-            <li class="breadcrumb-item">
-                <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
-            </li>
-        {% endfor %}
-    </ul>#}
-    
+<div id="account-account" class="container-fluid pms-manager-dashboard">
+
     {# Success/Error Alerts #}
     {% if success %}
         <div class="alert alert-success alert-dismissible">
@@ -45,129 +10,138 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endif %}
-    
+
     {% if error_warning %}
         <div class="alert alert-danger alert-dismissible">
             <i class="fas fa-solid fa-circle-exclamation"></i> {{ error_warning }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endif %}
-    
+
     <div class="row">
-        
+
         {# Left Column - Sidebar #}
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         {# Main Content Area #}
         <div id="content" class="col-lg-9 col-md-8">
             {{ content_top }}
-            
+
             {# ==================== WELCOME HERO SECTION ==================== #}
             <div class="pms-welcome-hero">
-                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
                         <h2>Welcome back, {{ manager_name }}!</h2>
                         <p>Here's your project overview and key metrics.</p>
-                        <div class="mt-2">
+                        <div class="mt-2 d-flex flex-wrap gap-2">
                             <span class="pms-badge">
-                                <i class="fas fa-regular fa-building"></i> {{ project_name }}
-                            </span>
-                            <span class="pms-badge ms-2">
                                 <i class="fas fa-regular fa-users"></i> {{ total_shareholders }} Shareholders
                             </span>
-                            <span class="pms-badge ms-2">
+                            <span class="pms-badge">
                                 <i class="fas fa-regular fa-chart-pie"></i> {{ total_shares }} Total Shares
                             </span>
                         </div>
                     </div>
-                    <div class="mt-2 mt-sm-0">
-                        <small class="opacity-75">Project Status: 
+                    <div>
+                        <small class="opacity-75">Project Status:
                             <strong>{{ project_status|capitalize }}</strong>
                         </small>
                     </div>
                 </div>
             </div>
-            
-            {# ==================== KEY METRICS ROW ==================== #}
-            <div class="row g-4 mb-4">
-                <div class="col-md-4 col-sm-6">
+
+            {# ==================== ROW 1: 4-column metrics row ==================== #}
+            <div class="row g-3 mb-3">
+
+                {# --- 1) Total Apartments --- #}
+                <div class="col-6 col-lg-3">
                     <div class="pms-stat-card">
                         <div class="pms-stat-icon primary-bg">
                             <i class="fas fa-regular fa-building"></i>
                         </div>
-                        <div class="pms-stat-label">Total Apartments</div>
-                        <div class="pms-stat-value">{{ total_apartments|default('0') }}</div>
-                        <div class="pms-stat-sub">{{ occupied_apartments|default('0') }} occupied</div>
+                        <div class="pms-stat-body">
+                            <div class="pms-stat-label">Total Apartments</div>
+                            <div class="pms-stat-value">{{ total_apartments|default('0') }}</div>
+                            <div class="pms-stat-sub">{{ occupied_apartments|default('0') }} occupied</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
-                    <div class="pms-stat-card clickable" onclick="openCollectionBreakdown()">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="pms-stat-icon blue-bg">
-                                    <i class="fas fa-regular fa-credit-card"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="event.stopPropagation(); openCollectionBreakdown();">
-                                    <i class="fa-regular fa-eye"></i> View Breakdown
+
+                {# --- 2) Total Collections (clickable) --- #}
+                <div class="col-6 col-lg-3">
+                    <div class="pms-stat-card pms-stat-card-clickable"
+                        role="button"
+                        tabindex="0"
+                        onclick="openCollectionBreakdown()"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCollectionBreakdown();}">
+                        <div class="pms-stat-icon blue-bg">
+                            <i class="fas fa-regular fa-credit-card"></i>
+                        </div>
+                        <div class="pms-stat-body">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="pms-stat-label">Total Collections</div>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary rounded-pill pms-stat-action d-none d-lg-inline-flex py-0 px-2"
+                                        onclick="event.stopPropagation(); openCollectionBreakdown();">
+                                    <i class="fa-regular fa-eye"></i>
                                 </button>
                             </div>
+                            <div class="pms-stat-value">৳ {{ total_collections|default('0') }}</div>
+                            <div class="pms-stat-sub">From {{ paying_shareholders|default('0') }} shareholders</div>
                         </div>
-                        <div class="pms-stat-label">Total Collections</div>
-                        <div class="pms-stat-value">৳ {{ total_collections|default('0') }}</div>
-                        <div class="pms-stat-sub">From {{ paying_shareholders|default('0') }} shareholders</div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
+
+                {# --- 3) Total Expenses --- #}
+                <div class="col-6 col-lg-3">
                     <div class="pms-stat-card">
                         <div class="pms-stat-icon green-bg">
                             <i class="fas fa-regular fa-chart-line"></i>
                         </div>
-                        <div class="pms-stat-label">Total Expenses</div>
-                        <div class="pms-stat-value">৳ {{ total_expenses|default('0') }}</div>
-                        <div class="pms-stat-sub">Construction phase</div>
+                        <div class="pms-stat-body">
+                            <div class="pms-stat-label">Total Expenses</div>
+                            <div class="pms-stat-value">৳ {{ total_expenses|default('0') }}</div>
+                            <div class="pms-stat-sub">Construction phase</div>
+                        </div>
                     </div>
                 </div>
-                {#<div class="col-md-3 col-sm-6">
-                    <div class="pms-stat-card">
+
+                {# --- 4) Collection Progress (ring) --- #}
+                <div class="col-6 col-lg-3">
+                    <div class="pms-stat-card pms-stat-progress-card">
                         <div class="pms-stat-icon warning-bg">
-                            <i class="fas fa-regular fa-clock"></i>
+                            <i class="fas fa-regular fa-chart-simple"></i>
                         </div>
-                        <div class="pms-stat-label">Outstanding Dues</div>
-                        <div class="pms-stat-value">৳ {{ outstanding_dues|default('0') }}</div>
-                        <div class="pms-stat-sub">{{ overdue_count|default('0') }} overdue</div>
-                    </div>
-                </div>#}
-            </div>
-            
-            {# ==================== COLLECTION PROGRESS & QUICK STATS ==================== #}
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="pms-card">
-                        <div class="pms-section-header">
-                            <h4 class="pms-section-title">
-                                <i class="fas fa-regular fa-chart-simple"></i> Collection Progress
-                            </h4>
-                        </div>
-                        <div class="text-center mb-3">
-                            <div class="pms-progress-ring" style="position: relative; display: inline-block;">
-                                <svg width="120" height="120">
-                                    <circle class="pms-progress-ring-bg" cx="60" cy="60" r="54" fill="none" stroke="#F5F7FA" stroke-width="12"/>
-                                    <circle class="pms-progress-ring-circle" cx="60" cy="60" r="54" fill="none" stroke="#1F8A4D" stroke-width="12" 
-                                            stroke-dasharray="{{ collection_percentage * 3.39 }}, 339" stroke-dashoffset="0"/>
+                        <div class="pms-stat-body">
+                            <div class="pms-stat-label">Collection Progress</div>
+
+                            <div class="pms-progress-ring">
+                                <svg viewBox="0 0 120 120" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" overflow="visible">
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#F5F7FA" stroke-width="12"/>
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#1F8A4D" stroke-width="12"
+                                            stroke-linecap="round"
+                                            transform="rotate(-90 60 60)"
+                                            stroke-dasharray="{{ (collection_percentage * 3.39)|round }}, 339"
+                                            stroke-dashoffset="0"/>
                                 </svg>
                                 <div class="pms-progress-ring-text">{{ collection_percentage|default('0') }}%</div>
                             </div>
-                        </div>
-                        <div class="text-center">
-                            <p class="mb-0"><strong>৳ {{ total_collections|default('0') }}</strong> collected of <strong>৳ {{ total_due|default('0') }}</strong></p>
+
+                            <div class="pms-stat-progress-caption">
+                                ৳ {{ total_collections|default('0') }} of ৳ {{ total_due|default('0') }}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+            </div>
+
+            {# ==================== ROW 2: Expense Breakdown + Recent Expenses ==================== #}
+            <div class="row g-3 mb-3">
+
+                {# --- Expense Breakdown --- #}
+                <div class="col-12 col-lg-6">
                     <div class="pms-card">
                         <div class="pms-section-header">
                             <h4 class="pms-section-title">
@@ -194,64 +168,63 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            {# ==================== RECENT EXPENSES ==================== #}
-            <div class="pms-card">
-                <div class="pms-section-header">
-                    <h4 class="pms-section-title">
-                        <i class="fas fa-regular fa-receipt"></i> Recent Expenses
-                    </h4>
-                    <a href="{{ all_expenses_link }}" class="pms-view-all">
-                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
-                    </a>
+
+                {# --- Recent Expenses --- #}
+                <div class="col-12 col-lg-6">
+                    <div class="pms-card">
+                        <div class="pms-section-header">
+                            <h4 class="pms-section-title">
+                                <i class="fas fa-regular fa-receipt"></i> Recent Expenses
+                            </h4>
+                            <a href="{{ all_expenses_link }}" class="pms-view-all">
+                                View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="pms-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Invoice #</th>
+                                        <th>Supplier</th>
+                                        <th>Payment Count</th>
+                                        <th>Paid Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in recent_expenses %}
+                                        <tr>
+                                            <td>{{ expense.invoice_date }}</td>
+                                            <td>{{ expense.invoice_number }}</td>
+                                            <td>{{ expense.supplier_name }}</td>
+                                            <td>{{ expense.payment_count }}</td>
+                                            <td class="text-danger">৳ {{ expense.paid_amount }}</td>
+                                            <td>
+                                                <span class="pms-status pms-status-paid">{{ expense.payment_status }}</span>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
+                                                No expenses recorded yet
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="table-responsive">
-                    <table class="pms-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Invoice #</th>
-                                <th>Supplier</th>
-                                <th>Payment Count</th>
-                                <th>Paid Amount</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for expense in recent_expenses %}
-                                <tr>
-                                    <td>{{ expense.invoice_date }}</td>
-                                    <td>{{ expense.invoice_number }}</td>
-                                    <td>{{ expense.supplier_name }}</td>
-                                    <td>{{ expense.payment_count }}</td>
-                                    <td class="text-danger">৳ {{ expense.paid_amount }}</td>
-                                    <td>
-                                        <span class="pms-status pms-status-paid">{{ expense.payment_status }}</span>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
-                                        No expenses recorded yet
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
             </div>
-            
-            {# ==================== TOP SHAREHOLDERS & RECENT PAYMENTS ==================== #}
-            <div class="row g-4">
+
+            {# ==================== ROW 3: Top Shareholders + Recent Payments ==================== #}
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="pms-card">
                         <div class="pms-section-header">
-                            {#<h4 class="pms-section-title">
-                                <i class="fas fa-regular fa-trophy"></i> Top Shareholders (by Ownership)
-                            </h4>#}
                             <h5 class="mb-0 pms-section-title">Top Shareholders</h5>
                             <select id="top-shareholder-criteria" class="form-select w-auto">
                                 <option value="ownership">By Ownership %</option>
@@ -274,16 +247,16 @@
                                     </thead>
                                     <tbody>
                                         {% if top_shareholders %}
-                                        {% for shareholder in top_shareholders %}
-                                            <tr>
-                                                <td>{{ shareholder.name }}</a></a>
-                                                <td>{{ shareholder.shareholder_code }}</a></a>
-                                                <td class="fw-bold">{{ shareholder.percentage|round(2) }}%</a></a>
-                                                <td>{{ shareholder.ownership_units }} units</a></a>
-                                                <td class="text-success">৳ {{ shareholder.total_paid|number_format(2) }}</a></a>
-                                                <td class="text-danger">৳ {{ shareholder.total_due|number_format(2) }}</a></a>
-                                            </tr>
-                                        {% endfor %}
+                                            {% for shareholder in top_shareholders %}
+                                                <tr>
+                                                    <td>{{ shareholder.name }}</td>
+                                                    <td>{{ shareholder.shareholder_code }}</td>
+                                                    <td class="fw-bold">{{ shareholder.percentage|round(2) }}%</td>
+                                                    <td>{{ shareholder.ownership_units }} units</td>
+                                                    <td class="text-success">৳ {{ shareholder.total_paid|number_format(2) }}</td>
+                                                    <td class="text-danger">৳ {{ shareholder.total_due|number_format(2) }}</td>
+                                                </tr>
+                                            {% endfor %}
                                         {% else %}
                                             <tr>
                                                 <td colspan="6" class="text-center text-muted py-3">No shareholder data available</td>
@@ -295,7 +268,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="pms-card">
                         <div class="pms-section-header">
@@ -306,7 +279,7 @@
                                 View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
                             </a>
                         </div>
-                        
+
                         <div class="table-responsive">
                             <table class="pms-table">
                                 <thead>
@@ -336,51 +309,18 @@
                     </div>
                 </div>
             </div>
-            
-            {# ==================== QUICK ACTIONS ==================== #}
-            {#<div class="pms-section-header mt-3">
-                <h4 class="pms-section-title">
-                    <i class="fas fa-regular fa-bolt"></i> Quick Actions
-                </h4>
-            </div>
-            
-            <div class="pms-quick-actions mb-4">
-                <a href="{{ add_expense_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-plus-circle"></i>
-                    <span>Add Expense</span>
-                </a>
-                <a href="{{ record_payment_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-credit-card"></i>
-                    <span>Record Payment</span>
-                </a>
-                <a href="{{ add_shareholder_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-user-plus"></i>
-                    <span>Add Shareholder</span>
-                </a>
-                <a href="{{ transfer_shares_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-arrow-right-arrow-left"></i>
-                    <span>Transfer Shares</span>
-                </a>
-                <a href="{{ generate_bills_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-file-invoice"></i>
-                    <span>Generate Bills</span>
-                </a>
-                <a href="{{ financial_report_link }}" class="pms-quick-btn">
-                    <i class="fas fa-regular fa-chart-line"></i>
-                    <span>Financial Report</span>
-                </a>
-            </div>#}
-            
+
             {{ content_bottom }}
         </div>
-        
+
     </div>
 </div>
+
 <script>
 // Dynamic top shareholders switching
 $('#top-shareholder-criteria').on('change', function() {
     var criteria = $(this).val();
-    
+
     $.ajax({
         url: 'index.php?route=account/manager.getTopShareholders&language={{ language }}&criteria=' + criteria + '&customer_token={{ customer_token }}',
         type: 'GET',
@@ -401,7 +341,6 @@ $('#top-shareholder-criteria').on('change', function() {
 // ==================== COLLECTION BREAKDOWN MODAL ====================
 
 function openCollectionBreakdown() {
-    // Show modal with loading spinner
     $('#collectionBreakdownModal').modal('show');
     $('#collection-breakdown-content').html(`
         <div class="text-center py-4">
@@ -409,8 +348,7 @@ function openCollectionBreakdown() {
             <p class="mt-2 text-muted">Loading collection breakdown...</p>
         </div>
     `);
-    
-    // Load data via AJAX
+
     $.ajax({
         url: 'index.php?route=account/manager.getCollectionBreakdown&language={{ language }}&customer_token={{ customer_token }}',
         type: 'GET',
@@ -419,25 +357,22 @@ function openCollectionBreakdown() {
             if (data.success && data.data.length > 0) {
                 var html = '<div class="table-responsive">';
                 html += '<table class="table table-bordered table-striped">';
-                html += '<thead>';
-                html += '<tr>';
+                html += '<thead><tr>';
                 html += '<th>Phase</th>';
                 html += '<th>Transactions</th>';
                 html += '<th class="text-end">Total Collected</th>';
                 html += '<th class="text-end">Average per Transaction</th>';
-                html += '</tr>';
-                html += '</thead>';
-                html += '<tbody>';
-                
+                html += '</tr></thead><tbody>';
+
                 var grandTotal = 0;
                 var grandTransactions = 0;
-                
+
                 for (var i in data.data) {
                     var row = data.data[i];
                     var avg = row.total_transactions > 0 ? row.total_collected_amount / row.total_transactions : 0;
                     grandTotal += parseFloat(row.total_collected_amount);
                     grandTransactions += parseInt(row.total_transactions);
-                    
+
                     html += '<tr>';
                     html += '<td><strong>' + row.phase_name + '</strong></td>';
                     html += '<td>' + row.total_transactions + '</td>';
@@ -445,19 +380,16 @@ function openCollectionBreakdown() {
                     html += '<td class="text-end">৳ ' + avg.toFixed(2) + '</td>';
                     html += '</tr>';
                 }
-                
-                html += '</tbody>';
-                html += '<tfoot class="fw-bold">';
+
+                html += '</tbody><tfoot class="fw-bold">';
                 html += '<tr>';
                 html += '<td><strong>Grand Total</strong></td>';
                 html += '<td>' + grandTransactions + '</td>';
                 html += '<td class="text-end text-success">৳ ' + grandTotal.toFixed(2) + '</td>';
                 html += '<td class="text-end">-</td>';
                 html += '</tr>';
-                html += '</tfoot>';
-                html += '</table>';
-                html += '</div>';
-                
+                html += '</tfoot></table></div>';
+
                 $('#collection-breakdown-content').html(html);
             } else {
                 $('#collection-breakdown-content').html(`
@@ -468,7 +400,7 @@ function openCollectionBreakdown() {
                 `);
             }
         },
-        error: function(xhr) {
+        error: function() {
             $('#collection-breakdown-content').html(`
                 <div class="alert alert-danger">
                     <i class="fas fa-regular fa-circle-exclamation"></i>
@@ -479,9 +411,10 @@ function openCollectionBreakdown() {
     });
 }
 </script>
+
 <!-- ==================== COLLECTION BREAKDOWN MODAL ==================== -->
 <div class="modal fade" id="collectionBreakdownModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
@@ -490,7 +423,6 @@ function openCollectionBreakdown() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="collection-breakdown-content">
-                <!-- Content loaded via AJAX -->
                 <div class="text-center py-4">
                     <i class="fas fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
                     <p class="mt-2 text-muted">Loading collection breakdown...</p>
@@ -502,4 +434,5 @@ function openCollectionBreakdown() {
         </div>
     </div>
 </div>
+
 {{ footer }}

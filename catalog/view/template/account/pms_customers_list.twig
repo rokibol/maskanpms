@@ -100,6 +100,15 @@
                     <a href="{{ add }}" class="btn btn-primary">
                         <i class="fas fa-solid fa-plus"></i> Add Accountant
                     </a>
+                    <button type="button" class="btn btn-success" 
+                            id="sharePopover"
+                            data-bs-container="body" 
+                            data-bs-toggle="popover" 
+                            data-bs-placement="bottom" 
+                            data-bs-html="true"
+                            title="Share Registration Link">
+                        <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
                     <a href="{{ back }}" class="btn btn-secondary">
                         <i class="fas fa-solid fa-arrow-left"></i> Back
                     </a>
@@ -191,50 +200,153 @@
         {{ column_right }}
     </div>
 </div>
+<!-- The Popover Content Template (Injecting Twig Variables safely) -->
+<template id="popover-content">
+  <div class="p-2 share-panel-wrapper" style="min-width: 220px;">
+    
+    <!-- Copy Input Group -->
+    <div class="input-group input-group-sm mb-3">
+      <input type="text" class="form-control text-muted" value="{{ accountant_registration_url }}" readonly id="shareLinkInput">
+      <button class="btn btn-primary" type="button" id="btnPopoverCopy" onclick="copyShareLink()">
+        <i class="fa-regular fa-copy"></i>
+      </button>
+    </div>
 
+    <!-- Social Action List -->
+    <div class="d-flex flex-column gap-2">
+      <!-- WhatsApp (Direct message API) -->
+      <a href="https://whatsapp.com{{ accountant_registration_url|url_encode }}" target="_blank" class="btn btn-sm btn-outline-success text-start">
+        <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
+      </a>
+      
+      <!-- Messenger (Requires redirect share intent) -->
+      <a href="https://facebook.com{{ accountant_registration_url|url_encode }}&redirect_uri={{ accountant_registration_url|url_encode }}" target="_blank" class="btn btn-sm btn-outline-primary text-start">
+        <i class="fa-brands fa-facebook-messenger me-2"></i> Messenger
+      </a>
+
+      <!-- Instagram (Direct link share note) -->
+      <a href="https://instagram.com" target="_blank" class="btn btn-sm btn-outline-danger text-start" onclick="alert('Instagram does not support direct link passing via URLs. We have copied the link to your clipboard so you can paste it into a DM!'); copyShareLink();">
+        <i class="fa-brands fa-instagram me-2"></i> Instagram
+      </a>
+
+      <!-- Email (Native Mailto protocol) -->
+      <a href="mailto:?subject=Shareholder%20Registration&body=Please%20use%20this%20link%20to%20register%3A%20{{ accountant_registration_url|url_encode }}" class="btn btn-sm btn-outline-secondary text-start">
+        <i class="fa-regular fa-envelope me-2"></i> Email Link
+      </a>
+    </div>
+
+  </div>
+</template>
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_customers&language={{ language }}';
-    
-    var filter_search = $('input[name="filter_search"]').val();
-    if (filter_search) {
-        url += '&filter_search=' + encodeURIComponent(filter_search);
-    }
-    
-    var filter_status = $('select[name="filter_status"]').val();
-    if (filter_status) {
-        url += '&filter_status=' + encodeURIComponent(filter_status);
-    }
-    
-    location = url;
-});
+    $(document).ready(function() {
+        var popoverTriggerEl = document.getElementById('sharePopover');
+        var templateEl = document.getElementById('popover-content');
+        
+        // Pull the raw Twig variable directly into JavaScript context
+        var shareData = {
+            title: 'Accountant Registration',
+            text: 'Please use this link to register as a accountant:',
+            url: '{{ accountant_registration_url }}'
+        };
 
-$('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_customers&language={{ language }}';
-});
+        if (popoverTriggerEl && templateEl) {
+            
+            // 1. MOBILE CONDITION: Check if the browser supports native mobile sharing
+            if (navigator.share) {
+                
+                // Remove Bootstrap data attributes so the popover doesn't trigger on mobile
+                popoverTriggerEl.removeAttribute('data-bs-toggle');
+                popoverTriggerEl.removeAttribute('data-bs-target');
+                
+                popoverTriggerEl.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    navigator.share(shareData)
+                        .then(() => console.log('Shared successfully'))
+                        .catch((err) => console.log('Share canceled or failed:', err));
+                });
+                
+            } else {
+                // 2. DESKTOP FALLBACK: Initialize the original Bootstrap Popover layout
+                var popover = new bootstrap.Popover(popoverTriggerEl, {
+                    content: templateEl.innerHTML,
+                    sanitize: false
+                });
 
-$('input[name="filter_search"]').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
-    }
-});
-
-function deleteCustomer(customerId) {
-    if (confirm('Are you sure you want to delete this accountant? They will no longer have access to the system.')) {
-        $.ajax({
-            url: 'index.php?route=account/pms_customers.delete&language={{ language }}&customer_id=' + customerId + '&user_token={{ user_token }}',
-            type: 'GET',
-            dataType: 'json',
-            success: function(json) {
-                if (json.success) {
-                    location.reload();
-                } else {
-                    alert(json.error);
-                }
+                // Close the popover wrapper if user clicks outside of it
+                $('body').on('click', function (e) {
+                    if (!$(popoverTriggerEl).is(e.target) && $(popoverTriggerEl).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                        popover.hide();
+                    }
+                });
             }
-        });
+        }
+    });
+
+    // Keep your clipboard copy method active for desktop fallbacks
+    function copyShareLink() {
+        var copyInput = document.querySelector('.popover #shareLinkInput');
+        var copyButton = document.querySelector('.popover #btnPopoverCopy');
+        
+        if (copyInput) {
+            copyInput.select();
+            copyInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyInput.value).then(function() {
+                if (copyButton) {
+                    var originalHtml = copyButton.innerHTML;
+                    copyButton.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    copyButton.className = "btn btn-success";
+                    setTimeout(function() {
+                        copyButton.innerHTML = originalHtml;
+                        copyButton.className = "btn btn-primary";
+                    }, 2000);
+                }
+            });
+        }
     }
-}
+
+    $('#button-filter').on('click', function() {
+        var url = 'index.php?route=account/pms_customers&language={{ language }}';
+        
+        var filter_search = $('input[name="filter_search"]').val();
+        if (filter_search) {
+            url += '&filter_search=' + encodeURIComponent(filter_search);
+        }
+        
+        var filter_status = $('select[name="filter_status"]').val();
+        if (filter_status) {
+            url += '&filter_status=' + encodeURIComponent(filter_status);
+        }
+        
+        location = url;
+    });
+
+    $('#button-clear').on('click', function() {
+        location = 'index.php?route=account/pms_customers&language={{ language }}';
+    });
+
+    $('input[name="filter_search"]').keydown(function(e) {
+        if (e.keyCode == 13) {
+            $('#button-filter').click();
+        }
+    });
+
+    function deleteCustomer(customerId) {
+        if (confirm('Are you sure you want to delete this accountant? They will no longer have access to the system.')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_customers.delete&language={{ language }}&customer_id=' + customerId + '&user_token={{ user_token }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        location.reload();
+                    } else {
+                        alert(json.error);
+                    }
+                }
+            });
+        }
+    }
 </script>
 
 {{ footer }}

@@ -36,7 +36,6 @@ $_['tab_subscription']          = 'Subscription';
 
 // Column
 $_['column_name']            = 'Project Name';
-$_['column_slug']            = 'Slug';
 $_['column_status']          = 'Status';
 $_['column_subscription']    = 'Subscription';
 $_['column_store']           = 'Store';
@@ -51,7 +50,6 @@ $_['button_clear']           = 'Clear';
 
 // Entry
 $_['entry_name']             = 'Project Name';
-$_['entry_slug']             = 'Slug (URL)';
 $_['entry_description']      = 'Description';
 $_['entry_address']          = 'Address';
 $_['entry_city']             = 'City';
@@ -72,7 +70,6 @@ $_['entry_handover_date']    = 'Handover Date';
 $_['entry_is_active']        = 'Is Active';
 
 // Help
-$_['help_slug']              = 'URL friendly name. Use hyphens instead of spaces. Example: sky-view';
 $_['help_theme_color']       = 'Hex color code for project dashboard. Example: #0B3C5D';
 $_['help_completion']        = 'Construction completion percentage (0-100)';
 
@@ -80,8 +77,6 @@ $_['help_completion']        = 'Construction completion percentage (0-100)';
 $_['error_warning']          = 'Warning: Please check the form carefully for errors!';
 $_['error_permission']       = 'Warning: You do not have permission to modify projects!';
 $_['error_name']             = 'Project Name must be between 3 and 100 characters!';
-$_['error_slug']             = 'Slug must be between 3 and 100 characters and unique!';
-$_['error_slug_exists']      = 'Slug already exists! Please use a different slug.';
 $_['error_total_shares']     = 'Total Shares must be a positive number!';
 $_['error_share_value']      = 'Share Value must be a positive number!';
 $_['error_completion']       = 'Completion Percentage must be between 0 and 100!';

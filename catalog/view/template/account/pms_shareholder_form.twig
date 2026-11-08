@@ -870,26 +870,33 @@ function isValidEmail(email) {
  * Update review section with entered data
  */
 function updateReview() {
-    // Personal
-    var firstname = document.getElementById('input-firstname').value;
-    var lastname = document.getElementById('input-lastname').value;
-    var phone = document.getElementById('input-phone').value;
+    // Personal - use correct IDs
+    var firstname = document.getElementById('input-firstname');
+    var lastname = document.getElementById('input-lastname');
+    var phone = document.getElementById('input-phone');
     
-    document.getElementById('review-name').textContent = firstname + ' ' + lastname;
-    document.getElementById('review-email').textContent = phone ? phone + '@gmail.com' : '-';
-    document.getElementById('review-phone').textContent = phone || '-';
+    var fullName = '';
+    if (firstname) fullName += firstname.value.trim();
+    if (lastname) fullName += ' ' + lastname.value.trim();
+    
+    document.getElementById('review-name').textContent = fullName.trim() || '-';
+    
+    // Phone - this is the fix
+    var phoneValue = phone ? phone.value.trim() : '';
+    document.getElementById('review-phone').textContent = phoneValue || '-';
     
     // Ownership
-    var ownership = document.getElementById('input-ownership').value;
-    document.getElementById('review-units').textContent = ownership ? ownership + ' units' : '-';
+    var ownership = document.getElementById('input-ownership');
+    var ownershipValue = ownership ? ownership.value.trim() : '';
+    document.getElementById('review-units').textContent = ownershipValue && ownershipValue ? ownershipValue + ' units' : '-';
     
     // Nominee
-    var nominee = document.getElementById('input-nominee-name').value;
-    document.getElementById('review-nominee').textContent = nominee || '-';
+    var nominee = document.getElementById('input-nominee-name');
+    document.getElementById('review-nominee').textContent = nominee && nominee.value.trim() ? nominee.value.trim() : '-';
     
     // Banking
-    var bank = document.getElementById('input-bank-name').value;
-    document.getElementById('review-bank').textContent = bank || '-';
+    var bank = document.getElementById('input-bank-name');
+    document.getElementById('review-bank').textContent = bank && bank.value.trim() ? bank.value.trim() : '-';
 }
 
 /**

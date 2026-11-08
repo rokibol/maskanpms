@@ -302,9 +302,8 @@ class Shareholder extends \Opencart\System\Engine\Model {
                 'email'             => $email,
                 'telephone'         => $phone,
                 'password'          => password_hash($data['password'], PASSWORD_DEFAULT),
-                'customer_group_id' => (int)$this->config->get('config_customer_group_id'),
-                'status'            => 1,
-                'approved'          => 1
+                'customer_group_id' => $data['customer_group_id'] ?? (int)$this->config->get('config_customer_group_id'),
+                'status'            => 1
             ];
             
             $this->db->query("
@@ -316,7 +315,6 @@ class Shareholder extends \Opencart\System\Engine\Model {
                     `password` = '" . $this->db->escape($customer_data['password']) . "',
                     `customer_group_id` = '" . (int)$customer_data['customer_group_id'] . "',
                     `status` = '" . (int)$customer_data['status'] . "',
-                    `approved` = '" . (int)$customer_data['approved'] . "',
                     `date_added` = NOW()
             ");
             
@@ -324,7 +322,7 @@ class Shareholder extends \Opencart\System\Engine\Model {
             $shareholder_code = $this->generateShareholderCode();
             
             $this->db->query("
-                INSERT INTO `" . DB_PREFIX . "pms_shareholder` 
+                INSERT INTO `" . DB_PREFIX . "shareholders` 
                 SET `shareholder_code` = '" . $this->db->escape($shareholder_code) . "',
                     `user_id` = '" . (int)$customer_id . "',
                     `project_id` = '" . (int)$data['project_id'] . "',
@@ -365,7 +363,7 @@ class Shareholder extends \Opencart\System\Engine\Model {
      */
     public function updateShareholder(int $shareholder_id, array $data): void {
         $this->db->query("
-            UPDATE `" . DB_PREFIX . "pms_shareholder` 
+            UPDATE `" . DB_PREFIX . "shareholders` 
             SET `ownership_units` = '" . (int)$data['ownership_units'] . "',
                 `phone` = '" . $this->db->escape($data['phone']) . "',
                 `address` = '" . $this->db->escape($data['address']) . "',

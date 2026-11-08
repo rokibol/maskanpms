@@ -29,7 +29,11 @@ class PmsCustomers extends \Opencart\System\Engine\Controller {
         if (!$project) {
             $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
+
+        $accountant_registration_url = $this->url->link('account/register_accountant', 'language=' . $this->config->get('config_language') . '&reference=' . $project['project_id']);
         
+        $data['accountant_registration_url'] = $accountant_registration_url;
+
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
         

@@ -30,7 +30,11 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         if (!$project) {
             $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
+
+        $shareholder_registration_url = $this->url->link('account/register_shareholder', 'language=' . $this->config->get('config_language') . '&reference=' . $project['project_id'], true);
         
+        $data['shareholder_registration_url'] = $shareholder_registration_url;
+
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
         $data['total_shares'] = $project['total_shares'];
@@ -563,11 +567,11 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             $phone = $this->request->post['phone'] ?? '';
             
             // Validate
-            if (empty($this->request->post['firstname']) || utf8_strlen($this->request->post['firstname']) < 1) {
+            if (empty($this->request->post['firstname']) || strlen($this->request->post['firstname']) < 1) {
                 $json['error']['firstname'] = $this->language->get('error_firstname');
             }
             
-            if (empty($this->request->post['lastname']) || utf8_strlen($this->request->post['lastname']) < 1) {
+            if (empty($this->request->post['lastname']) || strlen($this->request->post['lastname']) < 1) {
                 $json['error']['lastname'] = $this->language->get('error_lastname');
             }
             
@@ -598,7 +602,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             
             // Password validation for new shareholder
             if (!isset($this->request->get['shareholder_id'])) {
-                if (empty($this->request->post['password']) || utf8_strlen($this->request->post['password']) < 4) {
+                if (empty($this->request->post['password']) || strlen($this->request->post['password']) < 4) {
                     $json['error']['password'] = $this->language->get('error_password');
                 }
             }

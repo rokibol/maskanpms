@@ -1,51 +1,6 @@
 </main>
 <footer>
   <div class="container footer">
-    {#<div class="row">
-      {% if informations or blog %}
-        <div class="col-sm-3">
-          <h5>{{ text_information }}</h5>
-          <ul class="list-unstyled">
-            {% if blog %}
-              <li><a href="{{ blog }}">{{ text_blog }}</a></li>
-            {% endif %}
-            {% for information in informations %}
-              <li><a href="{{ information.href }}">{{ information.title }}</a></li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-      <div class="col-sm-3">
-        <h5>{{ text_service }}</h5>
-        <ul class="list-unstyled">
-          <li><a href="{{ contact }}">{{ text_contact }}</a></li>
-          <li><a href="{{ return }}">{{ text_return }}</a></li>
-          {% if gdpr %}
-            <li><a href="{{ gdpr }}">{{ text_gdpr }}</a></li>
-          {% endif %}
-          <li><a href="{{ sitemap }}">{{ text_sitemap }}</a></li>
-        </ul>
-      </div>
-      <div class="col-sm-3">
-        <h5>{{ text_extra }}</h5>
-        <ul class="list-unstyled">
-          <li><a href="{{ manufacturer }}">{{ text_manufacturer }}</a></li>
-          {% if affiliate %}
-            <li><a href="{{ affiliate }}">{{ text_affiliate }}</a></li>
-          {% endif %}
-          <li><a href="{{ special }}">{{ text_special }}</a></li>
-        </ul>
-      </div>
-      <div class="col-sm-3">
-        <h5>{{ text_account }}</h5>
-        <ul class="list-unstyled">
-          <li><a href="{{ account }}">{{ text_account }}</a></li>
-          <li><a href="{{ order }}">{{ text_order }}</a></li>
-          <li><a href="{{ wishlist }}">{{ text_wishlist }}</a></li>
-          <li><a href="{{ newsletter }}">{{ text_newsletter }}</a></li>
-        </ul>
-      </div>
-    </div>#}
     <hr>
     <p>{{ powered }}</p>
   </div>
@@ -74,13 +29,18 @@ function toggleMobileSidebar() {
 function closeMobileSidebar() {
     var sidebar = document.getElementById('mobileSidebar');
     var overlay = document.getElementById('sidebarOverlay');
-    if(sidebar) {
-      sidebar.classList.remove('open');
+    if (sidebar) {
+        sidebar.classList.remove('open');
     }
-    if(overlay) {
-      overlay.classList.remove('active');
+    if (overlay) {
+        overlay.classList.remove('active');
     }
-    document.body.style.overflow = '';
+    // Only reset body overflow if we're NOT about to open a Bootstrap modal.
+    // If a modal is open (or in the process of opening), Bootstrap owns
+    // body.style.overflow and resetting it here causes a scroll-lock jump.
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = '';
+    }
 }
 
 // Close sidebar on escape key
@@ -93,21 +53,25 @@ document.addEventListener('keydown', function(e) {
 // Swipe to close (touch)
 var touchStartX = 0;
 document.addEventListener('touchstart', function(e) {
-    touchStartX = e.changedTouches[0].screenX;
+    touchStartX = e.changedTouches[0].clientX;
 });
 document.addEventListener('touchend', function(e) {
-    var touchEndX = e.changedTouches[0].screenX;
+    var touchEndX = e.changedTouches[0].clientX;
     var sidebar = document.getElementById('mobileSidebar');
-    if (sidebar.classList.contains('open') && (touchStartX - touchEndX) > 80) {
+    if (sidebar
+        && sidebar.classList.contains('open')
+        && (touchStartX - touchEndX) > 80
+        && !document.body.classList.contains('modal-open')) {
         closeMobileSidebar();
     }
 });
 
 // Close sidebar on window resize (from mobile to desktop)
 window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
+    if (window.innerWidth > 768 && !document.body.classList.contains('modal-open')) {
         closeMobileSidebar();
     }
 });
+
 </script>
 </body></html>

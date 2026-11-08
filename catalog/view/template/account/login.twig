@@ -461,6 +461,11 @@
             padding: 1rem 0.8rem;
         }
     }
+    .error {
+        color: red; 
+        font-size: 14px; 
+        display: none;
+    }
 </style>
 
 {# ==================== MAIN LOGIN CONTAINER ==================== #}
@@ -539,16 +544,22 @@
                             
                             <div class="pms-form-group">
                                 <label class="pms-form-label" for="input-email">
-                                    <i class="fas fa-regular fa-envelope"></i> Email Address
+                                    <i class="fas fa-regular fa-mobile"></i> Mobile Number
                                 </label>
-                                <input type="email" 
+                                <input type="hidden" 
                                        name="email" 
-                                       value="{{ email }}" 
-                                       placeholder="your@email.com" 
-                                       id="input-email" 
-                                       class="pms-form-control"
-                                       autocomplete="email"
-                                       required>
+                                       value="" 
+                                       id="input-email"/>
+                                <input 
+                                    type="tel" 
+                                    id="telephone" 
+                                    name="telephone" 
+                                    class="pms-form-control"
+                                    placeholder="01XXXXXXXXX" 
+                                    maxlength="11" 
+                                    required
+                                >
+                                <div id="errorMessage" class="error"></div>
                             </div>
                             
                             <div class="pms-form-group">
@@ -622,6 +633,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.pms-login-tab');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
+    const telephoneInput = document.getElementById('telephone');
+
+    // Attach the blur event listener
+    telephoneInput.addEventListener('blur', function() {
+        validatePhoneNumber();
+    });
+
+    function validatePhoneNumber() {
+        const phoneInput = document.getElementById('telephone').value;
+        const hiddenField = document.getElementById('input-email');
+        const errorDiv = document.getElementById('errorMessage');
+        
+        // For monitoring/debugging simulation
+        const visualHiddenSpan = document.getElementById('hiddenFieldValueVisual');
+
+        // Bangladesh mobile operators pattern (Starts with 01, followed by 3-9, then 8 digits)
+        const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+        // Clear previous UI states
+        errorDiv.style.display = 'none';
+
+        // Strict Validation Check
+        if (bdPhoneRegex.test(phoneInput)) {
+            // Update hidden field to 1 if valid
+            hiddenField.value = phoneInput.trim() + "@gmail.com";
+            return true;
+        } else {
+            // Update hidden field to 0 if invalid
+            hiddenField.value = "0";
+
+            // Only show errors if the user actually typed something
+            if (phoneInput.trim() !== "") {
+                errorDiv.textContent = "Invalid format! Must start with 01 and be exactly 11 digits.";
+                errorDiv.style.display = 'block';
+            }
+            return false;
+        }
+    }
     
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {

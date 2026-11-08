@@ -23,7 +23,7 @@
     --pms-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --pms-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     --pms-radius: 0.75rem;
-    --pms-radius-lg: 1rem;
+    --pms-radius-lg: 0rem;
 }
 
 /* Sidebar Styling - Dark Blue #0B3C5D */
@@ -1610,12 +1610,14 @@
         left: -320px;
         width: 300px;
         height: 100vh;
+        height: 100dvh;
         background: #0B3C5D;
         z-index: 9999;
-        overflow-y: auto;
+        overflow: hidden;
         transition: left 0.3s ease;
         box-shadow: 2px 0 20px rgba(0,0,0,0.2);
-        padding: 20px 0;
+        display: flex;
+        padding: 0;
     }
     .pms-sidebar-mobile.open {
         left: 0;
@@ -1631,11 +1633,14 @@
         color: rgba(255,255,255,0.6);
         font-size: 24px;
         cursor: pointer;
+        z-index: 10;
     }
     .pms-sidebar-mobile .sidebar-header {
+        flex: 0 0 auto;
         padding: 20px 25px 15px;
         border-bottom: 1px solid rgba(255,255,255,0.1);
         text-align: center;
+        position: relative;
     }
     .pms-sidebar-mobile .sidebar-header .logo {
         color: white;
@@ -1650,6 +1655,7 @@
         font-size: 11px;
     }
     .pms-sidebar-mobile .sidebar-user {
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         gap: 12px;
@@ -1680,12 +1686,27 @@
         font-size: 11px;
     }
     .pms-sidebar-mobile .sidebar-nav {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         list-style: none;
         padding: 10px 0;
         margin: 0;
+        /* give the scrollbar a little breathing room */
+        padding-bottom: 20px;
     }
     .pms-sidebar-mobile .sidebar-nav li {
         margin: 2px 12px;
+    }
+    .pms-sidebar-mobile .sidebar-nav li:last-child {
+        margin-bottom: 4px;
+    }
+    .pms-sidebar-mobile .sidebar-nav::-webkit-scrollbar {
+        width: 6px;
+    }
+    .pms-sidebar-mobile .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.15);
+        border-radius: 3px;
     }
     .pms-sidebar-mobile .sidebar-nav li a {
         display: flex;
@@ -1720,12 +1741,13 @@
         margin-left: auto;
     }
     .pms-sidebar-mobile .sidebar-footer {
-        padding: 15px 25px;
+        flex: 0 0 auto;
+        padding: 12px 25px;
         border-top: 1px solid rgba(255,255,255,0.08);
         font-size: 11px;
         color: rgba(255,255,255,0.3);
         text-align: center;
-        margin-top: 10px;
+        background: #0B3C5D;
     }
 
     @media (max-width: 768px) {
@@ -1773,3 +1795,237 @@
             display: block !important;
         }
     }
+/* ============================================================
+   MANAGER DASHBOARD — MOBILE-FIRST CARD LAYOUT (v2)
+   4-column metrics row + 2-column detail row
+   Scoped to .pms-manager-dashboard so other roles are unaffected
+   ============================================================ */
+
+/* ---- Base stat card — horizontal icon + body on ALL sizes ---- */
+.pms-manager-dashboard .pms-stat-card {
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: row;        /* icon beside body, not above */
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    position: relative;
+}
+
+.pms-manager-dashboard .pms-stat-card .pms-stat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.15rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0;           /* was 0.25rem — removed */
+    flex-shrink: 0;
+}
+
+.pms-manager-dashboard .pms-stat-card .pms-stat-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.pms-manager-dashboard .pms-stat-card .pms-stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.4px;
+    margin-bottom: 0;
+}
+
+.pms-manager-dashboard .pms-stat-card .pms-stat-value {
+    font-size: 1.35rem;
+    line-height: 1.15;
+}
+
+.pms-manager-dashboard .pms-stat-card .pms-stat-sub {
+    font-size: 0.7rem;
+    margin-top: 0.15rem;
+}
+
+/* ---- Desktop ≥992px: same horizontal layout, slightly bigger numbers ---- */
+@media (min-width: 992px) {
+    .pms-manager-dashboard .pms-stat-card {
+        padding: 0.9rem 1rem;
+        gap: 0.85rem;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 1.25rem;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-value {
+        font-size: 1.45rem;
+    }
+}
+
+/* ---- Phone <576px: already horizontal, just tighter ---- */
+@media (max-width: 575.98px) {
+    .pms-manager-dashboard .pms-stat-card {
+        padding: 0.6rem 0.75rem;
+        min-height: 72px;
+        gap: 0.55rem;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+        border-radius: 0.55rem;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-label {
+        font-size: 0.6rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-value {
+        font-size: 1rem;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pms-manager-dashboard .pms-stat-card .pms-stat-sub {
+        font-size: 0.6rem;
+        margin-top: 0.05rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pms-manager-dashboard .pms-stat-action {
+        display: none !important;
+    }
+}
+/* ---- Collection Progress card (4th cell in metrics row) ---- */
+.pms-manager-dashboard .pms-stat-progress-card {
+    padding: 0.85rem 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Progress ring wrapper — sits on the right of the body */
+.pms-manager-dashboard .pms-progress-ring {
+    position: relative;
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.pms-manager-dashboard .pms-progress-ring svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.pms-manager-dashboard .pms-progress-ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #374151;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.pms-manager-dashboard .pms-stat-progress-caption {
+    font-size: 0.65rem;
+    color: #6B7280;
+    margin-top: 0.1rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 992px) {
+    .pms-manager-dashboard .pms-stat-progress-card {
+        padding: 0.9rem 1rem;
+        gap: 0.85rem;
+    }
+    .pms-manager-dashboard .pms-progress-ring {
+        width: 62px;
+        height: 62px;
+    }
+    .pms-manager-dashboard .pms-progress-ring-text {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pms-manager-dashboard .pms-stat-progress-card {
+        padding: 0.6rem 0.75rem;
+        min-height: 72px;
+        gap: 0.55rem;
+    }
+    .pms-manager-dashboard .pms-stat-progress-card .pms-stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+        border-radius: 0.55rem;
+        flex-shrink: 0;
+    }
+    .pms-manager-dashboard .pms-stat-progress-card .pms-stat-label {
+        display: block;
+        font-size: 0.6rem;
+        margin-bottom: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pms-manager-dashboard .pms-progress-ring {
+        width: 42px;
+        height: 42px;
+    }
+    .pms-manager-dashboard .pms-progress-ring-text {
+        font-size: 0.6rem;
+    }
+    .pms-manager-dashboard .pms-stat-progress-caption {
+        display: none;      /* hide ৳ caption on phone — label + % is enough */
+    }
+}
+.custom-popup-panel {
+    position: absolute;
+    top: 125%; /* Positions right beneath the button */
+    right: 0;
+    z-index: 1060; /* Higher than table cells and filters */
+    width: 280px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.popup-header h6 {
+    font-size: 14px;
+    font-weight: 600;
+}
+/* Tiny top layout arrow matching Bootstrap designs */
+.popup-arrow {
+    position: absolute;
+    top: -6px;
+    right: 15px;
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    border-top: 1px solid #d1d5db;
+    border-left: 1px solid #d1d5db;
+}
+.pms-info-share-register {
+    background-color: #1F8A4D !important;
+}
+.pms-info-share-register label {
+    color: #ffffff !important;
+}
