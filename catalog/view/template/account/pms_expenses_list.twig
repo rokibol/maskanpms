@@ -109,7 +109,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid pms-expenses-page">
     {#<ul class="breadcrumb">
         {% for breadcrumb in breadcrumbs %}
             <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
@@ -139,24 +139,22 @@
             </div>
             
             <!-- Statistics Cards -->
-            <div class="stats-card">
-                <div class="row">
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">৳ {{ stats.today|number_format(2) }}</div>
-                        <div class="stat-label">Today's Expenses</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">৳ {{ stats.week|number_format(2) }}</div>
-                        <div class="stat-label">This Week</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">৳ {{ stats.month|number_format(2) }}</div>
-                        <div class="stat-label">This Month</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">৳ {{ stats.total|number_format(2) }}</div>
-                        <div class="stat-label">Total Expenses</div>
-                    </div>
+            <div class="stats-card pms-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number">৳ {{ stats.today|number_format(2) }}</div>
+                    <div class="stat-label">Today's Expenses</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">৳ {{ stats.week|number_format(2) }}</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">৳ {{ stats.month|number_format(2) }}</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">৳ {{ stats.total|number_format(2) }}</div>
+                    <div class="stat-label">Total Expenses</div>
                 </div>
             </div>
             

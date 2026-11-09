@@ -25,7 +25,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid pms-invoices-page">
     
     <div class="row">
         <div class="col-lg-3 col-md-4">
@@ -50,20 +50,18 @@
             </div>
             
             <!-- Statistics Cards -->
-            <div class="stats-card">
-                <div class="row">
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number total">৳ {{ stats.total_amount|number_format(2) }}</div>
-                        <div class="stat-label">Total Invoices</div>
-                    </div>
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number paid">৳ {{ stats.paid_amount|number_format(2) }}</div>
-                        <div class="stat-label">Paid Amount</div>
-                    </div>
-                    <div class="col-md-4 stat-box">
-                        <div class="stat-number unpaid">৳ {{ stats.unpaid_amount|number_format(2) }}</div>
-                        <div class="stat-label">Unpaid Amount</div>
-                    </div>
+            <div class="stats-card pms-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number total">৳ {{ stats.total_amount|number_format(2) }}</div>
+                    <div class="stat-label">Total Invoices</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number paid">৳ {{ stats.paid_amount|number_format(2) }}</div>
+                    <div class="stat-label">Paid Amount</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number unpaid">৳ {{ stats.unpaid_amount|number_format(2) }}</div>
+                    <div class="stat-label">Unpaid Amount</div>
                 </div>
             </div>
             

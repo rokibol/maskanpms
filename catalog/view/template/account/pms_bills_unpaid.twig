@@ -54,7 +54,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid pms-unpaid-page">
     {#<ul class="breadcrumb">
         {% for breadcrumb in breadcrumbs %}
             <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
@@ -77,24 +77,22 @@
             </div>
             
             <!-- Payment Statistics -->
-            <div class="stats-card">
-                <div class="row">
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number amount">৳ {{ payment_stats.total_bills|number_format(2) }}</div>
-                        <div class="stat-label">Total Bills</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number amount">৳ {{ payment_stats.paid_amount|number_format(2) }}</div>
-                        <div class="stat-label">Collected</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number amount" style="color: #EF4444;">৳ {{ payment_stats.unpaid_amount|number_format(2) }}</div>
-                        <div class="stat-label">Unpaid</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number percentage">{{ payment_stats.paid_percentage }}%</div>
-                        <div class="stat-label">Collection Rate</div>
-                    </div>
+            <div class="stats-card pms-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number amount">৳ {{ payment_stats.total_bills|number_format(2) }}</div>
+                    <div class="stat-label">Total Bills</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number amount" style="color: #22C55E;">৳ {{ payment_stats.paid_amount|number_format(2) }}</div>
+                    <div class="stat-label">Collected</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number amount" style="color: #EF4444;">৳ {{ payment_stats.unpaid_amount|number_format(2) }}</div>
+                    <div class="stat-label">Unpaid</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number percentage">{{ payment_stats.paid_percentage }}%</div>
+                    <div class="stat-label">Collection Rate</div>
                 </div>
             </div>
             

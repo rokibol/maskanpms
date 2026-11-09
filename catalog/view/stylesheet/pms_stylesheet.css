@@ -2411,3 +2411,281 @@
         font-size: 0.85rem;
     }
 }
+/* ============================================================
+   UNPAID BILLS PAGE — STATS GRID (mobile-friendly 4 / 2 / 1)
+   Scoped to .pms-unpaid-page so other pages are untouched.
+   ============================================================ */
+
+.pms-unpaid-page .pms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.pms-unpaid-page .pms-stats-grid .stat-box {
+    padding: 15px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 0;
+    background: #fff;
+    min-width: 0;
+}
+
+.pms-unpaid-page .pms-stats-grid .stat-box:last-child {
+    border-right: none;
+}
+
+.pms-unpaid-page .pms-stats-grid .stat-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-unpaid-page .pms-stats-grid .stat-label {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Tablet: 2 × 2 grid ---- */
+@media (max-width: 991.98px) {
+    .pms-unpaid-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-box {
+        border-right: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-box:nth-child(2n) {
+        border-right: none;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-box:nth-last-child(-n + 2) {
+        border-bottom: none;
+    }
+}
+
+/* ---- Phone: still 2 × 2, tighter cells ---- */
+@media (max-width: 575.98px) {
+    .pms-unpaid-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin-bottom: 1rem;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-box {
+        padding: 0.65rem 0.5rem;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-number {
+        font-size: 1rem;
+        line-height: 1.15;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-label {
+        font-size: 0.6rem;
+        margin-top: 1px;
+    }
+}
+
+/* ---- Very small phones (<380px) ---- */
+@media (max-width: 379.98px) {
+    .pms-unpaid-page .pms-stats-grid .stat-number {
+        font-size: 0.88rem;
+    }
+    .pms-unpaid-page .pms-stats-grid .stat-label {
+        font-size: 0.55rem;
+    }
+}
+/* ============================================================
+   EXPENSES PAGE — STATS GRID (mobile-friendly 4 / 2 / 1)
+   Scoped to .pms-expenses-page so other pages are untouched.
+   ============================================================ */
+
+.pms-expenses-page .pms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.pms-expenses-page .pms-stats-grid .stat-box {
+    padding: 15px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 0;
+    background: #fff;
+    min-width: 0;
+}
+
+.pms-expenses-page .pms-stats-grid .stat-box:last-child {
+    border-right: none;
+}
+
+.pms-expenses-page .pms-stats-grid .stat-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #DC2626;                       /* keep the red expense tone */
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-expenses-page .pms-stats-grid .stat-label {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Tablet: 2 × 2 grid ---- */
+@media (max-width: 991.98px) {
+    .pms-expenses-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pms-expenses-page .pms-stats-grid .stat-box {
+        border-right: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-box:nth-child(2n) {
+        border-right: none;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-box:nth-last-child(-n + 2) {
+        border-bottom: none;
+    }
+}
+
+/* ---- Phone: 2 × 2, tighter cells ---- */
+@media (max-width: 575.98px) {
+    .pms-expenses-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin-bottom: 1rem;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-box {
+        padding: 0.65rem 0.5rem;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-number {
+        font-size: 1rem;
+        line-height: 1.15;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-label {
+        font-size: 0.6rem;
+        margin-top: 1px;
+    }
+}
+
+/* ---- Very small phones (<380px) ---- */
+@media (max-width: 379.98px) {
+    .pms-expenses-page .pms-stats-grid .stat-number {
+        font-size: 0.88rem;
+    }
+    .pms-expenses-page .pms-stats-grid .stat-label {
+        font-size: 0.55rem;
+    }
+}
+/* ============================================================
+   EXPENSE INVOICES PAGE — STATS GRID (3 across)
+   Scoped to .pms-invoices-page so other pages are untouched.
+   ============================================================ */
+
+.pms-invoices-page .pms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.pms-invoices-page .pms-stats-grid .stat-box {
+    padding: 15px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    background: #fff;
+    min-width: 0;
+}
+
+.pms-invoices-page .pms-stats-grid .stat-box:last-child {
+    border-right: none;
+}
+
+.pms-invoices-page .pms-stats-grid .stat-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-invoices-page .pms-stats-grid .stat-label {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Phone: keep 3 across but tighter ---- */
+@media (max-width: 575.98px) {
+    .pms-invoices-page .pms-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        margin-bottom: 1rem;
+    }
+    .pms-invoices-page .pms-stats-grid .stat-box {
+        padding: 0.6rem 0.35rem;
+    }
+    .pms-invoices-page .pms-stats-grid .stat-number {
+        font-size: 0.82rem;
+        line-height: 1.15;
+    }
+    .pms-invoices-page .pms-stats-grid .stat-label {
+        font-size: 0.55rem;
+        margin-top: 1px;
+    }
+}
+
+/* ---- Very small phones (<380px): switch to 2 columns ---- */
+@media (max-width: 379.98px) {
+    .pms-invoices-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pms-invoices-page .pms-stats-grid .stat-box {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    /* Right column: no right border */
+    .pms-invoices-page .pms-stats-grid .stat-box:nth-child(2n) {
+        border-right: none;
+    }
+    /* Last item spans full width and gets a top divider via border-bottom rule above */
+    .pms-invoices-page .pms-stats-grid .stat-box:nth-child(3) {
+        grid-column: span 2;
+        border-right: none;
+        border-bottom: none;
+    }
+    .pms-invoices-page .pms-stats-grid .stat-number {
+        font-size: 0.95rem;
+    }
+    .pms-invoices-page .pms-stats-grid .stat-label {
+        font-size: 0.6rem;
+    }
+}
