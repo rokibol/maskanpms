@@ -2029,3 +2029,385 @@
 .pms-info-share-register label {
     color: #ffffff !important;
 }
+/* ============================================================
+   ACCOUNTANT DASHBOARD — COMPACT MOBILE LAYOUT
+   Scoped to .pms-accountant-dashboard; other roles untouched.
+   ============================================================ */
+
+/* ---- Welcome Hero: compact on phone ---- */
+@media (max-width: 575.98px) {
+    .pms-accountant-dashboard .pms-welcome-hero {
+        padding: 1rem 1.15rem;
+        margin-bottom: 1rem;
+    }
+    .pms-accountant-dashboard .pms-welcome-hero h2 {
+        font-size: 1.15rem;
+        line-height: 1.25;
+        margin-bottom: 0.2rem;
+    }
+    .pms-accountant-dashboard .pms-welcome-hero p {
+        font-size: 0.78rem;
+        line-height: 1.35;
+        margin-bottom: 0.5rem;
+    }
+    /* Badges wrap neatly side-by-side with proper spacing (not ms-2) */
+    .pms-accountant-dashboard .pms-welcome-hero .mt-2 {
+        margin-top: 0.35rem !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .pms-accountant-dashboard .pms-welcome-hero .pms-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.6rem;
+    }
+    .pms-accountant-dashboard .pms-welcome-hero .pms-badge.ms-2 {
+        margin-left: 0 !important;   /* neutralize the forced offset */
+    }
+    /* Last-login text sits right under the badges, no vertical gap */
+    .pms-accountant-dashboard .pms-welcome-hero .mt-2.mt-sm-0 {
+        margin-top: 0.35rem !important;
+    }
+    .pms-accountant-dashboard .pms-welcome-hero small {
+        font-size: 0.7rem;
+    }
+}
+
+/* ---- Stat cards: 2 per row on phone, horizontal (icon beside body) ---- */
+.pms-accountant-dashboard .pms-stat-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    height: 100%;
+}
+
+.pms-accountant-dashboard .pms-stat-card .pms-stat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.15rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.pms-accountant-dashboard .pms-stat-card .pms-stat-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.pms-accountant-dashboard .pms-stat-card .pms-stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.4px;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-accountant-dashboard .pms-stat-card .pms-stat-value {
+    font-size: 1.2rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-accountant-dashboard .pms-stat-card .pms-stat-sub {
+    font-size: 0.65rem;
+    margin-top: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 992px) {
+    .pms-accountant-dashboard .pms-stat-card {
+        padding: 0.9rem 1rem;
+        gap: 0.85rem;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 1.25rem;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-value {
+        font-size: 1.45rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pms-accountant-dashboard .pms-stat-card {
+        padding: 0.6rem 0.7rem;
+        min-height: 72px;
+        gap: 0.55rem;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+        border-radius: 0.55rem;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-value {
+        font-size: 1rem;
+        line-height: 1.1;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-label {
+        font-size: 0.6rem;
+    }
+    .pms-accountant-dashboard .pms-stat-card .pms-stat-sub {
+        font-size: 0.6rem;
+    }
+}
+
+/* ---- Tighten the Recent Expenses / Recent Payments cards on phone ---- */
+@media (max-width: 575.98px) {
+    .pms-accountant-dashboard .pms-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .pms-accountant-dashboard .pms-section-title {
+        font-size: 0.95rem;
+    }
+    .pms-accountant-dashboard .pms-section-title i {
+        font-size: 1rem;
+    }
+}
+/* ============================================================
+   PAYMENTS PAGE — STATS GRID (mobile-friendly 4 / 2 / 1)
+   Scoped to .pms-payments-page so other list pages are untouched.
+   ============================================================ */
+
+.pms-payments-page .pms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.pms-payments-page .pms-stats-grid .stat-box {
+    padding: 15px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 0;
+    background: #fff;
+    min-width: 0;                      /* allows ellipsis on children */
+}
+
+.pms-payments-page .pms-stats-grid .stat-box:last-child {
+    border-right: none;
+}
+
+.pms-payments-page .pms-stats-grid .stat-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1F8A4D;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-payments-page .pms-stats-grid .stat-label {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Tablet: 2 columns (2 × 2 grid) ---- */
+@media (max-width: 991.98px) {
+    .pms-payments-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pms-payments-page .pms-stats-grid .stat-box {
+        border-right: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    /* Right column: remove right border */
+    .pms-payments-page .pms-stats-grid .stat-box:nth-child(2n) {
+        border-right: none;
+    }
+    /* Bottom row: remove bottom border */
+    .pms-payments-page .pms-stats-grid .stat-box:nth-last-child(-n + 2) {
+        border-bottom: none;
+    }
+}
+
+/* ---- Phone: still 2 columns, tighter cells ---- */
+@media (max-width: 575.98px) {
+    .pms-payments-page .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin-bottom: 1rem;
+    }
+    .pms-payments-page .pms-stats-grid .stat-box {
+        padding: 0.65rem 0.5rem;
+    }
+    .pms-payments-page .pms-stats-grid .stat-number {
+        font-size: 1rem;
+        line-height: 1.15;
+    }
+    .pms-payments-page .pms-stats-grid .stat-label {
+        font-size: 0.6rem;
+        margin-top: 1px;
+    }
+}
+
+/* ---- Very small phones (<380px): keep 2 cols but shrink slightly ---- */
+@media (max-width: 379.98px) {
+    .pms-payments-page .pms-stats-grid .stat-number {
+        font-size: 0.9rem;
+    }
+    .pms-payments-page .pms-stats-grid .stat-label {
+        font-size: 0.55rem;
+    }
+}
+/* ---- Filter bar: 2 per row on phones ---- */
+@media (max-width: 575.98px) {
+    .pms-payments-page .filter-bar {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .pms-payments-page .filter-bar .row.g-3 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+    .pms-payments-page .filter-bar .col-md-3,
+    .pms-payments-page .filter-bar .col-md-2 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+    /* Search input spans full width */
+    .pms-payments-page .filter-bar .col-md-3:first-child {
+        width: 100%;
+    }
+        /* Buttons in the second row: 50/50 with a real gap */
+    .pms-payments-page .filter-bar .row.mt-3 {
+        margin-top: 0.5rem !important;
+    }
+    .pms-payments-page .filter-bar .row.mt-3 > .col-md-12 {
+        display: flex;
+        gap: 0.5rem;               /* the visible separation between the two buttons */
+    }
+    .pms-payments-page .filter-bar .row.mt-3 #button-filter,
+    .pms-payments-page .filter-bar .row.mt-3 #button-clear {
+        flex: 1 1 0;               /* each takes exactly half of the available width */
+        width: auto;               /* cancel any width from earlier rules */
+        margin: 0;                 /* kill the stray margin-left */
+    }
+}
+/* ============================================================
+   BILL GENERATE — COMPACT INFO BOX (mobile + desktop)
+   Scoped to .pms-info-box so it does not affect other .info-box uses
+   ============================================================ */
+
+/* Container */
+.pms-info-box {
+    background: linear-gradient(135deg, #eaf3ff 0%, #eef7f1 100%);
+    border: 1px solid #d6e4f5;
+    border-left: 4px solid #1F8A4D;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Two-stat row */
+.pms-info-box .pms-info-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.pms-info-box .pms-info-stat {
+    text-align: center;
+    padding: 0.4rem 0.25rem;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+}
+
+.pms-info-box .pms-info-stat .stat-number {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0B3C5D;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-info-box .pms-info-stat .stat-label {
+    font-size: 0.72rem;
+    color: #6B7280;
+    margin-top: 1px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* "How it works" note */
+.pms-info-box .pms-info-note {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(31, 138, 77, 0.15);
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.pms-info-box .pms-info-note i {
+    color: #1F8A4D;
+    font-size: 0.95rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.pms-info-box .pms-info-note strong {
+    color: #0B3C5D;
+}
+
+/* ---- Phone: tighter still, keep 2 columns ---- */
+@media (max-width: 575.98px) {
+    .pms-info-box {
+        padding: 0.75rem 0.85rem;
+        margin-bottom: 1rem;
+    }
+    .pms-info-box .pms-info-stats {
+        gap: 0.4rem;
+        margin-bottom: 0.55rem;
+    }
+    .pms-info-box .pms-info-stat {
+        padding: 0.35rem 0.2rem;
+    }
+    .pms-info-box .pms-info-stat .stat-number {
+        font-size: 1.05rem;
+    }
+    .pms-info-box .pms-info-stat .stat-label {
+        font-size: 0.62rem;
+    }
+    .pms-info-box .pms-info-note {
+        font-size: 0.72rem;
+        line-height: 1.35;
+        padding: 0.45rem 0.6rem;
+        gap: 0.4rem;
+    }
+    .pms-info-box .pms-info-note i {
+        font-size: 0.85rem;
+    }
+}

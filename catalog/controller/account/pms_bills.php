@@ -203,7 +203,34 @@ class PmsBills extends \Opencart\System\Engine\Controller {
         $data['back'] = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         // Set default month to next month if not set
-        $data['bill_month'] = date('Y-m-d', strtotime('first day of next month'));
+        //$data['bill_month'] = date('Y-m-d', strtotime('first day of next month'));
+        // ---------- Build month dropdown options ----------
+        // Range: last 3 months + next 12 months (15 total). Adjust offsets to taste.
+        $months_options = [];
+
+        $tz = new \DateTimeZone('Asia/Dhaka'); // match your store timezone if different
+        $today = new \DateTime('now', $tz);
+
+        for ($offset = -3; $offset <= 12; $offset++) {
+            $d = clone $today;
+            $d->modify("first day of this month");
+            if ($offset !== 0) {
+                $d->modify(($offset > 0 ? '+' : '') . $offset . ' month');
+            }
+
+            $months_options[] = [
+                'value' => $d->format('Y-m'),                // 2026-11
+                'label' => $d->format('F Y'),                // November 2026
+            ];
+        }
+
+        $data['months_options'] = $months_options;
+
+        // Default selection = next month (same behavior as before)
+        $default = clone $today;
+        $default->modify('first day of this month');
+        $default->modify('+1 month');
+        $data['bill_month'] = $default->format('Y-m');       // 2026-12
         
         $data['customer_token'] = $this->session->data['customer_token'];
         

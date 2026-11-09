@@ -45,24 +45,20 @@
                 </div>
             </div>
             
-            <div class="info-box">
-                <div class="row">
-                    <div class="col-md-4 text-center">
+            <div class="info-box pms-info-box">
+                <div class="pms-info-stats">
+                    <div class="pms-info-stat">
                         <div class="stat-number">{{ apartment_stats.total }}</div>
-                        <div class="text-muted">Total Apartments</div>
+                        <div class="stat-label">Total Apartments</div>
                     </div>
-                    <div class="col-md-4 text-center">
+                    <div class="pms-info-stat">
                         <div class="stat-number">{{ apartment_stats.assigned }}</div>
-                        <div class="text-muted">Active Apartments</div>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div class="stat-number">৳ {{ apartment_stats.monthly_maintenance|number_format(2) }}</div>
-                        <div class="text-muted">Monthly Maintenance Revenue</div>
+                        <div class="stat-label">Active Apartments</div>
                     </div>
                 </div>
-                <div class="alert alert-info mt-3 mb-0">
+                <div class="pms-info-note">
                     <i class="fas fa-solid fa-info-circle"></i>
-                    <strong>How it works:</strong> Enter the total bill amount for each category. The system will automatically divide equally among all active apartments with assigned shareholders.
+                    <span><strong>How it works:</strong> Enter the total bill amount for each category. The system will automatically divide equally among all active apartments with assigned shareholders.</span>
                 </div>
             </div>
             
@@ -75,7 +71,13 @@
                         <div class="row mb-3 required">
                             <label class="col-sm-3 col-form-label">Bill Month</label>
                             <div class="col-sm-9">
-                                <input type="month" name="bill_month" value="{{ bill_month }}" class="form-control" required>
+                                <select name="bill_month" class="form-select" required>
+                                    {% for month in months_options %}
+                                        <option value="{{ month.value }}" {{ bill_month == month.value ? 'selected' : '' }}>
+                                            {{ month.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                                 <small class="text-muted">Select the month for which bills are being generated</small>
                             </div>
                         </div>
