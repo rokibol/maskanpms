@@ -20,7 +20,8 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         }*/
         
         $this->load->language('pms/payments');
-        
+        $this->load->model('pms/payment');
+
         $this->document->setTitle($this->language->get('heading_title'));
         
         // Get current project
@@ -37,7 +38,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         // Set up pagination and filters
         $url = '';
         
-        $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
+        /*$filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
         $filter_phase = isset($this->request->get['filter_phase']) ? $this->request->get['filter_phase'] : '';
         $filter_method = isset($this->request->get['filter_method']) ? $this->request->get['filter_method'] : '';
         $filter_date_from = isset($this->request->get['filter_date_from']) ? $this->request->get['filter_date_from'] : '';
@@ -71,7 +72,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
             'limit'               => $limit
         ];
         
-        $this->load->model('pms/payment');
+        
         
         $payment_total = $this->model_pms_payment->getTotalPayments($filter_data);
         $results = $this->model_pms_payment->getPayments($filter_data);
@@ -115,7 +116,7 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         $data['filter_phase'] = $filter_phase;
         $data['filter_method'] = $filter_method;
         $data['filter_date_from'] = $filter_date_from;
-        $data['filter_date_to'] = $filter_date_to;
+        $data['filter_date_to'] = $filter_date_to;*/
         
         // Filter options
         $data['payment_phases'] = $this->model_pms_payment->getPaymentPhases();
@@ -125,8 +126,8 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         $data['stats'] = $this->model_pms_payment->getPaymentStats($project['project_id']);
         
         // Sort and order
-        $data['sort'] = $sort;
-        $data['order'] = $order;
+        //$data['sort'] = $sort;
+        //$data['order'] = $order;
 
         $data['language'] = $this->config->get('config_language');
         $data['customer_token'] = $this->session->data['customer_token'];
@@ -498,5 +499,119 @@ class PmsPayments extends \Opencart\System\Engine\Controller {
         
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+        /**
+     * AJAX: Load payments table and pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/payments');
+        $this->load->model('pms/payment');
+        $project = $this->customer->getProject();
+
+        if (!$project) {
+            return;
+        }
+
+        // Filter parameters (same as index)
+        $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
+        $filter_phase       = isset($this->request->get['filter_phase']) ? $this->request->get['filter_phase'] : '';
+        $filter_method      = isset($this->request->get['filter_method']) ? $this->request->get['filter_method'] : '';
+        $filter_date_from   = isset($this->request->get['filter_date_from']) ? $this->request->get['filter_date_from'] : '';
+        $filter_date_to     = isset($this->request->get['filter_date_to']) ? $this->request->get['filter_date_to'] : '';
+        $sort               = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'p.payment_date';
+        $order              = isset($this->request->get['order']) ? $this->request->get['order'] : 'DESC';
+        $page               = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        // Build URL for pagination links (carry filters forward)
+        $url = '';
+        if ($filter_shareholder) $url .= '&filter_shareholder=' . urlencode($filter_shareholder);
+        if ($filter_phase)       $url .= '&filter_phase=' . $filter_phase;
+        if ($filter_method)      $url .= '&filter_method=' . $filter_method;
+        if ($filter_date_from)   $url .= '&filter_date_from=' . $filter_date_from;
+        if ($filter_date_to)     $url .= '&filter_date_to=' . $filter_date_to;
+        if ($sort)               $url .= '&sort=' . $sort;
+        if ($order)              $url .= '&order=' . $order;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'         => $project['project_id'],
+            'filter_shareholder' => $filter_shareholder,
+            'filter_phase'       => $filter_phase,
+            'filter_method'      => $filter_method,
+            'filter_date_from'   => $filter_date_from,
+            'filter_date_to'     => $filter_date_to,
+            'sort'               => $sort,
+            'order'              => $order,
+            'start'              => ($page - 1) * $limit,
+            'limit'              => $limit
+        ];
+
+        $payment_total = $this->model_pms_payment->getTotalPayments($filter_data);
+        $results       = $this->model_pms_payment->getPayments($filter_data);
+
+        // Build only the <tr> rows
+        $rows = '';
+        if ($results) {
+            foreach ($results as $result) {
+                $view_url = $this->url->link('account/pms_payments.view', 'language=' . $this->config->get('config_language') . '&payment_id=' . $result['id'] . $url . '&customer_token=' . $this->session->data['customer_token']);
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . date($this->language->get('date_format_short'), strtotime($result['payment_date'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['shareholder_name']) . '<br><small class="text-muted">' . htmlspecialchars($result['shareholder_code']) . '</small></td>';
+                $rows .= '<td>' . htmlspecialchars($result['phase_name']) . '</td>';
+                $rows .= '<td class="text-success fw-bold">' . number_format($result['amount'], 0) . '</td>';
+                $rows .= '<td>' . ucfirst($result['payment_method']) . '</td>';
+                $rows .= '<td>' . ($result['reference_number'] ? htmlspecialchars($result['reference_number']) : '-') . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['recorded_by_name']) . '</td>';
+                $rows .= '<td class="text-end" style="position: relative; overflow: visible;">
+                            <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-solid fa-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="' . $view_url . '"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePayment(' . $result['id'] . ')"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>
+                                </ul>
+                            </div>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
+                        No payments recorded yet.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $payment_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_payments.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($payment_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($payment_total - $limit)) ? $payment_total : ((($page - 1) * $limit) + $limit),
+            $payment_total,
+            ceil($payment_total / $limit)
+        );
+
+        // Return JSON: rows + pagination + results text
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $payment_total
+        ]));
     }
 }

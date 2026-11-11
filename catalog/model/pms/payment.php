@@ -144,6 +144,10 @@ class Payment extends \Opencart\System\Engine\Model {
             $sql .= " AND p.payment_phase_id = '" . (int)$data['filter_phase'] . "'";
         }
         
+        if (!empty($data['filter_method'])) {
+            $sql .= " AND p.payment_method = '" . $this->db->escape($data['filter_method']) . "'";
+        }
+        
         if (isset($data['filter_date_from']) && $data['filter_date_from']) {
             $sql .= " AND DATE(p.payment_date) >= '" . $this->db->escape($data['filter_date_from']) . "'";
         }

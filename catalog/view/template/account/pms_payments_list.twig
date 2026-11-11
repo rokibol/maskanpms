@@ -137,7 +137,7 @@
             </div>
             
             <!-- Payments Table -->
-            <div class="table-responsive">
+            <div class="table-responsive" id="payment-table-container">
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -151,46 +151,21 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if payments %}
-                            {% for payment in payments %}
-                                <tr>
-                                    <td>{{ payment.payment_date }}</td>
-                                    <td>{{ payment.shareholder_name }}<br><small class="text-muted">{{ payment.shareholder_code }}</small></td>
-                                    <td>{{ payment.phase_name }}</td>
-                                    <td class="text-success fw-bold">+ ৳ {{ payment.amount|number_format(2) }}</td>
-                                    <td>{{ payment.payment_method }}</td>
-                                    <td>{{ payment.reference_number }}</td>
-                                    <td>{{ payment.recorded_by }}</td>
-                                    <td class="text-end" style="position: relative; overflow: visible;">
-                                        <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i class="fas fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="{{ payment.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePayment({{ payment.payment_id }})"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
-                                    <i class="fas fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
-                                    No payments recorded yet.
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="payments-table-body">
+                        <tr id="payments-initial-row">
+                            <td colspan="8" class="text-center py-4">
+                                <button id="button-load-initial" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Load Payments
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
             
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+            <div class="row" id="payments-pagination-row" style="display:none;">
+                <div class="col-sm-6 text-start" id="payments-pagination">{{ pagination }}</div>
+                <div class="col-sm-6 text-end" id="payments-results">{{ results }}</div>
             </div>
             
             {{ content_bottom }}
@@ -201,53 +176,142 @@
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_payments&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_shareholder = $('input[name="filter_shareholder"]').val();
-    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
-    
-    var filter_phase = $('select[name="filter_phase"]').val();
-    if (filter_phase) url += '&filter_phase=' + filter_phase;
-    
-    var filter_method = $('select[name="filter_method"]').val();
-    if (filter_method) url += '&filter_method=' + filter_method;
-    
-    var filter_date_from = $('input[name="filter_date_from"]').val();
-    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
-    
-    var filter_date_to = $('input[name="filter_date_to"]').val();
-    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
-    
-    location = url;
-});
+// ============================================================
+// AJAX Payments List Loading
+// ============================================================
+$(document).ready(function() {
+    $("#payment-table-container").hide();
 
-$('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_payments&language={{ language }}&customer_token={{ customer_token }}';
-});
-
-$('input').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
+    function getFilterParams() {
+        var params = {};
+        params.filter_shareholder = $('input[name="filter_shareholder"]').val() || '';
+        params.filter_phase       = $('select[name="filter_phase"]').val() || '';
+        params.filter_method      = $('select[name="filter_method"]').val() || '';
+        params.filter_date_from   = $('input[name="filter_date_from"]').val() || '';
+        params.filter_date_to     = $('input[name="filter_date_to"]').val() || '';
+        return params;
     }
-});
 
-function deletePayment(paymentId) {
-    if (confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
+    function loadPayments(page) {
+        $("#payment-table-container").show();
+        
+        page = page || 1;
+
+        var filter = getFilterParams();
+        var query = 'index.php?route=account/pms_payments.loadList'
+                    + '&language={{ language }}'
+                    + '&customer_token={{ customer_token }}'
+                    + '&page=' + page;
+
+        if (filter.filter_shareholder) query += '&filter_shareholder=' + encodeURIComponent(filter.filter_shareholder);
+        if (filter.filter_phase)       query += '&filter_phase=' + filter.filter_phase;
+        if (filter.filter_method)      query += '&filter_method=' + filter.filter_method;
+        if (filter.filter_date_from)   query += '&filter_date_from=' + filter.filter_date_from;
+        if (filter.filter_date_to)     query += '&filter_date_to=' + filter.filter_date_to;
+
+        // Loading state
+        $('#payments-table-body').html(
+            '<tr><td colspan="8" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading payments...</span>' +
+            '</td></tr>'
+        );
+        $('#payments-pagination-row').hide();
+
         $.ajax({
-            url: 'index.php?route=account/pms_payments.delete&language={{ language }}&payment_id=' + paymentId + '&customer_token={{ customer_token }}',
+            url: query,
             type: 'GET',
             dataType: 'json',
             success: function(json) {
-                if (json.success) {
-                    location.reload();
-                } else {
-                    alert(json.error);
-                }
+                $('#payments-table-body').html(json.rows);
+                $('#payments-pagination').html(json.pagination);
+                $('#payments-results').html(json.results);
+                $('#payments-pagination-row').show();
+
+                // Re-bind pagination click events
+                bindPagination();
+            },
+            error: function() {
+                $('#payments-table-body').html(
+                    '<tr><td colspan="8" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load payments.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-}
+
+    // Pagination links trigger AJAX, not full page reload
+    function bindPagination() {
+        $('#payments-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+
+            var href = $(this).attr('href');
+            if (!href) return;
+
+            // Extract ?page=N from the OpenCart pagination URL
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+
+            loadPayments(page);
+
+            // Scroll to top of the table
+            $('html, body').animate({
+                scrollTop: $('#payments-table-body').offset().top - 120
+            }, 200);
+        });
+    }
+
+    // Initial "Load Payments" button
+    $(document).on('click', '#button-load-initial', function() {
+        loadPayments(1);
+    });
+
+    // Filter button → AJAX load page 1
+    $('#button-filter').on('click', function() {
+        loadPayments(1);
+    });
+
+    // Clear button → reset fields, then AJAX load page 1
+    $('#button-clear').on('click', function() {
+        $('input[name="filter_shareholder"]').val('');
+        $('select[name="filter_phase"]').val('');
+        $('select[name="filter_method"]').val('');
+        $('input[name="filter_date_from"]').val('');
+        $('input[name="filter_date_to"]').val('');
+        $("#payment-table-container").hide();
+        $("#payments-pagination-row").hide();
+    });
+
+    // Enter key in any input triggers filter
+    $('input, select').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
+
+    // ============================================================
+    // Delete Payment (unchanged, but reload via AJAX after delete)
+    // ============================================================
+    window.deletePayment = function(paymentId) {
+        if (confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_payments.delete&language={{ language }}&payment_id=' + paymentId + '&customer_token={{ customer_token }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        // Re-load current page via AJAX instead of full reload
+                        loadPayments(1);
+                    } else {
+                        alert(json.error || 'Failed to delete payment.');
+                    }
+                }
+            });
+        }
+    };
+});
 </script>
 
 {{ footer }}
