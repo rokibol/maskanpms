@@ -10,7 +10,7 @@ class PmsSuppliers extends \Opencart\System\Engine\Controller {
         
         $this->load->language('pms/suppliers');
         $this->document->setTitle($this->language->get('heading_title'));
-        
+        $this->load->model('pms/supplier');
         // Get current project
         $this->load->model('pms/project');
         $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
@@ -20,13 +20,11 @@ class PmsSuppliers extends \Opencart\System\Engine\Controller {
         }
         
         // Filter parameters
-        $filter_name = isset($this->request->get['filter_name']) ? $this->request->get['filter_name'] : '';
+        /*$filter_name = isset($this->request->get['filter_name']) ? $this->request->get['filter_name'] : '';
         $filter_status = isset($this->request->get['filter_status']) ? $this->request->get['filter_status'] : '';
         $sort = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'supplier_name';
         $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'ASC';
         $page = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
-        
-        $this->load->model('pms/supplier');
         
         $filter_data = [
             'project_id'    => $project['project_id'],
@@ -66,7 +64,7 @@ class PmsSuppliers extends \Opencart\System\Engine\Controller {
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($supplier_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($supplier_total - $this->config->get('config_pagination_admin'))) ? $supplier_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $supplier_total, ceil($supplier_total / $this->config->get('config_pagination_admin')));
-        
+        */
         $data['language'] = $this->config->get('config_language');
         $data['customer_token'] = $this->session->data['customer_token'];
         
@@ -81,6 +79,100 @@ class PmsSuppliers extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_suppliers_list', $data));
+    }
+
+    /**
+     * AJAX: Load suppliers table + pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/suppliers');
+        $this->load->model('pms/project');
+        $this->load->model('pms/supplier');
+
+        $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
+        if (!$project) {
+            return;
+        }
+
+        $filter_name   = isset($this->request->get['filter_name']) ? $this->request->get['filter_name'] : '';
+        $filter_status = isset($this->request->get['filter_status']) ? $this->request->get['filter_status'] : '';
+        $sort          = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'supplier_name';
+        $order         = isset($this->request->get['order']) ? $this->request->get['order'] : 'ASC';
+        $page          = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        $url = '';
+        if ($filter_name)   $url .= '&filter_name=' . urlencode($filter_name);
+        if ($filter_status) $url .= '&filter_status=' . $filter_status;
+        if ($sort)          $url .= '&sort=' . $sort;
+        if ($order)         $url .= '&order=' . $order;
+
+        $limit = $this->config->get('config_pagination_admin');
+        // If your config doesn't have this setting or you want a different limit, change to your preferred number:
+        // $limit = 20;
+
+        $filter_data = [
+            'project_id'    => $project['project_id'],
+            'filter_name'   => $filter_name,
+            'filter_status' => $filter_status,
+            'sort'          => $sort,
+            'order'         => $order,
+            'start'         => ($page - 1) * $limit,
+            'limit'         => $limit
+        ];
+
+        $supplier_total = $this->model_pms_supplier->getTotalSuppliers($filter_data);
+        $suppliers      = $this->model_pms_supplier->getSuppliers($filter_data);
+
+        // Build the rows HTML
+        $rows = '';
+        if ($suppliers) {
+            foreach ($suppliers as $supplier) {
+                $edit_url = $this->url->link('account/pms_suppliers.edit', 'language=' . $this->config->get('config_language') . '&supplier_id=' . $supplier['supplier_id'] . '&customer_token=' . $this->session->data['customer_token']);
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . htmlspecialchars($supplier['supplier_code']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($supplier['supplier_name']) . '</td>';
+                $rows .= '<td>' . (!empty($supplier['company_name']) ? htmlspecialchars($supplier['company_name']) : '-') . '</td>';
+                $rows .= '<td>' . (!empty($supplier['contact_person']) ? htmlspecialchars($supplier['contact_person']) : '-') . '</td>';
+                $rows .= '<td>' . (!empty($supplier['phone']) ? htmlspecialchars($supplier['phone']) : '-') . '</td>';
+                $rows .= '<td>' . (!empty($supplier['email']) ? htmlspecialchars($supplier['email']) : '-') . '</td>';
+                $rows .= '<td><span class="status-' . htmlspecialchars($supplier['status']) . '">' . ucfirst($supplier['status']) . '</span></td>';
+                $rows .= '<td class="text-end">
+                            <a href="' . $edit_url . '" class="btn btn-primary btn-sm"><i class="fa-regular fa-pen-to-square"></i></a>
+                            <button onclick="deleteSupplier(' . (int)$supplier['supplier_id'] . ')" class="btn btn-danger btn-sm"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="8" class="text-center text-muted py-4">No suppliers found</td></tr>';
+        }
+
+        // Pagination
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $supplier_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_suppliers.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($supplier_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($supplier_total - $limit)) ? $supplier_total : ((($page - 1) * $limit) + $limit),
+            $supplier_total,
+            ceil($supplier_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $supplier_total
+        ]));
     }
     
     public function add(): void {

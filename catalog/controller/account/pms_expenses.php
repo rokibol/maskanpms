@@ -58,8 +58,9 @@ class PmsExpenses extends \Opencart\System\Engine\Controller {
         if ($filter_amount_max) $url .= '&filter_amount_max=' . $filter_amount_max;
         if ($sort) $url .= '&sort=' . $sort;
         if ($order) $url .= '&order=' . $order;
-        
-        $limit = $this->config->get('config_pagination_admin');
+        $this->load->model('pms/expense');
+
+        /*$limit = $this->config->get('config_pagination_admin');
         
         $filter_data = [
             'project_id'        => $project['project_id'],
@@ -75,16 +76,14 @@ class PmsExpenses extends \Opencart\System\Engine\Controller {
             'limit'             => $limit
         ];
         
-        $this->load->model('pms/expense');
-        $this->load->model('pms/expense_category');
-        
         $expense_total = $this->model_pms_expense->getTotalExpenses($filter_data);
-        $results = $this->model_pms_expense->getExpenses($filter_data);
+        $results = $this->model_pms_expense->getExpenses($filter_data);*/
         
+        $this->load->model('pms/expense_category');
         // Get categories for filter dropdown
         $data['categories'] = $this->model_pms_expense_category->getCategories();
 
-        $data['expenses'] = [];
+        /*$data['expenses'] = [];
         
         foreach ($results as $result) {
             // Get category path
@@ -117,7 +116,7 @@ class PmsExpenses extends \Opencart\System\Engine\Controller {
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($expense_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($expense_total - $this->config->get('config_pagination_admin'))) ? $expense_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $expense_total, ceil($expense_total / $this->config->get('config_pagination_admin')));
-        
+        */
         // Sort links
         $data['sort_date'] = $this->url->link('account/pms_expenses', 'language=' . $this->config->get('config_language') . '&sort=e.expense_date' . $url . '&customer_token=' . $this->session->data['customer_token']);
         $data['sort_invoice'] = $this->url->link('account/pms_expenses', 'language=' . $this->config->get('config_language') . '&sort=e.invoice_number' . $url . '&customer_token=' . $this->session->data['customer_token']);
@@ -159,6 +158,137 @@ class PmsExpenses extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_expenses_list', $data));
+    }
+
+    /**
+     * AJAX: Load expenses table + pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/expenses');
+        $this->load->model('pms/project');
+        $this->load->model('pms/expense');
+        $this->load->model('pms/expense_category');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $filter_invoice = isset($this->request->get['filter_invoice']) ? $this->request->get['filter_invoice'] : '';
+        $filter_category = isset($this->request->get['filter_category']) ? $this->request->get['filter_category'] : '';
+        $filter_date_from = isset($this->request->get['filter_date_from']) ? $this->request->get['filter_date_from'] : '';
+        $filter_date_to = isset($this->request->get['filter_date_to']) ? $this->request->get['filter_date_to'] : '';
+        $filter_amount_min = isset($this->request->get['filter_amount_min']) ? $this->request->get['filter_amount_min'] : '';
+        $filter_amount_max = isset($this->request->get['filter_amount_max']) ? $this->request->get['filter_amount_max'] : '';
+        
+        $sort = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'e.expense_date';
+        $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'DESC';
+        $page = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+        
+        $url = '';
+        if ($filter_invoice) $url .= '&filter_invoice=' . urlencode($filter_invoice);
+        if ($filter_category) $url .= '&filter_category=' . $filter_category;
+        if ($filter_date_from) $url .= '&filter_date_from=' . $filter_date_from;
+        if ($filter_date_to) $url .= '&filter_date_to=' . $filter_date_to;
+        if ($filter_amount_min) $url .= '&filter_amount_min=' . $filter_amount_min;
+        if ($filter_amount_max) $url .= '&filter_amount_max=' . $filter_amount_max;
+        if ($sort) $url .= '&sort=' . $sort;
+        if ($order) $url .= '&order=' . $order;
+
+        $limit = $this->config->get('config_pagination_admin');
+        
+        $filter_data = [
+            'project_id'        => $project['project_id'],
+            'filter_invoice'    => $filter_invoice,
+            'filter_category'   => $filter_category,
+            'filter_date_from'  => $filter_date_from,
+            'filter_date_to'    => $filter_date_to,
+            'filter_amount_min' => $filter_amount_min,
+            'filter_amount_max' => $filter_amount_max,
+            'sort'              => $sort,
+            'order'             => $order,
+            'start'             => ($page - 1) * $limit,
+            'limit'             => $limit
+        ];
+        
+        $expense_total = $this->model_pms_expense->getTotalExpenses($filter_data);
+        $results = $this->model_pms_expense->getExpenses($filter_data);
+
+        $is_accountant = $this->customer->getGroupId() == 2 ? 1 : 0;
+
+        // Build the rows HTML
+        $rows = '';
+        if ($results) {
+            foreach ($results as $result) {
+                $edit_url = $is_accountant ? $this->url->link('account/pms_expenses.edit', 'language=' . $this->config->get('config_language') . '&expense_id=' . $result['expense_id'] . $url . '&customer_token=' . $this->session->data['customer_token']) : '';
+                $view_url = $this->url->link('account/pms_expenses.view', 'language=' . $this->config->get('config_language') . '&expense_id=' . $result['expense_id'] . $url . '&customer_token=' . $this->session->data['customer_token']);
+                $download_url = $this->url->link('account/pms_expenses.download', 'language=' . $this->config->get('config_language') . '&expense_id=' . $result['expense_id'] . '&customer_token=' . $this->session->data['customer_token']);
+
+                $has_document = !empty($result['document_path']);
+
+                // Build dropdown items
+                $dropdown = '<li><a class="dropdown-item" href="' . $view_url . '"><i class="fas fa-regular fa-eye"></i> View</a></li>';
+                if ($edit_url) {
+                    $dropdown .= '<li><a class="dropdown-item" href="' . $edit_url . '"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>';
+                }
+                if ($has_document) {
+                    $dropdown .= '<li><a class="dropdown-item" href="' . $download_url . '"><i class="fas fa-regular fa-download"></i> Download Document</a></li>';
+                }
+                $dropdown .= '<li><hr class="dropdown-divider"></li>';
+                if ($edit_url) {
+                    $dropdown .= '<li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteExpense(' . $result['expense_id'] . ')"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>';
+                }
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . date($this->language->get('date_format_short'), strtotime($result['expense_date'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['invoice_number']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['category_name']) . '</td>';
+                $rows .= '<td>' . (strlen($result['description']) > 40 ? htmlspecialchars(substr($result['description'], 0, 40)) . '...' : htmlspecialchars($result['description'])) . '</td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($result['total_amount'], 2) . '</td>';
+                $rows .= '<td>' . ($has_document ? '<a href="' . $download_url . '" class="badge-doc"><i class="fas fa-regular fa-file-pdf"></i> View</a>' : '<span class="text-muted">No file</span>') . '</td>';
+                $rows .= '<td class="text-end" style="position: relative; overflow: visible;">
+                            <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-solid fa-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">' . $dropdown . '</ul>
+                            </div>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="7" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-receipt fa-2x mb-2 d-block"></i>
+                        No expenses recorded yet.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $expense_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_expenses.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($expense_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($expense_total - $limit)) ? $expense_total : ((($page - 1) * $limit) + $limit),
+            $expense_total,
+            ceil($expense_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $expense_total
+        ]));
     }
     
     public function add(): void {

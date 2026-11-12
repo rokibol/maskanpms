@@ -128,8 +128,8 @@
                 <h1>{{ heading_title }}</h1>
                 <div>
                     {% if is_accountant %}
-                    <a href="{{ add }}" class="btn btn-primary">
-                        <i class="fas fa-solid fa-plus"></i> {{ button_add }}
+                    <a href="{{ add }}" class="btn btn-primary btn-add-expense">
+                        <i class="fas fa-solid fa-plus"></i> New Expense
                     </a>
                     {% endif %}
                     <a href="{{ back }}" class="btn btn-secondary">
@@ -186,7 +186,7 @@
                     </div>
                 </div>
                 <div class="row mt-3">
-                    <div class="col-md-12">
+                    <div class="col-md-12 d-flex justify-content-end gap-2 filter-actions">
                         <button type="button" id="button-filter" class="btn btn-primary">
                             <i class="fas fa-solid fa-search"></i> Filter
                         </button>
@@ -198,7 +198,7 @@
             </div>
             
             <!-- Expenses Table -->
-            <div class="table-responsive">
+            <div class="table-responsive" id="expense-container">
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -211,57 +211,21 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if expenses %}
-                            {% for expense in expenses %}
-                                <tr>
-                                    <td>{{ expense.expense_date }}</td>
-                                    <td>{{ expense.invoice_number }}</td>
-                                    <td>{{ expense.category_name }}</td>
-                                    <td>{{ expense.description|length > 40 ? expense.description|slice(0, 40) ~ '...' : expense.description }}</td>
-                                    <td class="text-danger">৳ {{ expense.total_amount|number_format(2) }}</td>
-                                    <td>
-                                        {% if expense.has_document %}
-                                            <a href="{{ expense.download }}" class="badge-doc">
-                                                <i class="fas fa-regular fa-file-pdf"></i> View
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted">No file</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end" style="position: relative; overflow: visible;">
-                                        <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i class="fas fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="{{ expense.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
-                                                {% if expense.edit %}<li><a class="dropdown-item" href="{{ expense.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>{% endif %}
-                                                {% if expense.has_document %}
-                                                    <li><a class="dropdown-item" href="{{ expense.download }}"><i class="fas fa-regular fa-download"></i> Download Document</a></li>
-                                                {% endif %}
-                                                <li><hr class="dropdown-divider"></li>
-                                                {% if expense.edit %}<li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteExpense({{ expense.expense_id }})"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>{% endif %}
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    <i class="fas fa-regular fa-receipt fa-2x mb-2 d-block"></i>
-                                    No expenses recorded yet.
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="expenses-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load expenses.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
             
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+            <!-- Pagination (hidden until AJAX returns) -->
+            <div class="row" id="expenses-pagination-row" style="display: none;">
+                <div class="col-sm-6 text-start" id="expenses-pagination"></div>
+                <div class="col-sm-6 text-end" id="expenses-results"></div>
             </div>
             
             {{ content_bottom }}
@@ -272,56 +236,115 @@
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_expenses&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_invoice = $('input[name="filter_invoice"]').val();
-    if (filter_invoice) url += '&filter_invoice=' + encodeURIComponent(filter_invoice);
-    
-    var filter_category = $('select[name="filter_category"]').val();
-    if (filter_category) url += '&filter_category=' + filter_category;
-    
-    var filter_date_from = $('input[name="filter_date_from"]').val();
-    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
-    
-    var filter_date_to = $('input[name="filter_date_to"]').val();
-    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
-    
-    var filter_amount_min = $('input[name="filter_amount_min"]').val();
-    if (filter_amount_min) url += '&filter_amount_min=' + filter_amount_min;
-    
-    var filter_amount_max = $('input[name="filter_amount_max"]').val();
-    if (filter_amount_max) url += '&filter_amount_max=' + filter_amount_max;
-    
-    location = url;
-});
+$(document).ready(function() {
+    $("#expense-container").hide();
 
-$('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_expenses&language={{ language }}&customer_token={{ customer_token }}';
-});
+    function loadExpenses(page) {
+        $("#expense-container").show();
 
-$('input, select').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
-    }
-});
+        page = page || 1;
+        var query = 'index.php?route=account/pms_expenses.loadList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
 
-function deleteExpense(expenseId) {
-    if (confirm('Are you sure you want to delete this expense? This will also remove all allocations to shareholders.')) {
+        var filter_invoice    = $('input[name="filter_invoice"]').val();
+        var filter_category   = $('select[name="filter_category"]').val();
+        var filter_date_from  = $('input[name="filter_date_from"]').val();
+        var filter_date_to    = $('input[name="filter_date_to"]').val();
+        var filter_amount_min = $('input[name="filter_amount_min"]').val();
+        var filter_amount_max = $('input[name="filter_amount_max"]').val();
+
+        if (filter_invoice)    query += '&filter_invoice=' + encodeURIComponent(filter_invoice);
+        if (filter_category)   query += '&filter_category=' + filter_category;
+        if (filter_date_from)  query += '&filter_date_from=' + filter_date_from;
+        if (filter_date_to)    query += '&filter_date_to=' + filter_date_to;
+        if (filter_amount_min) query += '&filter_amount_min=' + filter_amount_min;
+        if (filter_amount_max) query += '&filter_amount_max=' + filter_amount_max;
+
+        $('#expenses-table-body').html(
+            '<tr><td colspan="7" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading expenses...</span>' +
+            '</td></tr>'
+        );
+        $('#expenses-pagination-row').hide();
+
         $.ajax({
-            url: 'index.php?route=account/pms_expenses.delete&language={{ language }}&expense_id=' + expenseId + '&customer_token={{ customer_token }}',
+            url: query,
             type: 'GET',
             dataType: 'json',
             success: function(json) {
-                if (json.success) {
-                    location.reload();
-                } else {
-                    alert(json.error);
+                $('#expenses-table-body').html(json.rows);
+                $('#expenses-pagination').html(json.pagination);
+                $('#expenses-results').html(json.results);
+                
+                if (json.total > 0) {
+                    $('#expenses-pagination-row').show();
                 }
+                
+                bindPagination();
+            },
+            error: function() {
+                $('#expenses-table-body').html(
+                    '<tr><td colspan="7" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load expenses.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-}
+
+    function bindPagination() {
+        $('#expenses-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+            loadExpenses(page);
+            $('html, body').animate({ scrollTop: $('#expenses-table-body').offset().top - 120 }, 200);
+        });
+    }
+
+    $('#button-filter').on('click', function() {
+        loadExpenses(1);
+    });
+
+    $('#button-clear').on('click', function() {
+        $('input[name="filter_invoice"]').val('');
+        $('select[name="filter_category"]').val('');
+        $('input[name="filter_date_from"]').val('');
+        $('input[name="filter_date_to"]').val('');
+        $('input[name="filter_amount_min"]').val('');
+        $('input[name="filter_amount_max"]').val('');
+        $("#expense-container").hide();
+    });
+
+    $('input, select').keydown(function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
+
+    window.deleteExpense = function(expenseId) {
+        if (confirm('Are you sure you want to delete this expense? This will also remove all allocations to shareholders.')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_expenses.delete&language={{ language }}&expense_id=' + expenseId + '&customer_token={{ customer_token }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        loadExpenses(1);
+                    } else {
+                        alert(json.error || 'Failed to delete expense.');
+                    }
+                }
+            });
+        }
+    };
+});
 </script>
 
 {{ footer }}

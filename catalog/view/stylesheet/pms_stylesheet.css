@@ -2689,3 +2689,12 @@
         font-size: 0.6rem;
     }
 }
+@media (max-width: 575.98px) {
+    .pms-expenses-page .btn-add-expense {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    .pms-expenses-page .btn-add-expense .fa-plus {
+        margin-right: 2px;
+    }
+}

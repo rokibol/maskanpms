@@ -11,10 +11,10 @@
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>{{ heading_title }}</h1>
                 <div>
@@ -26,7 +26,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Filter Bar -->
             <div class="filter-bar">
                 <div class="row g-3">
@@ -36,17 +36,8 @@
                     <div class="col-md-3">
                         <select name="filter_status" class="form-select">
                             <option value="">All Status</option>
-                            {% if filter_status == 'active' %}
-                                <option value="active" selected>Active</option>
-                            {% else %}
-                                <option value="active">Active</option>
-                            {% endif %}
-
-                            {% if filter_status == 'inactive' %}
-                                <option value="inactive" selected>Inactive</option>
-                            {% else %}
-                                <option value="inactive">Inactive</option>
-                            {% endif %}
+                            <option value="active" {{ filter_status == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ filter_status == 'inactive' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -56,7 +47,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Suppliers Table -->
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
@@ -72,65 +63,124 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if suppliers %}
-                            {% for supplier in suppliers %}
-                                <tr>
-                                    <td>{{ supplier.supplier_code }}</td>
-                                    <td>{{ supplier.supplier_name }}</td>
-                                    <td>{{ supplier.company_name ?: '-' }}</td>
-                                    <td>{{ supplier.contact_person ?: '-' }}</td>
-                                    <td>{{ supplier.phone ?: '-' }}</td>
-                                    <td>{{ supplier.email ?: '-' }}</td>
-                                    <td>
-                                        <span class="status-{{ supplier.status }}">{{ supplier.status|capitalize }}</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="{{ supplier.edit }}" class="btn btn-primary btn-sm"><i class="fa-regular fa-pen-to-square"></i></a>
-                                        <button onclick="deleteSupplier({{ supplier.supplier_id }})" class="btn btn-danger btn-sm"><i class="fa-regular fa-trash-can"></i></button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr><td colspan="8" class="text-center text-muted py-4">No suppliers found</td></tr>
-                        {% endif %}
+                    <tbody id="suppliers-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load suppliers.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+
+            <!-- Pagination (hidden until AJAX returns) -->
+            <div class="row" id="suppliers-pagination-row" style="display: none;">
+                <div class="col-sm-6 text-start" id="suppliers-pagination"></div>
+                <div class="col-sm-6 text-end" id="suppliers-results"></div>
             </div>
-            
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_suppliers&language={{ language }}&customer_token= {{ customer_token }}';
-    var filter_name = $('input[name="filter_name"]').val();
-    var filter_status = $('select[name="filter_status"]').val();
-    if (filter_name) url += '&filter_name=' + encodeURIComponent(filter_name);
-    if (filter_status) url += '&filter_status=' + filter_status;
-    location = url;
-});
+$(document).ready(function() {
 
-function deleteSupplier(supplierId) {
-    if (confirm('Are you sure?')) {
+    function loadSuppliers(page) {
+        page = page || 1;
+        var query = 'index.php?route=account/pms_suppliers.loadList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
+
+        var filter_name   = $('input[name="filter_name"]').val();
+        var filter_status = $('select[name="filter_status"]').val();
+
+        if (filter_name)   query += '&filter_name=' + encodeURIComponent(filter_name);
+        if (filter_status) query += '&filter_status=' + filter_status;
+
+        // Loading state
+        $('#suppliers-table-body').html(
+            '<tr><td colspan="8" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading suppliers...</span>' +
+            '</td></tr>'
+        );
+        $('#suppliers-pagination-row').hide();
+
         $.ajax({
-            url: 'index.php?route=account/pms_suppliers.delete&language={{ language }}&customer_token={{ customer_token }}&supplier_id=' + supplierId,
+            url: query,
             type: 'GET',
+            dataType: 'json',
             success: function(json) {
-                if (json.success) location.reload();
+                $('#suppliers-table-body').html(json.rows);
+                $('#suppliers-pagination').html(json.pagination);
+                $('#suppliers-results').html(json.results);
+
+                if (json.total > 0) {
+                    $('#suppliers-pagination-row').show();
+                }
+
+                bindPagination();
+            },
+            error: function() {
+                $('#suppliers-table-body').html(
+                    '<tr><td colspan="8" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load suppliers.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-}
+
+    function bindPagination() {
+        $('#suppliers-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+            loadSuppliers(page);
+            $('html, body').animate({ scrollTop: $('#suppliers-table-body').offset().top - 120 }, 200);
+        });
+    }
+
+    $('#button-filter').on('click', function() {
+        loadSuppliers(1);
+    });
+
+    $('input, select').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
+
+    // Global function so the dynamically-loaded "Delete" button can call it
+    window.deleteSupplier = function(supplierId) {
+        if (confirm('Are you sure you want to delete this supplier?')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_suppliers.delete&language={{ language }}&customer_token={{ customer_token }}&supplier_id=' + supplierId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        loadSuppliers(1);
+                    } else if (json.error) {
+                        alert(json.error);
+                    }
+                },
+                error: function() {
+                    alert('Failed to delete supplier.');
+                }
+            });
+        }
+    };
+});
 </script>
 
 {{ footer }}
