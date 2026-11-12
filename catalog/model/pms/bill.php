@@ -311,7 +311,7 @@ class Bill extends \Opencart\System\Engine\Model {
             }
             $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
         }
-        
+
         $query = $this->db->query($sql);
         
         return $query->rows;
@@ -445,7 +445,7 @@ class Bill extends \Opencart\System\Engine\Model {
      * @return array
      */
     public function getUnpaidBills(int $shareholder_id): array {
-        $query = $this->db->query("
+        $sql = "
             SELECT b.*, bt.name as bill_type_name, a.apartment_number
             FROM `" . DB_PREFIX . "pms_monthly_bill` b
             LEFT JOIN `" . DB_PREFIX . "pms_bill_type` bt ON b.bill_type_id = bt.bill_type_id
@@ -454,9 +454,40 @@ class Bill extends \Opencart\System\Engine\Model {
             AND b.is_paid = 0
             AND b.is_deleted = 0
             ORDER BY b.bill_month ASC, bt.sort_order ASC
-        ");
+        ";
+        $query = $this->db->query($sql);
         
         return $query->rows;
+    }
+
+    public function getTotalUnpaidBillsForProject(int $project_id, array $data = []): int {
+        $sql = "SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "pms_monthly_bill` b
+                LEFT JOIN `" . DB_PREFIX . "pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `" . DB_PREFIX . "shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '" . (int)$project_id . "'
+                AND b.is_paid = 0 AND b.is_deleted = 0";
+
+        if (!empty($data['filter_shareholder'])) {
+            $sql .= " AND CONCAT(c.firstname, ' ', c.lastname) LIKE '%" . $this->db->escape($data['filter_shareholder']) . "%'";
+        }
+        if (!empty($data['filter_month'])) {
+            $sql .= " AND b.bill_month = '" . $this->db->escape($data['filter_month']) . "'";
+        }
+        if (!empty($data['filter_bill_type'])) {
+            $sql .= " AND b.bill_type_id = '" . (int)$data['filter_bill_type'] . "'";
+        }
+        if (!empty($data['filter_apartment'])) {
+            $sql .= " AND a.apartment_number LIKE '%" . $this->db->escape($data['filter_apartment']) . "%'";
+        }
+
+        $myfile = fopen("unpaid.txt", "a+");
+            fwrite($myfile, $sql . PHP_EOL);
+            fclose($myfile);
+
+        $query = $this->db->query($sql);
+
+        return (int)$query->row['total'];
     }
 
     /**
@@ -595,8 +626,14 @@ class Bill extends \Opencart\System\Engine\Model {
         if (!empty($data['filter_apartment'])) {
             $sql .= " AND a.apartment_number = '" . $this->db->escape($data['filter_apartment']) . "'";
         }
+
         
         $sql .= " ORDER BY b.bill_month ASC, a.apartment_number ASC";
+
+        if (isset($data['start']) || isset($data['limit'])) {
+            $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+        }
+        
         
         $query = $this->db->query($sql);
         

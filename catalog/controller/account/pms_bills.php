@@ -71,8 +71,8 @@ class PmsBills extends \Opencart\System\Engine\Controller {
         
         $this->load->model('pms/bill');
         
-        $bill_total = $this->model_pms_bill->getTotalProjectBills($filter_data);
-        $results = $this->model_pms_bill->getProjectBills($filter_data);
+        //$bill_total = $this->model_pms_bill->getTotalProjectBills($filter_data);
+        //$results = $this->model_pms_bill->getProjectBills($filter_data);
         
         // Get bill types for filter
         $data['bill_types'] = $this->model_pms_bill->getBillTypes();
@@ -80,7 +80,7 @@ class PmsBills extends \Opencart\System\Engine\Controller {
         // Get available months
         $data['available_months'] = $this->model_pms_bill->getAvailableMonths($project['project_id']);
         
-        $data['bills'] = [];
+        /*$data['bills'] = [];
         
         foreach ($results as $result) {
             $status_badge = $result['is_paid'] ? 
@@ -129,7 +129,7 @@ class PmsBills extends \Opencart\System\Engine\Controller {
         $data['sort_apartment'] = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&sort=a.apartment_number' . $url);
         $data['sort_amount'] = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&sort=b.amount' . $url);
         $data['sort_status'] = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&sort=b.is_paid' . $url);
-        
+        */
         // Filter values
         $data['filter_month'] = $filter_month;
         $data['filter_bill_type'] = $filter_bill_type;
@@ -162,6 +162,111 @@ class PmsBills extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
 
         $this->response->setOutput($this->load->view('account/pms_bills_list', $data));
+    }
+
+        /**
+     * AJAX: Load bills table + pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/bills');
+        $this->load->model('pms/project');
+        $this->load->model('pms/bill');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        // Filters
+        $filter_month       = isset($this->request->get['filter_month']) ? $this->request->get['filter_month'] : '';
+        $filter_bill_type   = isset($this->request->get['filter_bill_type']) ? $this->request->get['filter_bill_type'] : '';
+        $filter_status      = isset($this->request->get['filter_status']) ? $this->request->get['filter_status'] : '';
+        $filter_apartment   = isset($this->request->get['filter_apartment']) ? $this->request->get['filter_apartment'] : '';
+        $sort               = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'b.bill_month';
+        $order              = isset($this->request->get['order']) ? $this->request->get['order'] : 'DESC';
+        $page               = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        // Rebuild $url to keep filters in pagination links
+        $url = '';
+        if ($filter_month)      $url .= '&filter_month=' . $filter_month;
+        if ($filter_bill_type)  $url .= '&filter_bill_type=' . $filter_bill_type;
+        if ($filter_status)     $url .= '&filter_status=' . $filter_status;
+        if ($filter_apartment)  $url .= '&filter_apartment=' . urlencode($filter_apartment);
+        if ($sort)              $url .= '&sort=' . $sort;
+        if ($order)             $url .= '&order=' . $order;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'        => $project['project_id'],
+            'filter_month'      => $filter_month,
+            'filter_bill_type'  => $filter_bill_type,
+            'filter_status'     => $filter_status,
+            'filter_apartment'  => $filter_apartment,
+            'sort'              => $sort,
+            'order'             => $order,
+            'start'             => ($page - 1) * $limit,
+            'limit'             => $limit
+        ];
+
+        $bill_total = $this->model_pms_bill->getTotalProjectBills($filter_data);
+        $results    = $this->model_pms_bill->getProjectBills($filter_data);
+
+        // Build the rows HTML
+        $rows = '';
+        if ($results) {
+            foreach ($results as $result) {
+                $view_url = $this->url->link('account/pms_bills.view', 'language=' . $this->config->get('config_language') . '&bill_id=' . $result['bill_id'] . $url . '&customer_token=' . $this->session->data['customer_token']);
+
+                $status_badge = $result['is_paid']
+                    ? '<span class="badge-paid"><i class="fas fa-regular fa-circle-check"></i> Paid</span>'
+                    : '<span class="badge-unpaid"><i class="fas fa-regular fa-clock"></i> Unpaid</span>';
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . date('M Y', strtotime($result['bill_month'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['apartment_number']) . ' (Floor ' . (int)$result['floor_number'] . ')</td>';
+                $rows .= '<td>' . htmlspecialchars($result['bill_type_name']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['shareholder_name']) . '<br><small class="text-muted">' . htmlspecialchars($result['shareholder_code']) . '</small></td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($result['amount'], 2) . '</td>';
+                $rows .= '<td>' . ($result['due_date'] ? date('d M Y', strtotime($result['due_date'])) : '-') . '</td>';
+                $rows .= '<td>' . $status_badge . '</td>';
+                $rows .= '<td>' . ($result['paid_date'] ? date('d M Y', strtotime($result['paid_date'])) : '-') . '</td>';
+                $rows .= '<td class="text-end"><a href="' . $view_url . '" class="btn btn-info btn-sm" title="View Details"><i class="fas fa-regular fa-eye"></i></a></td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="9" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-file-invoice fa-2x mb-2 d-block"></i>
+                        No bills found. Click "Generate Bills" to create monthly bills.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $bill_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_bills.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($bill_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($bill_total - $limit)) ? $bill_total : ((($page - 1) * $limit) + $limit),
+            $bill_total,
+            ceil($bill_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $bill_total
+        ]));
     }
     
     public function generate(): void {
@@ -662,69 +767,174 @@ class PmsBills extends \Opencart\System\Engine\Controller {
     }
 
     /**
-     * Unpaid bills list (for accountant to see what needs payment)
-     */
+    * Unpaid bills page (initial load only — no data yet)
+    */
     public function unpaid(): void {
         if (!$this->customer->isLogged()) {
             $this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language')));
         }
-        
+
         $this->load->language('pms/bills');
-        
         $this->document->setTitle($this->language->get('heading_unpaid'));
-        
-        // Get current project
+
         $this->load->model('pms/project');
         $project = $this->customer->getProject();
-        
+
         if (!$project) {
             $this->response->redirect($this->url->link('account/account', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']));
         }
-        
+
         $data['project_id'] = $project['project_id'];
-        
-        // Filter parameters
+
+        // Preserve filter values
         $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
-        $filter_month = isset($this->request->get['filter_month']) ? $this->request->get['filter_month'] : '';
-        $filter_bill_type = isset($this->request->get['filter_bill_type']) ? $this->request->get['filter_bill_type'] : '';
-        $filter_apartment = isset($this->request->get['filter_apartment']) ? $this->request->get['filter_apartment'] : '';
-        
+        $filter_month       = isset($this->request->get['filter_month']) ? $this->request->get['filter_month'] : '';
+        $filter_bill_type   = isset($this->request->get['filter_bill_type']) ? $this->request->get['filter_bill_type'] : '';
+        $filter_apartment   = isset($this->request->get['filter_apartment']) ? $this->request->get['filter_apartment'] : '';
+
+        $this->load->model('pms/bill');
+
+        // Dropdown data
+        $data['bill_types']         = $this->model_pms_bill->getBillTypes();
+        $data['available_months']   = $this->model_pms_bill->getAvailableMonths($project['project_id']);
+
+        // Stats that appear above the table (these stay server-side — they're quick)
+        $data['payment_stats']      = $this->model_pms_bill->getBillPaymentStats($project['project_id']);
+        $data['total_unpaid_amount'] = $this->model_pms_bill->getTotalUnpaidAmount($project['project_id']);
+
+        // Filter values
+        $data['filter_shareholder'] = $filter_shareholder;
+        $data['filter_month']       = $filter_month;
+        $data['filter_bill_type']   = $filter_bill_type;
+        $data['filter_apartment']   = $filter_apartment;
+
+        $data['language']       = $this->config->get('config_language');
+        $data['customer_token'] = $this->session->data['customer_token'];
+
+        $data['mark_paid_url']       = $this->url->link('account/pms_bills.markPaid', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['bulk_mark_paid_url']  = $this->url->link('account/pms_bills.bulkMarkPaid', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+        $data['back']                = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
+
+        $data['column_left']    = $this->load->controller('common/column_left');
+        $data['column_right']   = $this->load->controller('common/column_right');
+        $data['content_top']    = $this->load->controller('common/content_top');
+        $data['content_bottom'] = $this->load->controller('common/content_bottom');
+        $data['footer']         = $this->load->controller('common/footer');
+        $data['header']         = $this->load->controller('common/header');
+
+        $this->response->setOutput($this->load->view('account/pms_bills_unpaid', $data));
+    }
+
+    /**
+    * AJAX: Load unpaid bills table + pagination
+    */
+    public function loadUnpaidList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/bills');
+        $this->load->model('pms/project');
+        $this->load->model('pms/bill');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        // Filters
+        $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
+        $filter_month       = isset($this->request->get['filter_month']) ? $this->request->get['filter_month'] : '';
+        $filter_bill_type   = isset($this->request->get['filter_bill_type']) ? $this->request->get['filter_bill_type'] : '';
+        $filter_apartment   = isset($this->request->get['filter_apartment']) ? $this->request->get['filter_apartment'] : '';
+        $page               = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        // Rebuild URL (filters only — page appended later)
+        $url = '';
+        if ($filter_shareholder) $url .= '&filter_shareholder=' . urlencode($filter_shareholder);
+        if ($filter_month)       $url .= '&filter_month=' . $filter_month;
+        if ($filter_bill_type)   $url .= '&filter_bill_type=' . $filter_bill_type;
+        if ($filter_apartment)   $url .= '&filter_apartment=' . urlencode($filter_apartment);
+
+        $limit = $this->config->get('config_pagination_admin');
+
         $filter_data = [
             'filter_shareholder' => $filter_shareholder,
             'filter_month'       => $filter_month,
             'filter_bill_type'   => $filter_bill_type,
-            'filter_apartment'   => $filter_apartment
+            'filter_apartment'   => $filter_apartment,
+            'start'              => ($page - 1) * $limit,
+            'limit'              => $limit
         ];
-        
-        $this->load->model('pms/bill');
-        
-        $data['unpaid_bills'] = $this->model_pms_bill->getUnpaidBillsForProject($project['project_id'], $filter_data);
-        $data['bill_types'] = $this->model_pms_bill->getBillTypes();
-        $data['available_months'] = $this->model_pms_bill->getAvailableMonths($project['project_id']);
-        $data['total_unpaid_amount'] = $this->model_pms_bill->getTotalUnpaidAmount($project['project_id']);
-        $data['payment_stats'] = $this->model_pms_bill->getBillPaymentStats($project['project_id']);
-        
-        // Filter values
-        $data['filter_shareholder'] = $filter_shareholder;
-        $data['filter_month'] = $filter_month;
-        $data['filter_bill_type'] = $filter_bill_type;
-        $data['filter_apartment'] = $filter_apartment;
 
-        $data['language'] = $this->config->get('config_language');
-        $data['customer_token'] = $this->session->data['customer_token'];
-        
-        // URLs
-        $data['mark_paid_url'] = $this->url->link('account/pms_bills.markPaid', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['bulk_mark_paid_url'] = $this->url->link('account/pms_bills.bulkMarkPaid', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        $data['back'] = $this->url->link('account/pms_bills', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
-        
-        $data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
-        
-        $this->response->setOutput($this->load->view('account/pms_bills_unpaid', $data));
+        // --- NOTE: Assumes your bill model exposes these two methods ---
+        // getTotalUnpaidBillsForProject($project_id, $filter_data)  → int
+        // getUnpaidBillsForProject($project_id, $filter_data)       → array (already exists)
+        // If getTotalUnpaidBillsForProject doesn't exist, fall back to counting the rows below.
+        $unpaid_total = $this->model_pms_bill->getTotalUnpaidBillsForProject($project['project_id'], $filter_data);
+
+            
+
+        $results = $this->model_pms_bill->getUnpaidBillsForProject($project['project_id'], $filter_data);
+
+        // Fallback total if the model method is missing
+        if ($unpaid_total === 0 && !empty($results)) {
+            $unpaid_total = count($results);
+        }
+
+        // Build rows
+        $rows = '';
+        if ($results) {
+            foreach ($results as $bill) {
+                $mark_paid = $this->url->link('account/pms_bills.markPaid', 'language=' . $this->config->get('config_language') . '&bill_id=' . $bill['bill_id'] . '&customer_token=' . $this->session->data['customer_token']);
+
+                $rows .= '<tr>';
+                $rows .= '<td><input type="checkbox" name="selected_bills[]" value="' . (int)$bill['bill_id'] . '" class="bill-selector"></td>';
+                $rows .= '<td>' . date('M Y', strtotime($bill['bill_month'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($bill['apartment_number']) . ' (Floor ' . (int)$bill['floor_number'] . ')</td>';
+                $rows .= '<td>' . htmlspecialchars($bill['bill_type_name']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($bill['shareholder_name']) . '<br><small class="text-muted">' . htmlspecialchars($bill['shareholder_code']) . '</small></td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($bill['amount'], 2) . '</td>';
+                $rows .= '<td>' . ($bill['due_date'] ? date('d M Y', strtotime($bill['due_date'])) : '-') . '</td>';
+                $rows .= '<td class="text-end">
+                            <a href="' . $mark_paid . '" class="btn btn-success btn-sm">
+                                <i class="fas fa-regular fa-circle-check"></i> Mark Paid
+                            </a>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-circle-check fa-2x mb-2 d-block"></i>
+                        No unpaid bills found. All bills are paid!
+                     </td></tr>';
+        }
+
+        // Pagination
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $unpaid_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_bills.loadUnpaidList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($unpaid_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($unpaid_total - $limit)) ? $unpaid_total : ((($page - 1) * $limit) + $limit),
+            $unpaid_total,
+            ceil($unpaid_total / $limit)
+        );
+
+        // Total unpaid across all pages (for the footer <tfoot>)
+        $total_unpaid_amount = $this->model_pms_bill->getTotalUnpaidAmount($project['project_id']);
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'                 => $rows,
+            'pagination'           => $pagination,
+            'results'              => $results_text,
+            'total'                => $unpaid_total,
+            'total_unpaid_amount'  => number_format($total_unpaid_amount, 2)
+        ]));
     }
 }

@@ -23,6 +23,8 @@ $_['column_status']         = 'Status';
 $_['column_paid_date']      = 'Paid Date';
 $_['column_action']         = 'Action';
 
+$_['button_generate_bills']         = 'Generate Bills';
+
 // Entry
 $_['entry_bill_month']      = 'Bill Month';
 $_['entry_bill_type']       = 'Bill Type';

@@ -144,44 +144,28 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if unpaid_bills %}
-                            {% for bill in unpaid_bills %}
-                                <tr>
-                                    <td><input type="checkbox" name="selected_bills[]" value="{{ bill.bill_id }}" class="bill-selector"></td>
-                                    <td>{{ bill.bill_month|date('M Y') }}</td>
-                                    <td>{{ bill.apartment_number }} (Floor {{ bill.floor_number }})</td>
-                                    <td>{{ bill.bill_type_name }}</td>
-                                    <td>
-                                        {{ bill.shareholder_name }}<br>
-                                        <small class="text-muted">{{ bill.shareholder_code }}</small>
-                                    </td>
-                                    <td class="text-danger">৳ {{ bill.amount|number_format(2) }}</td>
-                                    <td>{{ bill.due_date|date('d M Y') }}</td>
-                                    <td class="text-end">
-                                        <a href="{{ mark_paid_url }}&bill_id={{ bill.bill_id }}" class="btn btn-success btn-sm">
-                                            <i class="fas fa-regular fa-circle-check"></i> Mark Paid
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
-                                    <i class="fas fa-regular fa-circle-check fa-2x mb-2 d-block"></i>
-                                    No unpaid bills found. All bills are paid!
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="unpaid-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load unpaid bills.
+                            </td>
+                        </tr>
                     </tbody>
                     <tfoot>
                         <tr style="background: #f8f9fa;">
                             <td colspan="5" class="text-end fw-bold">Total Unpaid:</td>
-                            <td class="text-danger fw-bold">৳ {{ total_unpaid_amount|number_format(2) }}</td>
+                            <td class="text-danger fw-bold" id="unpaid-total-amount">৳ {{ total_unpaid_amount|number_format(2) }}</td>
                             <td colspan="2"></td>
                         </tr>
                     </tfoot>
                 </table>
+
+                <!-- Pagination (hidden until AJAX returns) -->
+                <div class="row" id="unpaid-pagination-row" style="display: none;">
+                    <div class="col-sm-6 text-start" id="unpaid-pagination"></div>
+                    <div class="col-sm-6 text-end" id="unpaid-results"></div>
+                </div>
             </div>
             
             <!-- Bulk Action Bar -->
@@ -208,91 +192,163 @@
 </div>
 
 <script>
-// Select All functionality
-$('#select-all').on('change', function() {
-    $('.bill-selector').prop('checked', $(this).prop('checked'));
-    updateSelectedCount();
-});
+$(document).ready(function() {
 
-$('.bill-selector').on('change', function() {
-    updateSelectedCount();
-});
+    // ---------- Load via AJAX ----------
+    function loadUnpaid(page) {
+        page = page || 1;
 
-function updateSelectedCount() {
-    var count = $('.bill-selector:checked').length;
-    $('#selected-count').text(count);
-}
+        var query = 'index.php?route=account/pms_bills.loadUnpaidList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
 
-// Bulk Mark Paid
-$('#bulk-mark-paid').on('click', function() {
-    var selected = [];
-    $('.bill-selector:checked').each(function() {
-        selected.push($(this).val());
-    });
-    
-    if (selected.length === 0) {
-        alert('Please select at least one bill');
-        return;
-    }
-    
-    var paymentMethod = $('#bulk-payment-method').val();
-    if (!paymentMethod) {
-        alert('Please select a payment method');
-        return;
-    }
-    
-    var paymentDate = $('#bulk-payment-date').val();
-    if (!paymentDate) {
-        alert('Please select payment date');
-        return;
-    }
-    
-    if (confirm('Mark ' + selected.length + ' bill(s) as paid?')) {
+        var filter_shareholder = $('input[name="filter_shareholder"]').val();
+        var filter_month       = $('select[name="filter_month"]').val();
+        var filter_bill_type   = $('select[name="filter_bill_type"]').val();
+        var filter_apartment   = $('input[name="filter_apartment"]').val();
+
+        if (filter_shareholder) query += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+        if (filter_month)       query += '&filter_month=' + filter_month;
+        if (filter_bill_type)   query += '&filter_bill_type=' + filter_bill_type;
+        if (filter_apartment)   query += '&filter_apartment=' + encodeURIComponent(filter_apartment);
+
+        // Loading state
+        $('#unpaid-table-body').html(
+            '<tr><td colspan="8" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading unpaid bills...</span>' +
+            '</td></tr>'
+        );
+        $('#unpaid-pagination-row').hide();
+
         $.ajax({
-            url: '{{ bulk_mark_paid_url }}',
-            type: 'POST',
-            data: {
-                bill_ids: selected,
-                payment_method: paymentMethod,
-                payment_date: paymentDate,
-                reference_number: $('#bulk-reference').val(),
-                user_token: '{{ user_token }}'
-            },
+            url: query,
+            type: 'GET',
             dataType: 'json',
             success: function(json) {
-                if (json.success) {
-                    location.reload();
+                $('#unpaid-table-body').html(json.rows);
+                $('#unpaid-pagination').html(json.pagination);
+                $('#unpaid-results').html(json.results);
+                $('#unpaid-total-amount').html('৳ ' + json.total_unpaid_amount);
+
+                if (json.total > 0) {
+                    $('#unpaid-pagination-row').show();
                 } else {
-                    alert(json.error);
+                    $('#unpaid-pagination-row').hide();
                 }
+
+                // Reset select-all
+                $('#select-all').prop('checked', false);
+                updateSelectedCount();
+
+                bindPagination();
+            },
+            error: function() {
+                $('#unpaid-table-body').html(
+                    '<tr><td colspan="8" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load unpaid bills.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-});
 
-// Filter
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_bills.unpaid&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_shareholder = $('input[name="filter_shareholder"]').val();
-    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
-    
-    var filter_month = $('select[name="filter_month"]').val();
-    if (filter_month) url += '&filter_month=' + filter_month;
-    
-    var filter_bill_type = $('select[name="filter_bill_type"]').val();
-    if (filter_bill_type) url += '&filter_bill_type=' + filter_bill_type;
-    
-    var filter_apartment = $('input[name="filter_apartment"]').val();
-    if (filter_apartment) url += '&filter_apartment=' + encodeURIComponent(filter_apartment);
-    
-    location = url;
-});
+    // ---------- Pagination AJAX ----------
+    function bindPagination() {
+        $('#unpaid-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
 
-$('input, select').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+
+            loadUnpaid(page);
+
+            $('html, body').animate({
+                scrollTop: $('#unpaid-table-body').offset().top - 120
+            }, 200);
+        });
     }
+
+    // ---------- Filter Button ----------
+    $('#button-filter').on('click', function() {
+        loadUnpaid(1);
+    });
+
+    $('input, select').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
+
+    // ---------- Select All ----------
+    $(document).on('change', '#select-all', function() {
+        $('.bill-selector').prop('checked', $(this).prop('checked'));
+        updateSelectedCount();
+    });
+
+    $(document).on('change', '.bill-selector', function() {
+        updateSelectedCount();
+    });
+
+    function updateSelectedCount() {
+        var count = $('.bill-selector:checked').length;
+        $('#selected-count').text(count);
+    }
+
+    // ---------- Bulk Mark Paid ----------
+    $('#bulk-mark-paid').on('click', function() {
+        var selected = [];
+        $('.bill-selector:checked').each(function() {
+            selected.push($(this).val());
+        });
+
+        if (selected.length === 0) {
+            alert('Please select at least one bill');
+            return;
+        }
+
+        var paymentMethod = $('#bulk-payment-method').val();
+        if (!paymentMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+
+        var paymentDate = $('#bulk-payment-date').val();
+        if (!paymentDate) {
+            alert('Please select payment date');
+            return;
+        }
+
+        if (confirm('Mark ' + selected.length + ' bill(s) as paid?')) {
+            $.ajax({
+                url: '{{ bulk_mark_paid_url }}',
+                type: 'POST',
+                data: {
+                    bill_ids: selected,
+                    payment_method: paymentMethod,
+                    payment_date: paymentDate,
+                    reference_number: $('#bulk-reference').val(),
+                    user_token: '{{ user_token }}'
+                },
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        // Reload current view via AJAX instead of full page
+                        loadUnpaid(1);
+                    } else {
+                        alert(json.error || 'Failed to mark bills as paid.');
+                    }
+                }
+            });
+        }
+    });
+
+    // Optional: auto-load on page visit? Remove the next line if you want blank until Filter clicked.
+    // loadUnpaid(1);
 });
 </script>
 

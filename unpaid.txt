@@ -1,0 +1,90 @@
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_month = '2026-08' AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_month = '2026-09' AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_month = '0000-00' AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '1'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_type_id = '2'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_month = '2026-11'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0 AND b.bill_month = '2026-11'
+SELECT COUNT(*) AS total FROM `mskn_pms_monthly_bill` b
+                LEFT JOIN `mskn_pms_apartment` a ON b.apartment_id = a.id
+                LEFT JOIN `mskn_shareholders` s ON b.shareholder_id = s.id
+                LEFT JOIN `mskn_customer` c ON s.user_id = c.customer_id
+                WHERE b.project_id = '14'
+                AND b.is_paid = 0 AND b.is_deleted = 0
