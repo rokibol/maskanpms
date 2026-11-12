@@ -34,7 +34,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
         $this->load->model('pms/supplier');
         
         // Get suppliers for filter dropdown
-        $data['suppliers'] = $this->model_pms_supplier->getSupplierOptions($project['project_id']);
+        /*$data['suppliers'] = $this->model_pms_supplier->getSupplierOptions($project['project_id']);
         
         $filter_data = [
             'project_id'          => $project['project_id'],
@@ -78,7 +78,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
                 'download'          => !empty($invoice['invoice_document']) ? $this->url->link('account/pms_expense_invoices.downloadDocument', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id']) : '',
                 'delete'            => $this->url->link('account/pms_expense_invoices.delete', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'])
             ];
-        }
+        }*/
         
         // Get invoice statistics
         $data['stats'] = $this->model_pms_expense_invoice->getInvoiceStats($project['project_id']);
@@ -86,7 +86,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
         $data['is_accountant'] = $this->customer->getGroupId() == 2 ? 1 : 0;
 
         // Pagination
-        $data['pagination'] = $this->load->controller('common/pagination', [
+        /*$data['pagination'] = $this->load->controller('common/pagination', [
 			'total' => $invoice_total,
 			'page'  => $page,
 			'limit' => $this->config->get('config_pagination_admin'),
@@ -94,7 +94,7 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
 		]);
 
 		$data['results'] = sprintf($this->language->get('text_pagination'), ($invoice_total) ? (($page - 1) * $this->config->get('config_pagination_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_pagination_admin')) > ($invoice_total - $this->config->get('config_pagination_admin'))) ? $invoice_total : ((($page - 1) * $this->config->get('config_pagination_admin')) + $this->config->get('config_pagination_admin')), $invoice_total, ceil($invoice_total / $this->config->get('config_pagination_admin')));
-        
+        */
 
         // Payment status options
         $data['payment_statuses'] = [
@@ -128,6 +128,128 @@ class PmsExpenseInvoices extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_expense_invoices_list', $data));
+    }
+
+    /**
+     * AJAX: Load expense invoices table + pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/expense_invoices');
+        $this->load->model('pms/project');
+        $this->load->model('pms/expense_invoice');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $filter_invoice_no     = isset($this->request->get['filter_invoice_no']) ? $this->request->get['filter_invoice_no'] : '';
+        $filter_supplier       = isset($this->request->get['filter_supplier']) ? $this->request->get['filter_supplier'] : '';
+        $filter_payment_status = isset($this->request->get['filter_payment_status']) ? $this->request->get['filter_payment_status'] : '';
+        $filter_date_from      = isset($this->request->get['filter_date_from']) ? $this->request->get['filter_date_from'] : '';
+        $filter_date_to        = isset($this->request->get['filter_date_to']) ? $this->request->get['filter_date_to'] : '';
+        $page                  = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'            => $project['project_id'],
+            'filter_invoice_no'     => $filter_invoice_no,
+            'filter_supplier'       => $filter_supplier,
+            'filter_payment_status' => $filter_payment_status,
+            'filter_date_from'      => $filter_date_from,
+            'filter_date_to'        => $filter_date_to,
+            'sort'                  => 'i.invoice_date',
+            'order'                 => 'DESC',
+            'start'                 => ($page - 1) * $limit,
+            'limit'                 => $limit
+        ];
+
+        $invoice_total = $this->model_pms_expense_invoice->getTotalInvoices($filter_data);
+        $invoices      = $this->model_pms_expense_invoice->getInvoices($filter_data);
+
+        $is_accountant = $this->customer->getGroupId() == 2 ? 1 : 0;
+
+        // Build the rows HTML
+        $rows = '';
+        if ($invoices) {
+            foreach ($invoices as $invoice) {
+                $due_amount = $invoice['total_amount'] - $invoice['paid_amount'];
+                $status_badge = $this->getStatusBadge($invoice['payment_status']);
+
+                $view_url = $this->url->link('account/pms_expense_invoices.view', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'] . '&customer_token=' . $this->session->data['customer_token']);
+                $edit_url = $is_accountant ? $this->url->link('account/pms_expense_invoices.edit', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'] . '&customer_token=' . $this->session->data['customer_token']) : '';
+                $download_url = !empty($invoice['invoice_document']) ? $this->url->link('account/pms_expense_invoices.downloadDocument', 'language=' . $this->config->get('config_language') . '&invoice_id=' . $invoice['invoice_id'] . '&customer_token=' . $this->session->data['customer_token']) : '';
+
+                $dropdown = '<li><a class="dropdown-item" href="' . $view_url . '"><i class="fas fa-regular fa-eye"></i> View</a></li>';
+                if ($edit_url) {
+                    $dropdown .= '<li><a class="dropdown-item" href="' . $edit_url . '"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>';
+                }
+                if ($download_url) {
+                    $dropdown .= '<li><a class="dropdown-item" href="' . $download_url . '"><i class="fas fa-regular fa-download"></i> Download Document</a></li>';
+                }
+                $dropdown .= '<li><hr class="dropdown-divider"></li>';
+                if ($edit_url) {
+                    $dropdown .= '<li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteInvoice(' . (int)$invoice['invoice_id'] . ')"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>';
+                }
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . htmlspecialchars($invoice['invoice_number']) . '</td>';
+                $rows .= '<td>' . date('d M Y', strtotime($invoice['invoice_date'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($invoice['supplier_name']) . '</td>';
+                $rows .= '<td>৳ ' . number_format($invoice['sub_total'], 2) . '</td>';
+                $rows .= '<td>৳ ' . number_format($invoice['tax_amount'], 2) . '</td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($invoice['total_amount'], 2) . '</td>';
+                $rows .= '<td class="text-success">৳ ' . number_format($invoice['paid_amount'], 2) . '</td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($due_amount, 2) . '</td>';
+                $rows .= '<td>' . $status_badge . '</td>';
+                $rows .= '<td class="text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-solid fa-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" data-bs-boundary="viewport">' . $dropdown . '</ul>
+                            </div>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="10" class="text-center text-muted py-4">No invoices found</td></tr>';
+        }
+
+        // Pagination
+        $url = '';
+        if ($filter_invoice_no)     $url .= '&filter_invoice_no=' . urlencode($filter_invoice_no);
+        if ($filter_supplier)       $url .= '&filter_supplier=' . $filter_supplier;
+        if ($filter_payment_status) $url .= '&filter_payment_status=' . $filter_payment_status;
+        if ($filter_date_from)      $url .= '&filter_date_from=' . $filter_date_from;
+        if ($filter_date_to)        $url .= '&filter_date_to=' . $filter_date_to;
+
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $invoice_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_expense_invoices.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($invoice_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($invoice_total - $limit)) ? $invoice_total : ((($page - 1) * $limit) + $limit),
+            $invoice_total,
+            ceil($invoice_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $invoice_total
+        ]));
     }
     
     public function add(): void {

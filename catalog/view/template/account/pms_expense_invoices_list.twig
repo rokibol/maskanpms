@@ -14,33 +14,65 @@
     .status-partial { background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
     .status-unpaid { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
     .status-overdue { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
-    /* Apply to the responsive table wrapper if you use .table-responsive */
+        /* Enable horizontal scroll on mobile — prevent content from overflowing */
     .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        /* Add subtle scrollbar hint on iOS/Safari */
+        scrollbar-width: thin;
+    }
+
+    /* Ensure the cell itself doesn't clip content (for dropdown menus) */
+    td {
         overflow: visible !important;
     }
 
-    /* Ensure the cell itself doesn't clip content */
-    td {
-        overflow: visible !important;
+    /* Make table minimum width so columns don't squash — ensures scroll works */
+    .table-responsive > .table {
+        min-width: 900px;
+    }
+
+    /* On mobile, ensure dropdown menus can escape the scroll container */
+    @media (max-width: 991.98px) {
+        .table-responsive {
+            /* Keep the horizontal scroll but let dropdowns escape visually */
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+        }
+    }
+
+    /* Responsive "New Invoice" button */
+    .btn-new-invoice { font-weight: 500; white-space: nowrap; }
+    @media (max-width: 575.98px) {
+        .btn-new-invoice { font-size: 12px; padding: 6px 10px; }
+        .btn-new-invoice .btn-text { display: none; }
+        .btn-new-invoice .btn-text-mobile { display: inline; }
+        .page-actions { gap: 6px !important; }
+    }
+    @media (min-width: 576px) {
+        .btn-new-invoice .btn-text-mobile { display: none; }
     }
 </style>
 
 <div class="container-fluid pms-invoices-page">
-    
+
     <div class="row">
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ heading_title }}</h1>
-                <div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h1 class="mb-0">{{ heading_title }}</h1>
+                <div class="d-flex gap-2 flex-wrap page-actions">
                     {% if is_accountant %}
-                    <a href="{{ add }}" class="btn btn-primary">
-                        <i class="fas fa-solid fa-plus"></i> {{ button_add }}
+                    <a href="{{ add }}" class="btn btn-primary btn-new-invoice">
+                        <i class="fas fa-solid fa-plus"></i>
+                        <span class="btn-text">New Invoice</span>
+                        <span class="btn-text-mobile">New Invoice</span>
                     </a>
                     {% endif %}
                     <a href="{{ back }}" class="btn btn-secondary">
@@ -48,7 +80,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Statistics Cards -->
             <div class="stats-card pms-stats-grid">
                 <div class="stat-box">
@@ -64,7 +96,7 @@
                     <div class="stat-label">Unpaid Amount</div>
                 </div>
             </div>
-            
+
             <!-- Filter Bar -->
             <div class="filter-bar">
                 <div class="row g-3">
@@ -100,7 +132,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Invoices Table -->
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
@@ -118,83 +150,129 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if invoices %}
-                            {% for invoice in invoices %}
-                                <tr>
-                                    <td>{{ invoice.invoice_number }}</td>
-                                    <td>{{ invoice.invoice_date }}</td>
-                                    <td>{{ invoice.supplier_name }}</td>
-                                    <td>৳ {{ invoice.sub_total|number_format(2) }}</td>
-                                    <td>৳ {{ invoice.tax_amount|number_format(2) }}</td>
-                                    <td class="text-danger">৳ {{ invoice.total_amount|number_format(2) }}</td>
-                                    <td class="text-success">৳ {{ invoice.paid_amount|number_format(2) }}</td>
-                                    <td class="text-danger">৳ {{ invoice.due_amount|number_format(2) }}</td>
-                                    <td>{{ invoice.status_badge|raw }}</td>
-                                    <td class="text-end">
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                                <i class="fas fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end" data-bs-boundary="viewport">
-                                                <li><a class="dropdown-item" href="{{ invoice.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
-                                                {% if invoice.edit %}<li><a class="dropdown-item" href="{{ invoice.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>{% endif %}
-                                                {% if invoice.has_document %}
-                                                    <li><a class="dropdown-item" href="{{ invoice.download }}"><i class="fas fa-regular fa-download"></i> Download Document</a></li>
-                                                {% endif %}
-                                                <li><hr class="dropdown-divider"></li>
-                                                {% if invoice.edit %}<li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteInvoice({{ invoice.invoice_id }})"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>{% endif %}
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr><td colspan="10" class="text-center text-muted py-4">No invoices found</td></tr>
-                        {% endif %}
+                    <tbody id="invoices-table-body">
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load invoices.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+
+            <!-- Pagination (hidden until AJAX returns) -->
+            <div class="row" id="invoices-pagination-row" style="display: none;">
+                <div class="col-sm-6 text-start" id="invoices-pagination"></div>
+                <div class="col-sm-6 text-end" id="invoices-results"></div>
             </div>
-            
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_expense_invoices&language={{ language }}';
-    var filter_invoice_no = $('input[name="filter_invoice_no"]').val();
-    var filter_supplier = $('select[name="filter_supplier"]').val();
-    var filter_payment_status = $('select[name="filter_payment_status"]').val();
-    var filter_date_from = $('input[name="filter_date_from"]').val();
-    var filter_date_to = $('input[name="filter_date_to"]').val();
-    if (filter_invoice_no) url += '&filter_invoice_no=' + encodeURIComponent(filter_invoice_no);
-    if (filter_supplier) url += '&filter_supplier=' + filter_supplier;
-    if (filter_payment_status) url += '&filter_payment_status=' + filter_payment_status;
-    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
-    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
-    location = url;
-});
+$(document).ready(function() {
 
-function deleteInvoice(invoiceId) {
-    if (confirm('Are you sure? This will also delete all associated expenses.')) {
+    function loadInvoices(page) {
+        page = page || 1;
+        var query = 'index.php?route=account/pms_expense_invoices.loadList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
+
+        var filter_invoice_no     = $('input[name="filter_invoice_no"]').val();
+        var filter_supplier       = $('select[name="filter_supplier"]').val();
+        var filter_payment_status = $('select[name="filter_payment_status"]').val();
+        var filter_date_from      = $('input[name="filter_date_from"]').val();
+        var filter_date_to        = $('input[name="filter_date_to"]').val();
+
+        if (filter_invoice_no)     query += '&filter_invoice_no=' + encodeURIComponent(filter_invoice_no);
+        if (filter_supplier)       query += '&filter_supplier=' + filter_supplier;
+        if (filter_payment_status) query += '&filter_payment_status=' + filter_payment_status;
+        if (filter_date_from)      query += '&filter_date_from=' + filter_date_from;
+        if (filter_date_to)        query += '&filter_date_to=' + filter_date_to;
+
+        // Loading state
+        $('#invoices-table-body').html(
+            '<tr><td colspan="10" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading invoices...</span>' +
+            '</td></tr>'
+        );
+        $('#invoices-pagination-row').hide();
+
         $.ajax({
-            url: 'index.php?route=account/pms_expense_invoices.delete&language={{ language }}&invoice_id=' + invoiceId,
+            url: query,
             type: 'GET',
+            dataType: 'json',
             success: function(json) {
-                if (json.success) location.reload();
+                $('#invoices-table-body').html(json.rows);
+                $('#invoices-pagination').html(json.pagination);
+                $('#invoices-results').html(json.results);
+
+                if (json.total > 0) {
+                    $('#invoices-pagination-row').show();
+                }
+
+                bindPagination();
+            },
+            error: function() {
+                $('#invoices-table-body').html(
+                    '<tr><td colspan="10" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load invoices.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-}
+
+    function bindPagination() {
+        $('#invoices-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+            loadInvoices(page);
+            $('html, body').animate({ scrollTop: $('#invoices-table-body').offset().top - 120 }, 200);
+        });
+    }
+
+    $('#button-filter').on('click', function() {
+        loadInvoices(1);
+    });
+
+    $('input, select').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
+
+    window.deleteInvoice = function(invoiceId) {
+        if (confirm('Are you sure? This will also delete all associated expenses.')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_expense_invoices.delete&language={{ language }}&invoice_id=' + invoiceId + '&customer_token={{ customer_token }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        loadInvoices(1);
+                    } else if (json.error) {
+                        alert(json.error);
+                    }
+                },
+                error: function() {
+                    alert('Failed to delete invoice.');
+                }
+            });
+        }
+    };
+});
 </script>
 
 {{ footer }}
