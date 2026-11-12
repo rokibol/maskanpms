@@ -867,19 +867,18 @@ class PmsBills extends \Opencart\System\Engine\Controller {
             'limit'              => $limit
         ];
 
-        // --- NOTE: Assumes your bill model exposes these two methods ---
-        // getTotalUnpaidBillsForProject($project_id, $filter_data)  → int
-        // getUnpaidBillsForProject($project_id, $filter_data)       → array (already exists)
-        // If getTotalUnpaidBillsForProject doesn't exist, fall back to counting the rows below.
-        $unpaid_total = $this->model_pms_bill->getTotalUnpaidBillsForProject($project['project_id'], $filter_data);
+        $unpaid_total_array = $this->model_pms_bill->getTotalUnpaidBillsForProject($project['project_id'], $filter_data);
 
-            
+        $total_unpaid_amount = 0;
 
         $results = $this->model_pms_bill->getUnpaidBillsForProject($project['project_id'], $filter_data);
 
         // Fallback total if the model method is missing
-        if ($unpaid_total === 0 && !empty($results)) {
-            $unpaid_total = count($results);
+        if (!empty($unpaid_total_array)) {
+            $unpaid_total = $unpaid_total_array['total'];
+            $total_unpaid_amount = $unpaid_total_array['sum_amount'];
+        } else {
+            $unpaid_total = 0;
         }
 
         // Build rows
@@ -925,8 +924,6 @@ class PmsBills extends \Opencart\System\Engine\Controller {
             ceil($unpaid_total / $limit)
         );
 
-        // Total unpaid across all pages (for the footer <tfoot>)
-        $total_unpaid_amount = $this->model_pms_bill->getTotalUnpaidAmount($project['project_id']);
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode([

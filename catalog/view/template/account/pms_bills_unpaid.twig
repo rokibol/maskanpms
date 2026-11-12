@@ -130,7 +130,7 @@
             </div>
             
             <!-- Unpaid Bills Table -->
-            <div class="table-responsive">
+            <div class="table-responsive" id="unpaid-table-container">
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -169,7 +169,7 @@
             </div>
             
             <!-- Bulk Action Bar -->
-            <div class="bulk-action-bar">
+            <div class="bulk-action-bar" id="unpaidbill-bulk-action-container">
                 <span class="text-muted small">Selected: <span id="selected-count">0</span> bills</span>
                 <select id="bulk-payment-method" class="form-select w-auto">
                     <option value="">Select Payment Method</option>
@@ -193,9 +193,14 @@
 
 <script>
 $(document).ready(function() {
+    $("#unpaid-table-container").hide();
+    $("#unpaidbill-bulk-action-container").hide();
 
     // ---------- Load via AJAX ----------
     function loadUnpaid(page) {
+        $("#unpaid-table-container").show();
+        $("#unpaidbill-bulk-action-container").show();
+
         page = page || 1;
 
         var query = 'index.php?route=account/pms_bills.loadUnpaidList'

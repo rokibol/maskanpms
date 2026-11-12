@@ -460,8 +460,8 @@ class Bill extends \Opencart\System\Engine\Model {
         return $query->rows;
     }
 
-    public function getTotalUnpaidBillsForProject(int $project_id, array $data = []): int {
-        $sql = "SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "pms_monthly_bill` b
+    public function getTotalUnpaidBillsForProject(int $project_id, array $data = []): array {
+        $sql = "SELECT COUNT(b.bill_id) AS total, SUM(b.amount) AS sum_amount FROM `" . DB_PREFIX . "pms_monthly_bill` b
                 LEFT JOIN `" . DB_PREFIX . "pms_apartment` a ON b.apartment_id = a.id
                 LEFT JOIN `" . DB_PREFIX . "shareholders` s ON b.shareholder_id = s.id
                 LEFT JOIN `" . DB_PREFIX . "customer` c ON s.user_id = c.customer_id
@@ -481,13 +481,15 @@ class Bill extends \Opencart\System\Engine\Model {
             $sql .= " AND a.apartment_number LIKE '%" . $this->db->escape($data['filter_apartment']) . "%'";
         }
 
-        $myfile = fopen("unpaid.txt", "a+");
-            fwrite($myfile, $sql . PHP_EOL);
-            fclose($myfile);
-
+        
         $query = $this->db->query($sql);
 
-        return (int)$query->row['total'];
+        $result_array = array(
+            'total' => (int)$query->row['total'],
+            'sum_amount' => (int)$query->row['sum_amount']
+        );
+
+        return $result_array;
     }
 
     /**
