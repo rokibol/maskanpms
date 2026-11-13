@@ -715,6 +715,12 @@ class Project extends \Opencart\System\Engine\Controller {
             $data['city'] = $project_info['city'] ?: '-';
             $data['postal_code'] = $project_info['postal_code'] ?: '-';
             $data['country'] = $project_info['country'] ?: '-';
+
+            // Subscription Information
+            $data['subscription_rate_per_apartment'] = $project_info['subscription_rate_per_apartment'] ?: '-';
+            $data['subscription_discount_type'] = $project_info['subscription_discount_type'] ?: '-';
+            $data['subscription_discount_value'] = $project_info['subscription_discount_value'] ?: '-';
+            $data['subscription_discount_reason'] = $project_info['subscription_discount_reason'] ?: '-';
             
             // Share Information
             $data['total_shares'] = $project_info['total_shares'];

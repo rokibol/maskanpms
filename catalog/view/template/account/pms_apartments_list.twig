@@ -212,58 +212,20 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if apartments %}
-                            {% for apartment in apartments %}
-                                <tr>
-                                    <td>{{ apartment.apartment_number }}</td>
-                                    <td>Floor {{ apartment.floor_number }}</td>
-                                    <td>{{ apartment.area_sqft|number_format(0) }}</td>
-                                    <td>{{ apartment.bedrooms }}</td>
-                                    <td>{{ apartment.fixed_maintenance_fee|number_format(2) }}</td>
-                                    <td>{{ apartment.shareholder_name }}</td>
-                                    <td>{{ apartment.status_badge|raw }}</td>
-                                    <td>{{ apartment.active_badge|raw }}</td>
-                                    <td class="text-end" style="position: relative; overflow: visible;">
-                                        <div class="dropdown action-dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="{{ apartment.view }}"><i class="fas fa-regular fa-eye"></i> View</a></li>
-                                                <li><a class="dropdown-item" href="{{ apartment.edit }}"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <a class="dropdown-item" href="javascript:void(0);" onclick="assignModal({{ apartment.apartment_id }}, '{{ apartment.apartment_number }}', {{ apartment.shareholder_id|default('null') }})">
-                                                        <i class="fas fa-solid fa-user-check"></i> Assign/Unassign
-                                                    </a>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteApartment({{ apartment.apartment_id }})">
-                                                        <i class="fas fa-regular fa-trash-can"></i> Delete
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
-                                    <i class="fas fa-regular fa-building fa-2x mb-2 d-block"></i>
-                                    No apartments found.
-                                </td>
-                            </tr>
-                        {% endif %}
+                    <tbody id="apartments-table-body">
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load apartments.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
             
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+            <div class="row mt-3" id="apartments-pagination-row" style="display: none;">
+                <div class="col-sm-6 text-start" id="apartments-pagination"></div>
+                <div class="col-sm-6 text-end" id="apartments-results"></div>
             </div>
             
             {{ content_bottom }}
@@ -311,6 +273,7 @@
 <script>
 var currentShareholderId = null;
 
+// Assign modal (unchanged)
 function assignModal(apartmentId, apartmentNumber, shareholderId) {
     $('#assign_apartment_id').val(apartmentId);
     $('#assign_apartment_number').val(apartmentNumber);
@@ -318,9 +281,10 @@ function assignModal(apartmentId, apartmentNumber, shareholderId) {
     $('#modal-assign').modal('show');
 }
 
+// Assign form submit — reloads via AJAX
 $('#form-assign').on('submit', function(e) {
     e.preventDefault();
-    
+
     $.ajax({
         url: 'index.php?route=account/pms_apartments.assign&language={{ language }}&customer_token={{ customer_token }}',
         type: 'POST',
@@ -329,7 +293,7 @@ $('#form-assign').on('submit', function(e) {
         success: function(json) {
             if (json.success) {
                 $('#modal-assign').modal('hide');
-                location.reload();
+                loadApartments(1);
             } else {
                 alert(json.error);
             }
@@ -337,41 +301,97 @@ $('#form-assign').on('submit', function(e) {
     });
 });
 
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_apartments&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_apartment = $('input[name="filter_apartment"]').val();
-    if (filter_apartment) url += '&filter_apartment=' + encodeURIComponent(filter_apartment);
-    
-    var filter_floor = $('select[name="filter_floor"]').val();
-    if (filter_floor) url += '&filter_floor=' + filter_floor;
-    
-    var filter_status = $('select[name="filter_status"]').val();
-    if (filter_status) url += '&filter_status=' + filter_status;
-    
-    var filter_bedrooms = $('select[name="filter_bedrooms"]').val();
-    if (filter_bedrooms) url += '&filter_bedrooms=' + filter_bedrooms;
-    
-    var filter_is_active = $('select[name="filter_is_active"]').val();
-    if (filter_is_active !== '') url += '&filter_is_active=' + filter_is_active;
-    
+// AJAX loading
+function loadApartments(page) {
+    page = page || 1;
+    var query = 'index.php?route=account/pms_apartments.loadList'
+              + '&language={{ language }}'
+              + '&customer_token={{ customer_token }}'
+              + '&page=' + page;
+
+    var filter_apartment   = $('input[name="filter_apartment"]').val();
+    var filter_floor       = $('select[name="filter_floor"]').val();
+    var filter_status      = $('select[name="filter_status"]').val();
+    var filter_bedrooms    = $('select[name="filter_bedrooms"]').val();
+    var filter_is_active   = $('select[name="filter_is_active"]').val();
     var filter_shareholder = $('input[name="filter_shareholder"]').val();
-    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
-    
-    location = url;
+
+    if (filter_apartment)    query += '&filter_apartment=' + encodeURIComponent(filter_apartment);
+    if (filter_floor)        query += '&filter_floor=' + filter_floor;
+    if (filter_status)       query += '&filter_status=' + filter_status;
+    if (filter_bedrooms)     query += '&filter_bedrooms=' + filter_bedrooms;
+    if (filter_is_active !== '' && filter_is_active !== null) query += '&filter_is_active=' + filter_is_active;
+    if (filter_shareholder)  query += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+
+    $('#apartments-table-body').html(
+        '<tr><td colspan="9" class="text-center py-4">' +
+            '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+            '<span class="text-muted">Loading apartments...</span>' +
+        '</td></tr>'
+    );
+    $('#apartments-pagination-row').hide();
+
+    $.ajax({
+        url: query,
+        type: 'GET',
+        dataType: 'json',
+        success: function(json) {
+            $('#apartments-table-body').html(json.rows);
+            $('#apartments-pagination').html(json.pagination);
+            $('#apartments-results').html(json.results);
+
+            if (json.total > 0) {
+                $('#apartments-pagination-row').show();
+            }
+
+            bindPagination();
+        },
+        error: function() {
+            $('#apartments-table-body').html(
+                '<tr><td colspan="9" class="text-center text-danger py-4">' +
+                    '<i class="fas fa-exclamation-circle"></i> Failed to load apartments.' +
+                '</td></tr>'
+            );
+        }
+    });
+}
+
+function bindPagination() {
+    $('#apartments-pagination a').off('click').on('click', function(e) {
+        e.preventDefault();
+        var href = $(this).attr('href');
+        if (!href) return;
+        var match = href.match(/[?&]page=(\d+)/);
+        var page = match ? parseInt(match[1]) : 1;
+        loadApartments(page);
+        $('html, body').animate({ scrollTop: $('#apartments-table-body').offset().top - 120 }, 200);
+    });
+}
+
+// Filter / Clear
+$('#button-filter').on('click', function() {
+    loadApartments(1);
 });
 
 $('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_apartments&language={{ language }}&customer_token={{ customer_token }}';
+    $('input[name="filter_apartment"]').val('');
+    $('select[name="filter_floor"]').val('');
+    $('select[name="filter_status"]').val('');
+    $('select[name="filter_bedrooms"]').val('');
+    $('select[name="filter_is_active"]').val('');
+    $('input[name="filter_shareholder"]').val('');
+    loadApartments(1);
 });
 
-$('input').keydown(function(e) {
+$('input, select').on('keydown', function(e) {
     if (e.keyCode == 13) {
+        e.preventDefault();
         $('#button-filter').click();
     }
 });
 
-function deleteApartment(apartmentId) {
+// Delete apartment — global so AJAX-loaded rows can call it
+window.deleteApartment = function(apartmentId) {
     if (confirm('Are you sure you want to delete this apartment? This action cannot be undone.')) {
         $.ajax({
             url: 'index.php?route=account/pms_apartments.delete&language={{ language }}&apartment_id=' + apartmentId + '&customer_token={{ customer_token }}',
@@ -379,57 +399,35 @@ function deleteApartment(apartmentId) {
             dataType: 'json',
             success: function(json) {
                 if (json.success) {
-                    location.reload();
+                    loadApartments(1);
                 } else {
-                    alert(json.error);
+                    alert(json.error || 'Failed to delete apartment.');
                 }
             }
         });
     }
-}
+};
 
-// Fix dropdown positioning - ensure dropdowns appear above table
-$(document).ready(function() {
-    // Reinitialize dropdowns to ensure proper positioning
-    $('.dropdown-toggle').on('show.bs.dropdown', function() {
-        var $dropdown = $(this).closest('.dropdown');
-        var $menu = $dropdown.find('.dropdown-menu');
-        var $button = $(this);
-        var buttonOffset = $button.offset();
-        var buttonHeight = $button.outerHeight();
-        var menuHeight = $menu.outerHeight();
-        var viewportBottom = $(window).scrollTop() + $(window).height();
-        var buttonBottom = buttonOffset.top + buttonHeight;
-        
-        // Remove any existing inline styles
-        $menu.removeAttr('style');
-        
-        // Check if dropdown would go outside viewport
-        if (buttonBottom + menuHeight > viewportBottom) {
-            // Show above the button
-            $menu.css({
-                'top': 'auto',
-                'bottom': '100%',
-                'right': '0',
-                'left': 'auto',
-                'margin-bottom': '5px'
-            });
-        } else {
-            // Show below the button
-            $menu.css({
-                'top': '100%',
-                'bottom': 'auto',
-                'right': '0',
-                'left': 'auto',
-                'margin-top': '5px'
-            });
-        }
-    });
-    
-    // Reset dropdown styles when hidden
-    $('.dropdown').on('hidden.bs.dropdown', function() {
-        $(this).find('.dropdown-menu').removeAttr('style');
-    });
+// Dropdown positioning fix (unchanged behavior — uses event delegation)
+$(document).on('show.bs.dropdown', '.dropdown-toggle', function() {
+    var $menu = $(this).closest('.dropdown').find('.dropdown-menu');
+    var buttonOffset = $(this).offset();
+    var buttonHeight = $(this).outerHeight();
+    var menuHeight = $menu.outerHeight();
+    var viewportBottom = $(window).scrollTop() + $(window).height();
+    var buttonBottom = buttonOffset.top + buttonHeight;
+
+    $menu.removeAttr('style');
+
+    if (buttonBottom + menuHeight > viewportBottom) {
+        $menu.css({ 'top': 'auto', 'bottom': '100%', 'right': '0', 'left': 'auto', 'margin-bottom': '5px' });
+    } else {
+        $menu.css({ 'top': '100%', 'bottom': 'auto', 'right': '0', 'left': 'auto', 'margin-top': '5px' });
+    }
+});
+
+$(document).on('hidden.bs.dropdown', '.dropdown', function() {
+    $(this).find('.dropdown-menu').removeAttr('style');
 });
 </script>
 

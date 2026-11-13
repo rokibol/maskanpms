@@ -31,6 +31,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
 
         // Get project-specific calculation
         $data['calculation'] = $this->model_pms_project_subscription->getSubscriptionCalculationDisplay($project['project_id']);
+
         $data['apartment_count'] = $data['calculation']['apartment_count'];
 
         // Duration options

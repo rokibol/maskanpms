@@ -43,7 +43,7 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
         $filter_bedrooms = isset($this->request->get['filter_bedrooms']) ? $this->request->get['filter_bedrooms'] : '';
         $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
         
-        $sort = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'a.floor_number';
+        /*$sort = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'a.floor_number';
         $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'ASC';
         $page = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
         
@@ -71,12 +71,12 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
             'order'               => $order,
             'start'               => ($page - 1) * $limit,
             'limit'               => $limit
-        ];
+        ];*/
         
         $this->load->model('pms/apartment');
         $this->load->model('pms/shareholder');
         
-        $apartment_total = $this->model_pms_apartment->getTotalApartments($filter_data);
+        /*$apartment_total = $this->model_pms_apartment->getTotalApartments($filter_data);
         $results = $this->model_pms_apartment->getApartments($filter_data);
         
         $data['apartments'] = [];
@@ -134,7 +134,7 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
         $data['sort_fee'] = $this->url->link('account/pms_apartments', 'language=' . $this->config->get('config_language') . '&sort=a.fixed_maintenance_fee' . $url . '&customer_token=' . $this->session->data['customer_token']);
         $data['sort_status'] = $this->url->link('account/pms_apartments', 'language=' . $this->config->get('config_language') . '&sort=assignment_status' . $url . '&customer_token=' . $this->session->data['customer_token']);
         $data['sort_active'] = $this->url->link('account/pms_apartments', 'language=' . $this->config->get('config_language') . '&sort=a.is_active' . $url . '&customer_token=' . $this->session->data['customer_token']);
-        
+        */
         // Filter values
         $data['filter_apartment'] = $filter_apartment;
         $data['filter_floor'] = $filter_floor;
@@ -166,8 +166,8 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
         $data['stats'] = $this->model_pms_apartment->getApartmentStats($project['project_id']);
         
         // Sort and order
-        $data['sort'] = $sort;
-        $data['order'] = $order;
+        /*$data['sort'] = $sort;
+        $data['order'] = $order;*/
 
         $data['language'] = $this->config->get('config_language');
         $data['customer_token'] =  $this->session->data['customer_token'];
@@ -185,6 +185,138 @@ class PmsApartments extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_apartments_list', $data));
+    }
+
+    /**
+     * AJAX: Load apartments table + pagination only
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/apartments');
+        $this->load->model('pms/project');
+        $this->load->model('pms/apartment');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $filter_apartment   = isset($this->request->get['filter_apartment']) ? $this->request->get['filter_apartment'] : '';
+        $filter_floor       = isset($this->request->get['filter_floor']) ? $this->request->get['filter_floor'] : '';
+        $filter_status      = isset($this->request->get['filter_status']) ? $this->request->get['filter_status'] : '';
+        $filter_is_active   = isset($this->request->get['filter_is_active']) ? $this->request->get['filter_is_active'] : '';
+        $filter_bedrooms    = isset($this->request->get['filter_bedrooms']) ? $this->request->get['filter_bedrooms'] : '';
+        $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
+        $sort  = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'a.floor_number';
+        $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'ASC';
+        $page  = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'         => $project['project_id'],
+            'filter_apartment'   => $filter_apartment,
+            'filter_floor'       => $filter_floor,
+            'filter_status'      => $filter_status,
+            'filter_is_active'   => $filter_is_active,
+            'filter_bedrooms'    => $filter_bedrooms,
+            'filter_shareholder' => $filter_shareholder,
+            'sort'               => $sort,
+            'order'              => $order,
+            'start'              => ($page - 1) * $limit,
+            'limit'              => $limit
+        ];
+
+        $apartment_total = $this->model_pms_apartment->getTotalApartments($filter_data);
+        $results         = $this->model_pms_apartment->getApartments($filter_data);
+
+        // Build rows HTML
+        $rows = '';
+        if ($results) {
+            foreach ($results as $result) {
+                $status_badge = (!empty($result['shareholder_id']))
+                    ? '<span class="badge bg-success">Assigned</span>'
+                    : '<span class="badge bg-secondary">Available</span>';
+
+                $active_badge = $result['is_active']
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-danger">Inactive</span>';
+
+                $view_url    = $this->url->link('account/pms_apartments.view', 'language=' . $this->config->get('config_language') . '&apartment_id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+                $edit_url    = $this->url->link('account/pms_apartments.edit', 'language=' . $this->config->get('config_language') . '&apartment_id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+                $assign_url  = $this->url->link('account/pms_apartments.assign', 'language=' . $this->config->get('config_language') . '&apartment_id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+
+                $shareholder_id_js = !empty($result['shareholder_id']) ? (int)$result['shareholder_id'] : 'null';
+                $apartment_num_js  = htmlspecialchars(addslashes($result['apartment_number']), ENT_QUOTES);
+
+                $rows .= '<tr>';
+                $rows .= '<td>' . htmlspecialchars($result['apartment_number']) . '</td>';
+                $rows .= '<td>Floor ' . (int)$result['floor_number'] . '</td>';
+                $rows .= '<td>' . number_format($result['area_sqft'], 0) . '</td>';
+                $rows .= '<td>' . (int)$result['bedrooms'] . '</td>';
+                $rows .= '<td>' . number_format($result['fixed_maintenance_fee'], 2) . '</td>';
+                $rows .= '<td>' . (htmlspecialchars($result['shareholder_name']) ?: '-') . '</td>';
+                $rows .= '<td>' . $status_badge . '</td>';
+                $rows .= '<td>' . $active_badge . '</td>';
+                $rows .= '<td class="text-end" style="position: relative; overflow: visible;">
+                            <div class="dropdown action-dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-solid fa-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="' . $view_url . '"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                    <li><a class="dropdown-item" href="' . $edit_url . '"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="assignModal(' . (int)$result['id'] . ', \'' . $apartment_num_js . '\', ' . $shareholder_id_js . ')"><i class="fas fa-solid fa-user-check"></i> Assign/Unassign</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteApartment(' . (int)$result['id'] . ')"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>
+                                </ul>
+                            </div>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="9" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-building fa-2x mb-2 d-block"></i>
+                        No apartments found.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $url = '';
+        if ($filter_apartment)   $url .= '&filter_apartment=' . urlencode($filter_apartment);
+        if ($filter_floor !== '')$url .= '&filter_floor=' . $filter_floor;
+        if ($filter_status)      $url .= '&filter_status=' . $filter_status;
+        if ($filter_is_active !== '') $url .= '&filter_is_active=' . $filter_is_active;
+        if ($filter_bedrooms !== '')  $url .= '&filter_bedrooms=' . $filter_bedrooms;
+        if ($filter_shareholder) $url .= '&filter_shareholder=' . urlencode($filter_shareholder);
+        if ($sort)               $url .= '&sort=' . $sort;
+        if ($order)              $url .= '&order=' . $order;
+
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $apartment_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_apartments.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($apartment_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($apartment_total - $limit)) ? $apartment_total : ((($page - 1) * $limit) + $limit),
+            $apartment_total,
+            ceil($apartment_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $apartment_total
+        ]));
     }
     
     public function add(): void {

@@ -28,16 +28,18 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
     }
 
-    /* Global fix for dropdowns in tables */
+    /* Enable horizontal scroll on mobile — do NOT use overflow: visible */
     .table-responsive {
-        overflow-x: auto;
-        overflow: visible !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
-
-    .table {
-        overflow: visible !important;
+    .table-responsive > .table {
+        min-width: 1000px;
     }
 
     .table td {
@@ -57,54 +59,32 @@
 
     .dropdown-menu { position: absolute !important; z-index: 9999 !important; }
 
-    /* For right-aligned dropdowns */
     .table .dropdown-menu-end {
         right: 0 !important;
         left: auto !important;
     }
-
-    /* On hover, ensure dropdown is above */
-    .table tr:hover {
-        overflow: visible !important;
-    }
-
-    /* Fix for card body clipping */
-    .card-body {
-        overflow: visible !important;
-    }
-
-    /* Fix for content area */
-    #content {
-        overflow: visible !important;
-    }
 </style>
 
 <div class="container-fluid">
-    {#<ul class="breadcrumb">
-        {% for breadcrumb in breadcrumbs %}
-            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
-        {% endfor %}
-    </ul>#}
-    
     <div class="row">
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <h1>{{ heading_title }}</h1>
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{{ add }}" class="btn btn-primary">
                         <i class="fa-solid fa-plus"></i> {{ button_add }}
                     </a>
-                    <button type="button" class="btn btn-success" 
+                    <button type="button" class="btn btn-success"
                             id="sharePopover"
-                            data-bs-container="body" 
-                            data-bs-toggle="popover" 
-                            data-bs-placement="bottom" 
+                            data-bs-container="body"
+                            data-bs-toggle="popover"
+                            data-bs-placement="bottom"
                             data-bs-html="true"
                             title="Share Registration Link">
                         <i class="fa-solid fa-share-nodes"></i> Share
@@ -114,7 +94,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Filter Bar -->
             <div class="filter-bar">
                 <div class="row g-3">
@@ -125,7 +105,7 @@
                         <select name="filter_status" class="form-select">
                             <option value="">All Status</option>
                             {% for status_value, status_name in statuses %}
-                                <option value="{{ status_value }}" {{ filter_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                                <option value="{{ status_value }}">{{ status_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -133,7 +113,7 @@
                         <select name="filter_user_status" class="form-select">
                             <option value="">All Login Status</option>
                             {% for status_value, status_name in user_statuses %}
-                                <option value="{{ status_value }}" {{ filter_user_status == status_value ? 'selected' : '' }}>{{ status_name }}</option>
+                                <option value="{{ status_value }}">{{ status_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -144,9 +124,9 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Bulk Action Bar -->
-            <div class="bulk-action-bar">
+            <div class="bulk-action-bar" id="bulk-action-container">
                 <input type="checkbox" id="select-all" class="form-check-input me-2">
                 <span class="me-2"><strong>Selected:</strong></span>
                 <select id="bulk-action" class="form-select w-auto">
@@ -157,11 +137,10 @@
                     <option value="delete">{{ text_delete }}</option>
                 </select>
                 <button type="button" id="button-bulk-action" class="btn btn-secondary">Apply</button>
-                <span class="text-muted ms-auto small">Showing {{ results }}</span>
             </div>
-            
+
             <!-- Shareholder Table -->
-            <div class="table-responsive">
+            <div class="table-responsive" id="shareholder-table-container">
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -179,343 +158,270 @@
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% if shareholders %}
-                            {% for shareholder in shareholders %}
-                                <tr>
-                                    <td><input type="checkbox" name="selected[]" value="{{ shareholder.shareholder_id }}" class="row-selector"></td>
-                                    <td>{{ shareholder.name }}</td>
-                                    <td>{{ shareholder.shareholder_code }}</td>
-                                    <td>{{ shareholder.email }}</td>
-                                    <td>{{ shareholder.phone }}</td>
-                                    <td>{{ shareholder.ownership_units }}</td>
-                                    <td>{{ shareholder.ownership_percentage }}%</td>
-                                    <td class="text-danger">৳ {{ shareholder.due_amount|number_format(2) }}</td>
-                                    <td>
-                                        <span class="shareholder-status status-{{ shareholder.status }}">
-                                            {{ shareholder.status|capitalize }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="shareholder-status status-{{ shareholder.user_status_text|lower }}">
-                                            {{ shareholder.user_status_text }}
-                                        </span>
-                                    </td>
-                                    <td>{{ shareholder.registered_date }}</td>
-                                    <td class="text-end" style="position: relative; overflow: visible;">
-                                        <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end" style="position: absolute; z-index: 9999; min-width: 160px;">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ shareholder.view }}">
-                                                        <i class="fas fa-regular fa-eye"></i> View
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ shareholder.edit }}">
-                                                        <i class="fas fa-regular fa-pen-to-square"></i> Edit
-                                                    </a>
-                                                </li>
-                                                
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ shareholder.payment_allocation }}">
-                                                        <i class="fas fa-solid fa-credit-card"></i> Payment Allocation
-                                                    </a>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShareholder({{ shareholder.shareholder_id }})">
-                                                        <i class="fas fa-regular fa-trash-can"></i> Delete
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="12" class="text-center text-muted py-4">
-                                    <i class="fas fa-regular fa-users fa-2x mb-2 d-block"></i>
-                                    {{ text_no_results }}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                    <tfooter>
+                    <tbody id="shareholders-table-body">
                         <tr>
-                            <td colspan="5">
-                                Total:
-                            </td>
-                            <td>
-                                {{ shareholder_total_allocated_unit }}
-                            </td>
-                            <td colspan="6">
+                            <td colspan="12" class="text-center text-muted py-4">
+                                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                Use the filter above and click "Filter" to load shareholders.
                             </td>
                         </tr>
-                    </tfooter>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5">Total Units:</td>
+                            <td id="total-allocated-units">—</td>
+                            <td colspan="6"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-            
-            <div class="row">
-                <div class="col-sm-6 text-start">{{ pagination }}</div>
-                <div class="col-sm-6 text-end">{{ results }}</div>
+
+            <!-- Pagination (hidden until AJAX returns) -->
+            <div class="row" id="shareholders-pagination-row" style="display: none;">
+                <div class="col-sm-6 text-start" id="shareholders-pagination"></div>
+                <div class="col-sm-6 text-end" id="shareholders-results"></div>
             </div>
-            
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
-<!-- The Popover Content Template (Injecting Twig Variables safely) -->
+
+<!-- Popover Content Template -->
 <template id="popover-content">
   <div class="p-2 share-panel-wrapper" style="min-width: 220px;">
-    
-    <!-- Copy Input Group -->
     <div class="input-group input-group-sm mb-3">
       <input type="text" class="form-control text-muted" value="{{ shareholder_registration_url }}" readonly id="shareLinkInput">
       <button class="btn btn-primary" type="button" id="btnPopoverCopy" onclick="copyShareLink()">
         <i class="fa-regular fa-copy"></i>
       </button>
     </div>
-
-    <!-- Social Action List -->
     <div class="d-flex flex-column gap-2">
-      <!-- WhatsApp (Direct message API) -->
       <a href="https://whatsapp.com{{ shareholder_registration_url|url_encode }}" target="_blank" class="btn btn-sm btn-outline-success text-start">
         <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
       </a>
-      
-      <!-- Messenger (Requires redirect share intent) -->
       <a href="https://facebook.com{{ shareholder_registration_url|url_encode }}&redirect_uri={{ shareholder_registration_url|url_encode }}" target="_blank" class="btn btn-sm btn-outline-primary text-start">
         <i class="fa-brands fa-facebook-messenger me-2"></i> Messenger
       </a>
-
-      <!-- Instagram (Direct link share note) -->
-      <a href="https://instagram.com" target="_blank" class="btn btn-sm btn-outline-danger text-start" onclick="alert('Instagram does not support direct link passing via URLs. We have copied the link to your clipboard so you can paste it into a DM!'); copyShareLink();">
+      <a href="https://instagram.com" target="_blank" class="btn btn-sm btn-outline-danger text-start" onclick="alert('Instagram does not support direct link passing via URLs. Link copied to clipboard!'); copyShareLink();">
         <i class="fa-brands fa-instagram me-2"></i> Instagram
       </a>
-
-      <!-- Email (Native Mailto protocol) -->
       <a href="mailto:?subject=Shareholder%20Registration&body=Please%20use%20this%20link%20to%20register%3A%20{{ shareholder_registration_url|url_encode }}" class="btn btn-sm btn-outline-secondary text-start">
         <i class="fa-regular fa-envelope me-2"></i> Email Link
       </a>
     </div>
-
   </div>
 </template>
 
 <script>
-    $(document).ready(function() {
-        var popoverTriggerEl = document.getElementById('sharePopover');
-        var templateEl = document.getElementById('popover-content');
-        
-        // Pull the raw Twig variable directly into JavaScript context
-        var shareData = {
-            title: 'Shareholder Registration',
-            text: 'Please use this link to register as a shareholder:',
-            url: '{{ shareholder_registration_url }}'
-        };
+$(document).ready(function() {
+    $("#shareholder-table-container").hide();
+    $("#bulk-action-container").hide();
+    // ---- Popover / Native Share logic ---- //
+    var popoverTriggerEl = document.getElementById('sharePopover');
+    var templateEl = document.getElementById('popover-content');
 
-        if (popoverTriggerEl && templateEl) {
-            
-            // 1. MOBILE CONDITION: Check if the browser supports native mobile sharing
-            if (navigator.share) {
-                
-                // Remove Bootstrap data attributes so the popover doesn't trigger on mobile
-                popoverTriggerEl.removeAttribute('data-bs-toggle');
-                popoverTriggerEl.removeAttribute('data-bs-target');
-                
-                popoverTriggerEl.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    navigator.share(shareData)
-                        .then(() => console.log('Shared successfully'))
-                        .catch((err) => console.log('Share canceled or failed:', err));
-                });
-                
-            } else {
-                // 2. DESKTOP FALLBACK: Initialize the original Bootstrap Popover layout
-                var popover = new bootstrap.Popover(popoverTriggerEl, {
-                    content: templateEl.innerHTML,
-                    sanitize: false
-                });
+    var shareData = {
+        title: 'Shareholder Registration',
+        text: 'Please use this link to register as a shareholder:',
+        url: '{{ shareholder_registration_url }}'
+    };
 
-                // Close the popover wrapper if user clicks outside of it
-                $('body').on('click', function (e) {
-                    if (!$(popoverTriggerEl).is(e.target) && $(popoverTriggerEl).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                        popover.hide();
-                    }
-                });
-            }
-        }
-    });
-
-    // Keep your clipboard copy method active for desktop fallbacks
-    function copyShareLink() {
-        var copyInput = document.querySelector('.popover #shareLinkInput');
-        var copyButton = document.querySelector('.popover #btnPopoverCopy');
-        
-        if (copyInput) {
-            copyInput.select();
-            copyInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyInput.value).then(function() {
-                if (copyButton) {
-                    var originalHtml = copyButton.innerHTML;
-                    copyButton.innerHTML = '<i class="fa-solid fa-check"></i>';
-                    copyButton.className = "btn btn-success";
-                    setTimeout(function() {
-                        copyButton.innerHTML = originalHtml;
-                        copyButton.className = "btn btn-primary";
-                    }, 2000);
+    if (popoverTriggerEl && templateEl) {
+        if (navigator.share) {
+            popoverTriggerEl.removeAttribute('data-bs-toggle');
+            popoverTriggerEl.removeAttribute('data-bs-target');
+            popoverTriggerEl.addEventListener('click', function(e) {
+                e.preventDefault();
+                navigator.share(shareData).catch(function(){});
+            });
+        } else {
+            var popover = new bootstrap.Popover(popoverTriggerEl, {
+                content: templateEl.innerHTML,
+                sanitize: false
+            });
+            $('body').on('click', function (e) {
+                if (!$(popoverTriggerEl).is(e.target) && $(popoverTriggerEl).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    popover.hide();
                 }
             });
         }
     }
 
+    // ---- AJAX load ---- //
+    function loadShareholders(page) {
+        page = page || 1;
+        var query = 'index.php?route=account/pms_shareholders.loadList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
 
-// Filter
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_shareholders&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_search = $('input[name=\'filter_search\']').val();
-    if (filter_search) {
-        url += '&filter_search=' + encodeURIComponent(filter_search);
-    }
-    
-    var filter_status = $('select[name=\'filter_status\']').val();
-    if (filter_status) {
-        url += '&filter_status=' + encodeURIComponent(filter_status);
-    }
-    
-    var filter_user_status = $('select[name=\'filter_user_status\']').val();
-    if (filter_user_status) {
-        url += '&filter_user_status=' + encodeURIComponent(filter_user_status);
-    }
-    
-    location = url;
-});
+        var filter_search      = $('input[name="filter_search"]').val();
+        var filter_status      = $('select[name="filter_status"]').val();
+        var filter_user_status = $('select[name="filter_user_status"]').val();
 
-// Enter key in search
-$('input[name=\'filter_search\']').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
-    }
-});
+        if (filter_search)      query += '&filter_search=' + encodeURIComponent(filter_search);
+        if (filter_status)      query += '&filter_status=' + filter_status;
+        if (filter_user_status) query += '&filter_user_status=' + filter_user_status;
 
-// Select All
-$('#select-all, #select-all-header').on('change', function() {
-    var isChecked = $(this).prop('checked');
-    $('.row-selector').prop('checked', isChecked);
-});
+        $('#shareholders-table-body').html(
+            '<tr><td colspan="12" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading shareholders...</span>' +
+            '</td></tr>'
+        );
+        $('#shareholders-pagination-row').hide();
+        $("#shareholder-table-container").show();
+        $("#bulk-action-container").show();
 
-// Bulk Action
-$('#button-bulk-action').on('click', function() {
-    var action = $('#bulk-action').val();
-    var selected = [];
-    
-    $('.row-selector:checked').each(function() {
-        selected.push($(this).val());
-    });
-    
-    if (!action) {
-        alert('Please select an action');
-        return;
-    }
-    
-    if (selected.length === 0) {
-        alert('Please select at least one shareholder');
-        return;
-    }
-    
-    if (action === 'delete') {
-        if (!confirm('Are you sure you want to delete selected shareholders? This action cannot be undone.')) {
-            return;
-        }
-    } else {
-        if (!confirm('Are you sure you want to ' + action + ' selected shareholders?')) {
-            return;
-        }
-    }
-    
-    $.ajax({
-        url: '{{ bulk_action_url }}',
-        type: 'POST',
-        data: {
-            action: action,
-            selected: selected,
-            user_token: '{{ user_token }}'
-        },
-        dataType: 'json',
-        success: function(json) {
-            if (json.success) {
-                location.reload();
-            } else {
-                alert(json.error);
-            }
-        }
-    });
-});
-
-// Delete single shareholder
-function deleteShareholder(shareholder_id) {
-    if (confirm('Are you sure you want to delete this shareholder?')) {
         $.ajax({
-            url: 'index.php?route=account/pms_shareholders.delete&language={{ language }}&shareholder_id=' + shareholder_id + '&customer_token={{ customer_token }}',
-            type: 'POST',
+            url: query,
+            type: 'GET',
             dataType: 'json',
             success: function(json) {
-                if (json.success) {
-                    location.reload();
-                } else {
-                    alert(json.error);
+                $('#shareholders-table-body').html(json.rows);
+                $('#shareholders-pagination').html(json.pagination);
+                $('#shareholders-results').html(json.results);
+                $('#total-allocated-units').html(json.total_allocated_units);
+                $('#bulk-showing').text('Showing ' + (json.results || ''));
+
+                if (json.total > 0) {
+                    $('#shareholders-pagination-row').show();
                 }
+
+                // Reset bulk-action state
+                $('#select-all, #select-all-header').prop('checked', false);
+
+                bindPagination();
+            },
+            error: function() {
+                $('#shareholders-table-body').html(
+                    '<tr><td colspan="12" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load shareholders.' +
+                    '</td></tr>'
+                );
             }
         });
     }
-}
 
-// Fix dropdown positioning
-$(document).ready(function() {
-    // Recalculate dropdown position when opened
-    $('.dropdown-toggle').on('show.bs.dropdown', function() {
-        var $dropdown = $(this).closest('.dropdown');
-        var $menu = $dropdown.find('.dropdown-menu');
+    function bindPagination() {
+        $('#shareholders-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+            loadShareholders(page);
+            $('html, body').animate({ scrollTop: $('#shareholders-table-body').offset().top - 120 }, 200);
+        });
+    }
+
+    // Filter
+    $('#button-filter').on('click', function() {
+        loadShareholders(1);
+    });
+
+    $('input[name="filter_search"]').on('keydown', function(e) {
+        if (e.keyCode == 13) { e.preventDefault(); $('#button-filter').click(); }
+    });
+
+    // Select All
+    $(document).on('change', '#select-all, #select-all-header', function() {
+        var isChecked = $(this).prop('checked');
+        $('.row-selector').prop('checked', isChecked);
+    });
+
+    // Bulk action (unchanged behavior — reloads via AJAX on success)
+    $('#button-bulk-action').on('click', function() {
+        var action = $('#bulk-action').val();
+        var selected = [];
+        $('.row-selector:checked').each(function() { selected.push($(this).val()); });
+
+        if (!action) { alert('Please select an action'); return; }
+        if (selected.length === 0) { alert('Please select at least one shareholder'); return; }
+
+        if (action === 'delete') {
+            if (!confirm('Are you sure you want to delete selected shareholders? This action cannot be undone.')) return;
+        } else {
+            if (!confirm('Are you sure you want to ' + action + ' selected shareholders?')) return;
+        }
+
+        $.ajax({
+            url: '{{ bulk_action_url }}',
+            type: 'POST',
+            data: { action: action, selected: selected, user_token: '{{ user_token }}' },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    loadShareholders(1);
+                } else {
+                    alert(json.error || 'Failed to apply action.');
+                }
+            }
+        });
+    });
+
+    // Delete single shareholder — global so AJAX-loaded rows can call it
+    window.deleteShareholder = function(shareholder_id) {
+        if (confirm('Are you sure you want to delete this shareholder?')) {
+            $.ajax({
+                url: 'index.php?route=account/pms_shareholders.delete&language={{ language }}&id=' + shareholder_id + '&customer_token={{ customer_token }}',
+                type: 'POST',
+                dataType: 'json',
+                success: function(json) {
+                    if (json.success) {
+                        loadShareholders(1);
+                    } else {
+                        alert(json.error || 'Failed to delete shareholder.');
+                    }
+                }
+            });
+        }
+    };
+
+    // Fix dropdown positioning (unchanged)
+    $(document).on('show.bs.dropdown', '.dropdown-toggle', function() {
+        var $menu = $(this).closest('.dropdown').find('.dropdown-menu');
         var buttonOffset = $(this).offset();
         var buttonHeight = $(this).outerHeight();
-        
-        // Check if dropdown would go outside viewport
         var menuHeight = $menu.outerHeight();
         var viewportBottom = $(window).scrollTop() + $(window).height();
         var buttonBottom = buttonOffset.top + buttonHeight;
-        
+
         if (buttonBottom + menuHeight > viewportBottom) {
-            // Show above if not enough space below
-            $menu.css({
-                'top': 'auto',
-                'bottom': '100%',
-                'right': '0',
-                'left': 'auto'
-            });
+            $menu.css({ 'top': 'auto', 'bottom': '100%', 'right': '0', 'left': 'auto' });
         } else {
-            // Show below
-            $menu.css({
-                'top': '100%',
-                'bottom': 'auto',
-                'right': '0',
-                'left': 'auto'
-            });
+            $menu.css({ 'top': '100%', 'bottom': 'auto', 'right': '0', 'left': 'auto' });
         }
     });
-    
-    // Reset dropdown position when hidden
-    $('.dropdown').on('hidden.bs.dropdown', function() {
+
+    $(document).on('hidden.bs.dropdown', '.dropdown', function() {
         $(this).find('.dropdown-menu').removeAttr('style');
     });
 });
 
+// Copy link from popover
+function copyShareLink() {
+    var copyInput = document.querySelector('.popover #shareLinkInput');
+    var copyButton = document.querySelector('.popover #btnPopoverCopy');
+
+    if (copyInput) {
+        copyInput.select();
+        copyInput.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyInput.value).then(function() {
+            if (copyButton) {
+                var originalHtml = copyButton.innerHTML;
+                copyButton.innerHTML = '<i class="fa-solid fa-check"></i>';
+                copyButton.className = "btn btn-success";
+                setTimeout(function() {
+                    copyButton.innerHTML = originalHtml;
+                    copyButton.className = "btn btn-primary";
+                }, 2000);
+            }
+        });
+    }
+}
 </script>
 {{ footer }}

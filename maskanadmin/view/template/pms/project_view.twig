@@ -155,6 +155,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="#tab-subscription" data-bs-toggle="tab" class="nav-link">
+                    <i class="fa-solid fa-chart-line"></i> Subscription
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="#tab-users" data-bs-toggle="tab" class="nav-link">
                     <i class="fa-solid fa-users"></i> Project Users
                 </a>
@@ -356,6 +361,63 @@
                     </div>
                 </div>
 
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-chart-simple"></i> Financial Summary
+                    </div>
+                    <div class="info-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <div class="info-label">Total Expenses</div>
+                                    <div class="info-value text-danger">৳ {{ stats.total_expense_amount|number_format(2) }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Total Collected</div>
+                                    <div class="info-value text-success">৳ {{ stats.total_payment_amount|number_format(2) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <div class="info-label">Outstanding Dues</div>
+                                    <div class="info-value text-warning">৳ {{ stats.outstanding_dues|number_format(2) }}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Collection Rate</div>
+                                    <div class="info-value">{{ stats.collection_percentage }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="tab-subscription">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-chart-pie"></i> Subscription
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">Rate per Apartment (BDT)</div>
+                            <div class="info-value"><strong>{{ subscription_rate_per_apartment }}</strong></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Discount Type</div>
+                            <div class="info-value">{{ subscription_discount_type != '-' ? subscription_discount_type : '-' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Discount Value</div>
+                            <div class="info-value">{{ subscription_discount_value != '-' ? subscription_discount_value : '-' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Discount Reason</div>
+                            <div class="info-value">{{ subscription_discount_reason != '-' ? subscription_discount_reason : '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="tab-financial">
                 <div class="info-card">
                     <div class="info-card-header">
                         <i class="fa-solid fa-chart-simple"></i> Financial Summary

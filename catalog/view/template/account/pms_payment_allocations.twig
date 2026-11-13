@@ -48,9 +48,7 @@
         font-size: 13px;
         border-bottom: 1px solid #f0f0f0;
     }
-    .text-right {
-        text-align: right;
-    }
+    .text-right { text-align: right; }
     .badge-phase {
         background: #e8f0fe;
         color: #0B3C5D;
@@ -58,53 +56,165 @@
         border-radius: 20px;
         font-size: 11px;
     }
+
+    /* ============================================================
+       THUMBNAIL GRID for Phase / Top Shareholders
+       ============================================================ */
+    .thumb-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .thumb-card {
+        background: #f8f9fc;
+        border: 1px solid #e0e4ee;
+        border-radius: 8px;
+        padding: 10px 12px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        min-width: 0;
+    }
+    .thumb-card:hover {
+        border-color: #0B3C5D;
+        box-shadow: 0 2px 8px rgba(11, 60, 93, 0.08);
+    }
+    .thumb-card .thumb-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0B3C5D;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .thumb-card .thumb-amt {
+        font-size: 13px;
+        font-weight: 700;
+        color: #198754;
+        line-height: 1.2;
+    }
+    .thumb-card .thumb-meta {
+        font-size: 11px;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+
+    /* Mobile scroll for the table */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .table-responsive > .data-table {
+        min-width: 900px;
+    }
+
+    /* Responsive */
+    @media (max-width: 991.98px) {
+        .thumb-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 575.98px) {
+        .summary-number { font-size: 1.1rem; }
+        .summary-label  { font-size: 0.65rem; }
+        .summary-card   { padding: 10px; margin-bottom: 10px; }
+        .summary-card .section-title { font-size: 0.9rem; }
+        .filter-bar     { padding: 10px; margin-bottom: 1rem; }
+        .filter-bar .row.g-3 {
+            --bs-gutter-x: 0.5rem;
+            --bs-gutter-y: 0.5rem;
+        }
+        .filter-bar .col-md-2,
+        .filter-bar .col-md-3 {
+            flex: 0 0 auto;
+            width: 50%;
+        }
+        .filter-bar .row.mt-3 > .col-md-12 {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .filter-bar .row.mt-3 #button-filter,
+        .filter-bar .row.mt-3 #button-clear {
+            flex: 1 1 0;
+            width: auto;
+            margin: 0;
+        }
+        h1 { font-size: 1.15rem; }
+
+        /* Thumbnails 2 per row on phone */
+        .thumb-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .thumb-card {
+            padding: 8px 9px;
+            border-radius: 6px;
+        }
+        .thumb-card .thumb-title {
+            font-size: 0.7rem;
+            margin-bottom: 3px;
+        }
+        .thumb-card .thumb-amt {
+            font-size: 0.82rem;
+        }
+        .thumb-card .thumb-meta {
+            font-size: 0.6rem;
+        }
+    }
+
+    @media (max-width: 379.98px) {
+        .thumb-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 <div class="container-fluid">
-    
     <div class="row">
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ heading_title }}</h1>
-                <div class="d-flex gap-2">
-                    <a href="{{ bulk_allocation_rate }}" class="btn btn-info">
-                        <i class="fa-solid fa-calculator"></i> Bulk Allocation by Rate
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h1 class="mb-0">{{ heading_title }}</h1>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ bulk_allocation_rate }}" class="btn btn-info btn-sm">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span class="d-none d-sm-inline">Bulk Allocation by Rate</span>
+                        <span class="d-inline d-sm-none">Bulk Rate</span>
                     </a>
-                    <a href="{{ back }}" class="btn btn-secondary">
-                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    <a href="{{ back }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-arrow-left"></i> Back
                     </a>
                 </div>
             </div>
-            
-            <!-- Summary Cards -->
+
+            <!-- Summary Cards (server-side) -->
             <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="summary-card">
+                <div class="col-md-4 col-4">
+                    <div class="summary-card text-center">
                         <div class="summary-number">৳ {{ summary.total_allocated|number_format(2) }}</div>
                         <div class="summary-label">Total Allocated Amount</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="summary-card">
+                <div class="col-md-4 col-4">
+                    <div class="summary-card text-center">
                         <div class="summary-number">{{ summary.total_allocations }}</div>
                         <div class="summary-label">Total Allocations</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="summary-card">
+                <div class="col-md-4 col-4">
+                    <div class="summary-card text-center">
                         <div class="summary-number">{{ summary.last_allocation }}</div>
                         <div class="summary-label">Last Allocation</div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Filter Bar -->
+
+            <!-- Filter Bar + Payment Allocations List (together at top) -->
             <div class="filter-bar">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -142,44 +252,8 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Allocations by Phase Summary -->
-            {% if summary.by_phase %}
-            <div class="summary-card mb-4">
-                <div class="section-title">Allocations by Phase</div>
-                <div class="row">
-                    {% for phase in summary.by_phase %}
-                        <div class="col-md-3">
-                            <div class="mb-2">
-                                <strong>{{ phase.phase_name }}</strong><br>
-                                <span class="text-success">৳ {{ phase.total|number_format(2) }}</span>
-                                <span class="text-muted">({{ phase.count }} allocations)</span>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- Top Shareholders -->
-            {% if summary.top_shareholders %}
-            <div class="summary-card mb-4">
-                <div class="section-title">Top Shareholders by Allocation</div>
-                <div class="row">
-                    {% for shareholder in summary.top_shareholders %}
-                        <div class="col-md-3">
-                            <div class="mb-2">
-                                <strong>{{ shareholder.shareholder_name }}</strong><br>
-                                <span class="text-success">৳ {{ shareholder.total|number_format(2) }}</span>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- Allocations Table -->
-            <div class="summary-card">
+
+            <div class="summary-card" id="payment-allocations-container">
                 <div class="section-title">Payment Allocations List</div>
                 <div class="table-responsive">
                     <table class="data-table">
@@ -195,85 +269,175 @@
                                 <th>Recorded By</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% if allocations %}
-                                {% for allocation in allocations %}
-                                    <tr>
-                                        <td>{{ allocation.date_only }}</a></td>
-                                        <td>{{ allocation.shareholder_name }}</a></td>
-                                        <td>{{ allocation.shareholder_code }}</a></td>
-                                        <td>{{ allocation.ownership_percentage }}%</a></td>
-                                        <td><span class="badge-phase">{{ allocation.phase_name }}</span></a></td>
-                                        <td class="text-success">৳ {{ allocation.allocated_amount|number_format(2) }}</a></td>
-                                        <td>{{ allocation.notes ?: '-' }}</a></td>
-                                        <td>{{ allocation.created_by }}</a></td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        <i class="fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
-                                        No payment allocations found.
-                                    </a>
-                                </tr>
-                            {% endif %}
+                        <tbody id="allocations-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                    Use the filter above and click "Filter" to load allocations.
+                                </td>
+                            </tr>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th colspan="5" class="text-end">Total:</th>
-                                <th class="text-success">৳ {{ summary.total_allocated|number_format(2) }}</th>
+                                <th class="text-success" id="table-total">৳ {{ summary.total_allocated|number_format(2) }}</th>
                                 <th colspan="2"></th>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                
-                <div class="row mt-3">
-                    <div class="col-sm-6 text-start">{{ pagination }}</div>
-                    <div class="col-sm-6 text-end">{{ results }}</div>
+
+                <div class="row mt-3" id="allocations-pagination-row" style="display: none;">
+                    <div class="col-sm-6 text-start" id="allocations-pagination"></div>
+                    <div class="col-sm-6 text-end" id="allocations-results"></div>
                 </div>
             </div>
-            
+
+            <!-- ============================================================
+                 Allocations by Phase + Top Shareholders (moved to bottom)
+                 Rendered as thumbnail grids
+                 ============================================================ -->
+            <div class="row mb-4">
+                <!-- Allocations by Phase -->
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="summary-card h-100 mb-0">
+                        <div class="section-title">Allocations by Phase</div>
+                        {% if summary.by_phase %}
+                            <div class="thumb-grid">
+                                {% for phase in summary.by_phase %}
+                                    <div class="thumb-card">
+                                        <div class="thumb-title" title="{{ phase.phase_name }}">{{ phase.phase_name }}</div>
+                                        <div class="thumb-amt">৳ {{ phase.total|number_format(2) }}</div>
+                                        <div class="thumb-meta">{{ phase.count }} allocations</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">No allocations yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Top Shareholders -->
+                <div class="col-md-6">
+                    <div class="summary-card h-100 mb-0">
+                        <div class="section-title">Top Shareholders by Allocation</div>
+                        {% if summary.top_shareholders %}
+                            <div class="thumb-grid">
+                                {% for shareholder in summary.top_shareholders %}
+                                    <div class="thumb-card">
+                                        <div class="thumb-title" title="{{ shareholder.shareholder_name }}">{{ shareholder.shareholder_name }}</div>
+                                        <div class="thumb-amt">৳ {{ shareholder.total|number_format(2) }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">No allocations yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_shareholder = $('input[name="filter_shareholder"]').val();
-    if (filter_shareholder) url += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
-    
-    var filter_phase = $('select[name="filter_phase"]').val();
-    if (filter_phase) url += '&filter_phase=' + filter_phase;
-    
-    var filter_date_from = $('input[name="filter_date_from"]').val();
-    if (filter_date_from) url += '&filter_date_from=' + filter_date_from;
-    
-    var filter_date_to = $('input[name="filter_date_to"]').val();
-    if (filter_date_to) url += '&filter_date_to=' + filter_date_to;
-    
-    var filter_amount_min = $('input[name="filter_amount_min"]').val();
-    if (filter_amount_min) url += '&filter_amount_min=' + filter_amount_min;
-    
-    var filter_amount_max = $('input[name="filter_amount_max"]').val();
-    if (filter_amount_max) url += '&filter_amount_max=' + filter_amount_max;
-    
-    location = url;
-});
+$(document).ready(function() {
+    $("#payment-allocations-container").hide();
 
-$('#button-clear').on('click', function() {
-    location = 'index.php?route=account/pms_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
-});
+    function loadAllocations(page) {
+        $("#payment-allocations-container").show();
+        
+        page = page || 1;
 
-$('input, select').keydown(function(e) {
-    if (e.keyCode == 13) {
-        $('#button-filter').click();
+        var query = 'index.php?route=account/pms_payment_allocations.loadList'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}'
+                  + '&page=' + page;
+
+        var filter_shareholder = $('input[name="filter_shareholder"]').val();
+        var filter_phase       = $('select[name="filter_phase"]').val();
+        var filter_date_from   = $('input[name="filter_date_from"]').val();
+        var filter_date_to     = $('input[name="filter_date_to"]').val();
+        var filter_amount_min  = $('input[name="filter_amount_min"]').val();
+        var filter_amount_max  = $('input[name="filter_amount_max"]').val();
+
+        if (filter_shareholder) query += '&filter_shareholder=' + encodeURIComponent(filter_shareholder);
+        if (filter_phase)       query += '&filter_phase=' + filter_phase;
+        if (filter_date_from)   query += '&filter_date_from=' + filter_date_from;
+        if (filter_date_to)     query += '&filter_date_to=' + filter_date_to;
+        if (filter_amount_min)  query += '&filter_amount_min=' + filter_amount_min;
+        if (filter_amount_max)  query += '&filter_amount_max=' + filter_amount_max;
+
+        $('#allocations-table-body').html(
+            '<tr><td colspan="8" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading allocations...</span>' +
+            '</td></tr>'
+        );
+        $('#allocations-pagination-row').hide();
+
+        $.ajax({
+            url: query,
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                $('#allocations-table-body').html(json.rows);
+                $('#allocations-pagination').html(json.pagination);
+                $('#allocations-results').html(json.results);
+
+                if (json.total > 0) {
+                    $('#allocations-pagination-row').show();
+                }
+
+                bindPagination();
+            },
+            error: function() {
+                $('#allocations-table-body').html(
+                    '<tr><td colspan="8" class="text-center text-danger py-4">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load allocations.' +
+                    '</td></tr>'
+                );
+            }
+        });
     }
+
+    function bindPagination() {
+        $('#allocations-pagination a').off('click').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (!href) return;
+            var match = href.match(/[?&]page=(\d+)/);
+            var page = match ? parseInt(match[1]) : 1;
+            loadAllocations(page);
+            $('html, body').animate({ scrollTop: $('#allocations-table-body').offset().top - 120 }, 200);
+        });
+    }
+
+    $('#button-filter').on('click', function() {
+        loadAllocations(1);
+    });
+
+    $('#button-clear').on('click', function() {
+        $('input[name="filter_shareholder"]').val('');
+        $('select[name="filter_phase"]').val('');
+        $('input[name="filter_date_from"]').val('');
+        $('input[name="filter_date_to"]').val('');
+        $('input[name="filter_amount_min"]').val('');
+        $('input[name="filter_amount_max"]').val('');
+        loadAllocations(1);
+    });
+
+    $('input, select').on('keydown', function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $('#button-filter').click();
+        }
+    });
 });
 </script>
 

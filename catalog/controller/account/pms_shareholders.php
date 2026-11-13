@@ -40,7 +40,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         $data['total_shares'] = $project['total_shares'];
         
         // Set up pagination and filters
-        $url = '';
+        /*$url = '';
         
         if (isset($this->request->get['filter_search'])) {
             $url .= '&filter_search=' . urlencode(html_entity_decode($this->request->get['filter_search'], ENT_QUOTES, 'UTF-8'));
@@ -86,17 +86,19 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
             'order'               => $order,
             'start'               => ($page - 1) * $limit,
             'limit'               => $limit
-        ];
+        ];*/
         
         $this->load->model('pms/shareholder');
         
-        $shareholder_total = $this->model_pms_shareholder->getTotalShareholders($filter_data);
-        $shareholder_total_allocated_unit = $this->model_pms_shareholder->getTotalUnitAllocated($filter_data);
-        $results = $this->model_pms_shareholder->getShareholders($filter_data);
+        /*$shareholder_total = $this->model_pms_shareholder->getTotalShareholders($filter_data);*/
 
-        $data['shareholder_total_allocated_unit'] = $shareholder_total_allocated_unit;
+        //$shareholder_total_allocated_unit = $this->model_pms_shareholder->getTotalUnitAllocated($filter_data);
+
+        /*$results = $this->model_pms_shareholder->getShareholders($filter_data);*/
+
+        //$data['shareholder_total_allocated_unit'] = $shareholder_total_allocated_unit;
         
-        $data['shareholders'] = [];
+        /*$data['shareholders'] = [];
         
         foreach ($results as $result) {
             $due_amount = $this->getShareholderDue($result['id']);
@@ -169,7 +171,7 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         // Filter values
         $data['filter_search'] = $filter_search;
         $data['filter_status'] = $filter_status;
-        $data['filter_user_status'] = $filter_user_status;
+        $data['filter_user_status'] = $filter_user_status;*/
         
         // Status options for filter
         $data['statuses'] = $this->model_pms_shareholder->getStatuses();
@@ -179,8 +181,8 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
         ];
         
         // Sort and order
-        $data['sort'] = $sort;
-        $data['order'] = $order;
+        /*$data['sort'] = $sort;
+        $data['order'] = $order;*/
         
         $data['language'] = $this->config->get('config_language');
         $data['customer_token'] = $this->session->data['customer_token'];
@@ -200,6 +202,128 @@ class PmsShareholders extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_shareholders_list', $data));
+    }
+
+    /**
+     * AJAX: Load shareholders table + pagination
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/shareholder');
+        $this->load->model('pms/project');
+        $this->load->model('pms/shareholder');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $filter_search      = isset($this->request->get['filter_search']) ? $this->request->get['filter_search'] : '';
+        $filter_status      = isset($this->request->get['filter_status']) ? $this->request->get['filter_status'] : '';
+        $filter_user_status = isset($this->request->get['filter_user_status']) ? $this->request->get['filter_user_status'] : '';
+
+        $sort  = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'c.firstname';
+        $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'ASC';
+        $page  = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'         => $project['project_id'],
+            'filter_search'      => $filter_search,
+            'filter_status'      => $filter_status,
+            'filter_user_status' => $filter_user_status,
+            'sort'               => $sort,
+            'order'              => $order,
+            'start'              => ($page - 1) * $limit,
+            'limit'              => $limit
+        ];
+
+        $shareholder_total = $this->model_pms_shareholder->getTotalShareholders($filter_data);
+        $total_allocated_units = $this->model_pms_shareholder->getTotalUnitAllocated($filter_data);
+        $results = $this->model_pms_shareholder->getShareholders($filter_data);
+
+        // Build the rows HTML
+        $rows = '';
+        if ($results) {
+            foreach ($results as $result) {
+                $due_amount = $this->model_pms_shareholder->getTotalDue($result['id']);
+
+                $user_status_text  = $result['user_status'] ? 'Enabled' : 'Disabled';
+                $user_status_lower = strtolower($user_status_text);
+
+                $view_url              = $this->url->link('account/pms_shareholders.view', 'language=' . $this->config->get('config_language') . '&id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+                $edit_url              = $this->url->link('account/pms_shareholders.edit', 'language=' . $this->config->get('config_language') . '&id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+                $payment_allocation_url = $this->url->link('account/pms_shareholders.paymentAllocation', 'language=' . $this->config->get('config_language') . '&shareholder_id=' . $result['id'] . '&customer_token=' . $this->session->data['customer_token']);
+
+                $rows .= '<tr>';
+                $rows .= '<td><input type="checkbox" name="selected[]" value="' . (int)$result['id'] . '" class="row-selector"></td>';
+                $rows .= '<td>' . htmlspecialchars($result['firstname'] . ' ' . $result['lastname']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['shareholder_code']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['email']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($result['phone']) . '</td>';
+                $rows .= '<td>' . (int)$result['ownership_units'] . '</td>';
+                $rows .= '<td>' . round($result['ownership_percentage'], 2) . '%</td>';
+                $rows .= '<td class="text-danger">৳ ' . number_format($due_amount, 2) . '</td>';
+                $rows .= '<td><span class="shareholder-status status-' . htmlspecialchars($result['status']) . '">' . ucfirst($result['status']) . '</span></td>';
+                $rows .= '<td><span class="shareholder-status status-' . $user_status_lower . '">' . $user_status_text . '</span></td>';
+                $rows .= '<td>' . date($this->language->get('date_format_short'), strtotime($result['registered_date'])) . '</td>';
+                $rows .= '<td class="text-end" style="position: relative; overflow: visible;">
+                            <div class="dropdown action-dropdown" style="position: relative; display: inline-block;">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-solid fa-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="position: absolute; z-index: 9999; min-width: 160px;">
+                                    <li><a class="dropdown-item" href="' . $view_url . '"><i class="fas fa-regular fa-eye"></i> View</a></li>
+                                    <li><a class="dropdown-item" href="' . $edit_url . '"><i class="fas fa-regular fa-pen-to-square"></i> Edit</a></li>
+                                    <li><a class="dropdown-item" href="' . $payment_allocation_url . '"><i class="fas fa-solid fa-credit-card"></i> Payment Allocation</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShareholder(' . (int)$result['id'] . ')"><i class="fas fa-regular fa-trash-can"></i> Delete</a></li>
+                                </ul>
+                            </div>
+                          </td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="12" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-users fa-2x mb-2 d-block"></i>
+                        No shareholders found.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $url = '';
+        if ($filter_search)      $url .= '&filter_search=' . urlencode($filter_search);
+        if ($filter_status)      $url .= '&filter_status=' . $filter_status;
+        if ($filter_user_status) $url .= '&filter_user_status=' . $filter_user_status;
+        if ($sort)               $url .= '&sort=' . $sort;
+        if ($order)              $url .= '&order=' . $order;
+
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $shareholder_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_shareholders.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($shareholder_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($shareholder_total - $limit)) ? $shareholder_total : ((($page - 1) * $limit) + $limit),
+            $shareholder_total,
+            ceil($shareholder_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'                  => $rows,
+            'pagination'            => $pagination,
+            'results'               => $results_text,
+            'total'                 => $shareholder_total,
+            'total_allocated_units' => $total_allocated_units
+        ]));
     }
     
     private function getShareholderDue(int $id): float {

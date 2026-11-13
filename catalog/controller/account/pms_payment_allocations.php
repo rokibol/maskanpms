@@ -85,7 +85,7 @@ class PmsPaymentAllocations extends \Opencart\System\Engine\Controller {
 
         $data['customer_token'] = $this->session->data['customer_token'];
         
-        $data['allocations'] = [];
+        /*$data['allocations'] = [];
         foreach ($allocations as $allocation) {
             $data['allocations'][] = [
                 'allocation_id'      => $allocation['allocation_id'],
@@ -117,7 +117,7 @@ class PmsPaymentAllocations extends \Opencart\System\Engine\Controller {
         $data['sort_amount'] = $this->url->link('account/pms_payment_allocations', 'language=' . $this->config->get('config_language') . '&sort=pa.allocated_amount' . $url . '&customer_token=' . $this->session->data['customer_token']);
         $data['sort_shareholder'] = $this->url->link('account/pms_payment_allocations', 'language=' . $this->config->get('config_language') . '&sort=shareholder_name' . $url . '&customer_token=' . $this->session->data['customer_token']);
         $data['sort_phase'] = $this->url->link('account/pms_payment_allocations', 'language=' . $this->config->get('config_language') . '&sort=phase_name' . $url . '&customer_token=' . $this->session->data['customer_token']);
-        
+        */
         // Bulk action URLs
         $data['bulk_action_url'] = $this->url->link('account/pms_payment_allocations.bulkAction', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
@@ -145,6 +145,108 @@ class PmsPaymentAllocations extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_payment_allocations', $data));
+    }
+
+    /**
+     * AJAX: Load payment allocations table + pagination ONLY
+     */
+    public function loadList(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/payment_allocations');
+        $this->load->model('pms/project');
+        $this->load->model('pms/shareholder');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $filter_shareholder = isset($this->request->get['filter_shareholder']) ? $this->request->get['filter_shareholder'] : '';
+        $filter_phase       = isset($this->request->get['filter_phase']) ? $this->request->get['filter_phase'] : '';
+        $filter_date_from   = isset($this->request->get['filter_date_from']) ? $this->request->get['filter_date_from'] : '';
+        $filter_date_to     = isset($this->request->get['filter_date_to']) ? $this->request->get['filter_date_to'] : '';
+        $filter_amount_min  = isset($this->request->get['filter_amount_min']) ? $this->request->get['filter_amount_min'] : '';
+        $filter_amount_max  = isset($this->request->get['filter_amount_max']) ? $this->request->get['filter_amount_max'] : '';
+        $sort  = isset($this->request->get['sort']) ? $this->request->get['sort'] : 'pa.created_at';
+        $order = isset($this->request->get['order']) ? $this->request->get['order'] : 'DESC';
+        $page  = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+
+        $limit = $this->config->get('config_pagination_admin');
+
+        $filter_data = [
+            'project_id'         => $project['project_id'],
+            'filter_shareholder' => $filter_shareholder,
+            'filter_phase'       => $filter_phase,
+            'filter_date_from'   => $filter_date_from,
+            'filter_date_to'     => $filter_date_to,
+            'filter_amount_min'  => $filter_amount_min,
+            'filter_amount_max'  => $filter_amount_max,
+            'sort'               => $sort,
+            'order'              => $order,
+            'start'              => ($page - 1) * $limit,
+            'limit'              => $limit
+        ];
+
+        $allocation_total = $this->model_pms_shareholder->getTotalPaymentAllocations($filter_data);
+        $allocations      = $this->model_pms_shareholder->getAllPaymentAllocations($filter_data);
+
+        // Build rows HTML only
+        $rows = '';
+        if ($allocations) {
+            foreach ($allocations as $allocation) {
+                $rows .= '<tr>';
+                $rows .= '<td>' . date('d M Y', strtotime($allocation['created_at'])) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($allocation['shareholder_name']) . '</td>';
+                $rows .= '<td>' . htmlspecialchars($allocation['shareholder_code']) . '</td>';
+                $rows .= '<td>' . round($allocation['ownership_percentage'], 2) . '%</td>';
+                $rows .= '<td><span class="badge-phase">' . htmlspecialchars($allocation['phase_name']) . '</span></td>';
+                $rows .= '<td class="text-success">৳ ' . number_format($allocation['allocated_amount'], 2) . '</td>';
+                $rows .= '<td>' . ($allocation['notes'] ? htmlspecialchars($allocation['notes']) : '-') . '</td>';
+                $rows .= '<td>' . htmlspecialchars($allocation['created_by_name']) . '</td>';
+                $rows .= '</tr>';
+            }
+        } else {
+            $rows = '<tr><td colspan="8" class="text-center text-muted py-4">
+                        <i class="fa-regular fa-credit-card fa-2x mb-2 d-block"></i>
+                        No payment allocations found.
+                     </td></tr>';
+        }
+
+        // Pagination
+        $url = '';
+        if ($filter_shareholder) $url .= '&filter_shareholder=' . urlencode($filter_shareholder);
+        if ($filter_phase)       $url .= '&filter_phase=' . $filter_phase;
+        if ($filter_date_from)   $url .= '&filter_date_from=' . $filter_date_from;
+        if ($filter_date_to)     $url .= '&filter_date_to=' . $filter_date_to;
+        if ($filter_amount_min)  $url .= '&filter_amount_min=' . $filter_amount_min;
+        if ($filter_amount_max)  $url .= '&filter_amount_max=' . $filter_amount_max;
+        if ($sort)               $url .= '&sort=' . $sort;
+        if ($order)              $url .= '&order=' . $order;
+
+        $pagination = $this->load->controller('common/pagination', [
+            'total' => $allocation_total,
+            'page'  => $page,
+            'limit' => $limit,
+            'url'   => $this->url->link('account/pms_payment_allocations.loadList', $url . '&language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'] . '&page={page}')
+        ]);
+
+        $results_text = sprintf($this->language->get('text_pagination'),
+            ($allocation_total) ? (($page - 1) * $limit) + 1 : 0,
+            ((($page - 1) * $limit) > ($allocation_total - $limit)) ? $allocation_total : ((($page - 1) * $limit) + $limit),
+            $allocation_total,
+            ceil($allocation_total / $limit)
+        );
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            'rows'       => $rows,
+            'pagination' => $pagination,
+            'results'    => $results_text,
+            'total'      => $allocation_total
+        ]));
     }
 
     public function bulkAction(): void {
