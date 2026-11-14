@@ -78,16 +78,16 @@ class Manager extends \Opencart\System\Engine\Controller {
 
 		$data['total_expenses'] = $this->model_pms_expense->getTotalExpenseSum($project_info['project_id']);
 
-		$data['expense_categories'] = $this->model_pms_expense->getExpenseBreakdownByCategory($project_info['project_id']);
+		//$data['expense_categories'] = $this->model_pms_expense->getExpenseBreakdownByCategory($project_info['project_id']);
 
-		$data['recent_expenses'] = $this->model_pms_expense_invoice->getInvoices($project_info);
+		//$data['recent_expenses'] = $this->model_pms_expense_invoice->getInvoices($project_info);
 
 		$apartment_stats = $this->model_pms_apartment->getApartmentStats($project_info['project_id']);
 
 		$data['occupied_apartments'] = (int)$project_info['total_shares'] - (int)$apartment_stats['available'];
 
 		// Get top shareholders by ownership (default)
-		$data['top_shareholders'] = $this->model_pms_shareholder->getTopShareholders($project_info['project_id'], 'ownership', 5);
+		//$data['top_shareholders'] = $this->model_pms_shareholder->getTopShareholders($project_info['project_id'], 'ownership', 5);
 
 		// OR get summary with all metrics
 		$data['top_shareholders_summary'] = $this->model_pms_shareholder->getTopShareholdersSummary($project_info['project_id'], 5);
@@ -97,10 +97,10 @@ class Manager extends \Opencart\System\Engine\Controller {
 		$data['all_expenses_link'] = $this->url->link('account/pms_expense_invoices', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
 
 		// Get recent payments
-		$data['recent_payments'] = $this->model_pms_payment->getRecentPayments($project_info['project_id'], 5);
+		//$data['recent_payments'] = $this->model_pms_payment->getRecentPayments($project_info['project_id'], 5);
 
 		// Get top shareholders
-		$data['top_shareholders'] = $this->model_pms_shareholder->getTopShareholders($project_info['project_id'], 'ownership', 5);
+		//$data['top_shareholders'] = $this->model_pms_shareholder->getTopShareholders($project_info['project_id'], 'ownership', 5);
 
 		$data['language'] = $this->config->get('config_language');
 		$data['customer_token'] = $this->session->data['customer_token'];
@@ -271,4 +271,155 @@ class Manager extends \Opencart\System\Engine\Controller {
 		
 		return $html;
 	}
+
+	/**
+     * AJAX: Load Expense Breakdown
+     */
+    public function loadExpenseBreakdown(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+        $this->load->language('account/manager');
+        $this->load->model('pms/project');
+        $this->load->model('pms/expense');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $categories = $this->model_pms_expense->getExpenseBreakdownByCategory($project['project_id']);
+
+        $html = '';
+        if ($categories) {
+            foreach ($categories as $category) {
+                $html .= '<div class="mb-3">';
+                $html .= '<div class="d-flex justify-content-between mb-1">';
+                $html .= '<span class="small">' . htmlspecialchars($category['category_name']) . '</span>';
+                $html .= '<span class="small fw-bold">৳ ' . number_format($category['total_amount'], 2) . '</span>';
+                $html .= '</div>';
+                $html .= '<div class="pms-progress">';
+                $html .= '<div class="pms-progress-bar" style="width: ' . (float)$category['percentage'] . '%"></div>';
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+        } else {
+            $html = '<p class="text-muted text-center py-3">No expense data available</p>';
+        }
+
+        $this->response->setOutput($html);
+    }
+
+    /**
+     * AJAX: Load Recent Expenses
+     */
+    public function loadRecentExpenses(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+        $this->load->language('account/manager');
+        $this->load->model('pms/project');
+        $this->load->model('pms/expense_invoice');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $recent_expenses = $this->model_pms_expense_invoice->getInvoices($project);
+
+        $html = '';
+        if ($recent_expenses) {
+            foreach ($recent_expenses as $expense) {
+                $html .= '<tr>';
+                $html .= '<td>' . htmlspecialchars($expense['invoice_date']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($expense['invoice_number']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($expense['supplier_name']) . '</td>';
+                $html .= '<td>' . (int)$expense['payment_count'] . '</td>';
+                $html .= '<td class="text-danger">৳ ' . number_format($expense['paid_amount'], 2) . '</td>';
+                $html .= '<td><span class="pms-status pms-status-paid">' . htmlspecialchars($expense['payment_status']) . '</span></td>';
+                $html .= '</tr>';
+            }
+        } else {
+            $html = '<tr><td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
+                        No expenses recorded yet
+                     </td></tr>';
+        }
+
+        $this->response->setOutput($html);
+    }
+
+    /**
+     * AJAX: Load Top Shareholders
+     */
+    public function loadTopShareholders(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+        $this->load->language('account/manager');
+        $this->load->model('pms/project');
+        $this->load->model('pms/shareholder');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $criteria = isset($this->request->get['criteria']) ? $this->request->get['criteria'] : 'ownership';
+        $top_shareholders = $this->model_pms_shareholder->getTopShareholders($project['project_id'], $criteria, 5);
+
+        $html = '';
+        if ($top_shareholders) {
+            foreach ($top_shareholders as $shareholder) {
+                $html .= '<tr>';
+                $html .= '<td>' . htmlspecialchars($shareholder['name']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($shareholder['shareholder_code']) . '</td>';
+                $html .= '<td class="fw-bold">' . round($shareholder['percentage'], 2) . '%</td>';
+                $html .= '<td>' . (int)$shareholder['ownership_units'] . ' units</td>';
+                $html .= '<td class="text-success">৳ ' . number_format($shareholder['total_paid'], 2) . '</td>';
+                $html .= '<td class="text-danger">৳ ' . number_format($shareholder['total_due'], 2) . '</td>';
+                $html .= '</tr>';
+            }
+        } else {
+            $html = '<tr><td colspan="6" class="text-center text-muted py-3">No shareholder data available</td></tr>';
+        }
+
+        $this->response->setOutput($html);
+    }
+
+    /**
+     * AJAX: Load Recent Payments
+     */
+    public function loadRecentPayments(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+        $this->load->language('account/manager');
+        $this->load->model('pms/project');
+        $this->load->model('pms/payment');
+
+        $project = $this->customer->getProject();
+        if (!$project) {
+            return;
+        }
+
+        $recent_payments = $this->model_pms_payment->getRecentPayments($project['project_id'], 5);
+
+        $html = '';
+        if ($recent_payments) {
+            foreach ($recent_payments as $payment) {
+                $html .= '<tr>';
+                $html .= '<td>' . htmlspecialchars($payment['payment_date']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($payment['shareholder_name']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($payment['phase_name']) . '</td>';
+                $html .= '<td class="text-success">+ ৳ ' . number_format($payment['amount'], 2) . '</td>';
+                $html .= '</tr>';
+            }
+        } else {
+            $html = '<tr><td colspan="4" class="text-center text-muted py-3">No payments recorded yet</td></tr>';
+        }
+
+        $this->response->setOutput($html);
+    }
 }

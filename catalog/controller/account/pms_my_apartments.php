@@ -149,8 +149,8 @@ class PmsMyApartments extends \Opencart\System\Engine\Controller {
         
         $data['has_multiple'] = count($apartments) > 1;
         $data['back'] = (count($apartments) > 1) 
-            ? $this->url->link('account/pms_my_apartments', 'language=' . $this->config->get('config_language'))
-            : $this->url->link('account/pms_dashboard', 'language=' . $this->config->get('config_language'));
+            ? $this->url->link('account/pms_my_apartments', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'])
+            : $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         $data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');

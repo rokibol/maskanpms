@@ -13,13 +13,12 @@
         padding: 10px;
         border-right: 1px solid #e0e0e0;
     }
-    .summary-item:last-child {
-        border-right: none;
-    }
+    .summary-item:last-child { border-right: none; }
     .summary-number {
         font-size: 28px;
         font-weight: 700;
         color: #22C55E;
+        line-height: 1.15;
     }
     .summary-label {
         font-size: 12px;
@@ -38,19 +37,6 @@
         overflow: hidden;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-    .payment-item {
-        border-bottom: 1px solid #e0e0e0;
-        padding: 15px 20px;
-        transition: background 0.2s;
-    }
-    .payment-item:hover {
-        background: #f8f9fa;
-    }
-    .payment-amount {
-        font-size: 16px;
-        font-weight: 700;
-        color: #22C55E;
-    }
     .payment-method {
         display: inline-block;
         padding: 2px 8px;
@@ -64,47 +50,138 @@
         font-size: 12px;
         color: #666;
     }
+
+    /* Phase breakdown compact */
+    .phase-breakdown .phase-item {
+        display: inline-block;
+        background: #f5f7fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 4px 10px;
+        margin: 0 0.4rem 0.4rem 0;
+        font-size: 0.8rem;
+    }
+    .phase-breakdown .phase-item strong {
+        color: #0B3C5D;
+        margin-right: 0.25rem;
+    }
+
+    /* Empty loader (reuse from previous) */
+    .pms-empty-loader {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: #f8f9fc;
+        border: 1px dashed #d6dfec;
+        border-radius: 8px;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    .pms-empty-loader i {
+        color: #0B3C5D;
+        opacity: 0.6;
+    }
+    .pms-empty-loader strong {
+        color: #0B3C5D;
+    }
+
+    /* ============================================================
+       Mobile — compact summary + filter + table
+       ============================================================ */
+    @media (max-width: 575.98px) {
+        .summary-card {
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            border-radius: 10px;
+        }
+        .summary-card .row > .summary-item {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 6px 2px;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card .row > .summary-item:nth-child(2n) {
+            border-right: none;
+        }
+        .summary-card .row > .summary-item:nth-last-child(-n + 2) {
+            border-bottom: none;
+        }
+        .summary-number {
+            font-size: 1rem;
+        }
+        .summary-label {
+            font-size: 0.6rem;
+            margin-top: 2px;
+        }
+
+        .filter-bar {
+            padding: 10px;
+            margin-bottom: 1rem;
+        }
+        .filter-bar .row.g-3 {
+            --bs-gutter-x: 0.5rem;
+            --bs-gutter-y: 0.5rem;
+        }
+        .filter-bar .col-md-4 {
+            flex: 0 0 auto;
+            width: 50%;
+        }
+        .filter-bar .col-md-4:last-child {
+            width: 100%;
+        }
+        h1 { font-size: 1.15rem; }
+
+        .payment-history-card .table th,
+        .payment-history-card .table td {
+            padding: 0.45rem 0.5rem;
+            font-size: 0.72rem;
+        }
+        .payment-method { font-size: 0.6rem; }
+        .reference-number { font-size: 0.68rem; }
+        .phase-breakdown .phase-item {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+        }
+        .pms-empty-loader { font-size: 0.8rem; padding: 1.25rem 0.75rem; }
+        .pms-empty-loader i { font-size: 1.5rem; }
+    }
 </style>
 
 <div class="container-fluid">
-    {#<ul class="breadcrumb">
-        {% for breadcrumb in breadcrumbs %}
-            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
-        {% endfor %}
-    </ul>#}
-    
     <div class="row">
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ heading_payment_history }}</h1>
-                <a href="{{ back }}" class="btn btn-secondary">
-                    <i class="fas fa-solid fa-arrow-left"></i> Back to Bills
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                <h1 class="mb-0">{{ heading_payment_history }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-solid fa-arrow-left"></i>
+                    <span class="d-none d-sm-inline">Back to Bills</span>
+                    <span class="d-inline d-sm-none">Back</span>
                 </a>
             </div>
-            
-            <!-- Payment Summary -->
+
+            <!-- Payment Summary (server-side) -->
             <div class="summary-card">
-                <div class="row">
-                    <div class="col-md-3 summary-item">
+                <div class="row g-0">
+                    <div class="col-md-3 col-6 summary-item">
                         <div class="summary-number">৳ {{ payment_summary.total_paid|number_format(2) }}</div>
                         <div class="summary-label">Total Paid</div>
                     </div>
-                    <div class="col-md-3 summary-item">
+                    <div class="col-md-3 col-6 summary-item">
                         <div class="summary-number text-danger">৳ {{ payment_summary.total_due|number_format(2) }}</div>
                         <div class="summary-label">Total Due</div>
                     </div>
-                    <div class="col-md-3 summary-item">
-                        <div class="summary-number">{{ payment_summary.total_payments }}</div>
-                        <div class="summary-label">Total Transactions</div>
+                    <div class="col-md-3 col-6 summary-item">
+                        <div class="summary-number text-dark">{{ payment_summary.total_payments }}</div>
+                        <div class="summary-label">Transactions</div>
                     </div>
-                    <div class="col-md-3 summary-item">
-                        <div class="summary-number">{{ payment_summary.last_payment_date }}</div>
+                    <div class="col-md-3 col-6 summary-item">
+                        <div class="summary-number text-dark" style="font-size: 1.1rem;">{{ payment_summary.last_payment_date }}</div>
                         <div class="summary-label">Last Payment</div>
                     </div>
                 </div>
@@ -117,17 +194,17 @@
                         <i class="fas fa-solid fa-chart-pie"></i> Payment by Phase
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="phase-breakdown">
                             {% for phase in payment_summary.payment_by_phase %}
-                                <div class="col-md-3 mb-2">
+                                <span class="phase-item">
                                     <strong>{{ phase.phase_name }}:</strong> ৳ {{ phase.total|number_format(2) }}
-                                </div>
+                                </span>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             {% endif %}
-            
+
             <!-- Filter Bar -->
             <div class="filter-bar">
                 <div class="row g-3">
@@ -154,70 +231,84 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Payment History Table -->
+
+            <!-- Payment History Placeholder + Table -->
             <div class="payment-history-card">
-                {% if payments %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Payment Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Payment Method</th>
-                                    <th>Reference No</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in payments %}
-                                    <tr>
-                                        <td>{{ payment.payment_date|date('d M Y') }}</td>
-                                        <td>{{ payment.phase_name }} Payment</td>
-                                        <td class="text-success">+ ৳ {{ payment.amount|number_format(2) }}</td>
-                                        <td><span class="payment-method">{{ payment.payment_method|capitalize }}</span></td>
-                                        <td class="reference-number">{{ payment.reference_number ?: '-' }}</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="2" class="text-end">Total:</th>
-                                    <th class="text-success">৳ {{ payment_summary.total_paid|number_format(2) }}</th>
-                                    <th colspan="3"></th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-regular fa-credit-card fa-3x mb-3 d-block"></i>
-                        <h5>No payment history found</h5>
-                        <p>You haven't made any payments yet.</p>
-                    </div>
-                {% endif %}
+                <div class="pms-empty-loader" id="payment-history-placeholder">
+                    <i class="fas fa-regular fa-credit-card fa-2x mb-2"></i>
+                    <p class="mb-0">Click on <strong>Filter</strong> to load your <strong>Payment History</strong>.</p>
+                </div>
+
+                <div class="table-responsive" id="payment-history-wrapper" style="display: none;">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Payment Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-history-body"></tbody>
+                    </table>
+                </div>
             </div>
-            
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_payment_history&language={{ language }}';
-    
-    var filter_year = $('select[name="filter_year"]').val();
-    if (filter_year) url += '&filter_year=' + filter_year;
-    
-    var filter_month = $('select[name="filter_month"]').val();
-    if (filter_month) url += '&filter_month=' + filter_month;
-    
-    location = url;
+$(document).ready(function() {
+
+    function loadPaymentHistory() {
+        var query = 'index.php?route=account/pms_my_bills.loadPaymentHistory'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}';
+
+        var filter_year  = $('select[name="filter_year"]').val();
+        var filter_month = $('select[name="filter_month"]').val();
+        if (filter_year)  query += '&filter_year=' + filter_year;
+        if (filter_month) query += '&filter_month=' + filter_month;
+
+        // Loading state
+        $('#payment-history-placeholder').hide();
+        $('#payment-history-wrapper').show();
+        $('#payment-history-body').html(
+            '<tr><td colspan="6" class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading payment history...</span>' +
+            '</td></tr>'
+        );
+
+        $.ajax({
+            url: query,
+            type: 'GET',
+            dataType: 'html',
+            success: function(html) {
+                $('#payment-history-body').html(html);
+            },
+            error: function() {
+                $('#payment-history-body').html(
+                    '<tr><td colspan="6" class="text-center text-danger py-3">' +
+                        '<i class="fas fa-exclamation-circle"></i> Failed to load payment history.' +
+                    '</td></tr>'
+                );
+            }
+        });
+    }
+
+    $('#button-filter').on('click', loadPaymentHistory);
+
+    $('select[name="filter_year"], select[name="filter_month"]').on('change', function() {
+        loadPaymentHistory();
+    });
+
 });
 </script>
 

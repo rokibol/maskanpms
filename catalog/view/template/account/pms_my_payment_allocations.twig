@@ -13,12 +13,11 @@
         padding: 10px;
         border-right: 1px solid #e0e0e0;
     }
-    .summary-item:last-child {
-        border-right: none;
-    }
+    .summary-item:last-child { border-right: none; }
     .summary-number {
         font-size: 28px;
         font-weight: 700;
+        line-height: 1.15;
     }
     .summary-number.total { color: #22C55E; }
     .summary-number.count { color: #0B3C5D; }
@@ -39,11 +38,6 @@
         margin-bottom: 15px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         overflow: hidden;
-        transition: transform 0.2s;
-    }
-    .allocation-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .allocation-header {
         padding: 12px 20px;
@@ -66,9 +60,7 @@
         background: #e8f0fe;
         color: #0B3C5D;
     }
-    .allocation-body {
-        padding: 15px 20px;
-    }
+    .allocation-body { padding: 15px 20px; }
     .allocation-detail {
         display: flex;
         justify-content: space-between;
@@ -95,6 +87,8 @@
         font-size: 12px;
         color: #666;
     }
+
+    /* Phase breakdown compact */
     .phase-breakdown {
         background: #f8f9fa;
         border-radius: 8px;
@@ -108,15 +102,105 @@
         padding: 8px 0;
         border-bottom: 1px solid #e0e0e0;
     }
-    .phase-item:last-child {
-        border-bottom: none;
+    .phase-item:last-child { border-bottom: none; }
+    .phase-name { font-weight: 500; }
+    .phase-amount { font-weight: 600; color: #22C55E; }
+
+    /* Empty loader (same as previous pages) */
+    .pms-empty-loader {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: #f8f9fc;
+        border: 1px dashed #d6dfec;
+        border-radius: 8px;
+        color: #6b7280;
+        font-size: 0.9rem;
     }
-    .phase-name {
-        font-weight: 500;
+    .pms-empty-loader i {
+        color: #0B3C5D;
+        opacity: 0.6;
     }
-    .phase-amount {
-        font-weight: 600;
-        color: #22C55E;
+    .pms-empty-loader strong { color: #0B3C5D; }
+
+    /* ============================================================
+       Mobile — compact summary cards + filter + allocation cards
+       ============================================================ */
+    @media (max-width: 575.98px) {
+        .summary-card {
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            border-radius: 10px;
+        }
+        .summary-card h5 { font-size: 0.9rem; }
+
+        /* 3-across compact summary items */
+        .summary-card .row > .summary-item {
+            flex: 0 0 33.3333%;
+            max-width: 33.3333%;
+            padding: 4px 2px;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: none;
+        }
+        .summary-card .row > .summary-item:nth-child(3n) {
+            border-right: none;
+        }
+        .summary-number { font-size: 0.95rem; }
+        .summary-label  { font-size: 0.58rem; margin-top: 2px; line-height: 1.2; }
+
+        /* Shareholder info compact */
+        .summary-card .row > [class^="col-md-"] {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .summary-card .row > [class^="col-md-"]:last-child {
+            margin-bottom: 0;
+        }
+        .summary-card .alert {
+            padding: 6px 10px;
+            font-size: 0.72rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Filter bar 2-per-row */
+        .filter-bar {
+            padding: 10px;
+            margin-bottom: 1rem;
+        }
+        .filter-bar .row.g-3 {
+            --bs-gutter-x: 0.5rem;
+            --bs-gutter-y: 0.5rem;
+        }
+        .filter-bar .col-md-4,
+        .filter-bar .col-md-3 {
+            flex: 0 0 auto;
+            width: 50%;
+        }
+        .filter-bar .col-md-2 {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+
+        /* Phase breakdown compact */
+        .phase-breakdown { padding: 10px; }
+        .phase-item {
+            padding: 6px 0;
+            font-size: 0.8rem;
+        }
+        .phase-amount { font-size: 0.82rem; }
+
+        /* Allocation cards compact */
+        .allocation-card { border-radius: 8px; margin-bottom: 10px; }
+        .allocation-header { padding: 8px 12px; gap: 6px; }
+        .allocation-date { font-size: 0.78rem; }
+        .allocation-phase { font-size: 0.62rem; padding: 3px 8px; }
+        .allocation-body { padding: 10px 12px; }
+        .allocation-detail { padding: 5px 0; }
+        .allocation-label { font-size: 0.72rem; }
+        .allocation-value { font-size: 0.82rem; }
+        .allocation-value.amount { font-size: 0.95rem; }
+        .allocation-notes { font-size: 0.68rem; padding: 8px; }
+
+        h1 { font-size: 1.15rem; }
     }
 </style>
 
@@ -125,26 +209,27 @@
         <div class="col-lg-3 col-md-4">
             {{ column_left }}
         </div>
-        
+
         <div id="content" class="col">
             {{ content_top }}
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{{ heading_title }}</h1>
-                <a href="{{ back }}" class="btn btn-secondary">
-                    <i class="fas fa-solid fa-arrow-left"></i> Back to Dashboard
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                <h1 class="mb-0">{{ heading_title }}</h1>
+                <a href="{{ back }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-solid fa-arrow-left"></i>
+                    <span class="d-none d-sm-inline">Back to Dashboard</span>
+                    <span class="d-inline d-sm-none">Back</span>
                 </a>
             </div>
-            
+
             <!-- Shareholder Info -->
             <div class="summary-card">
                 <div class="row">
                     <div class="col-md-6">
                         <h5 class="mb-2">{{ shareholder_name }}</h5>
-                        <p class="text-muted mb-0">Shareholder Code: {{ shareholder_code }}</p>
-                        <p class="text-muted">Ownership: {{ ownership_percentage|round(2) }}%</p>
+                        <p class="text-muted mb-1">Shareholder Code: <strong>{{ shareholder_code }}</strong></p>
                     </div>
-                    <div class="col-md-6 text-md-end">
+                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
                         <div class="alert alert-info mb-0">
                             <i class="fas fa-regular fa-info-circle"></i>
                             <strong>Note:</strong> These are the payment allocations credited to your account.
@@ -152,25 +237,25 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Summary Statistics -->
+
+            <!-- Summary Statistics (compact) -->
             <div class="summary-card">
-                <div class="row">
-                    <div class="col-md-4 summary-item">
+                <div class="row g-0">
+                    <div class="col-md-4 col-4 summary-item">
                         <div class="summary-number total">৳ {{ allocation_summary.total_allocated|number_format(2) }}</div>
-                        <div class="summary-label">Total Allocated Amount</div>
+                        <div class="summary-label">Total Allocated</div>
                     </div>
-                    <div class="col-md-4 summary-item">
+                    <div class="col-md-4 col-4 summary-item">
                         <div class="summary-number count">{{ allocation_summary.total_allocations }}</div>
-                        <div class="summary-label">Total Allocations</div>
+                        <div class="summary-label">Allocations</div>
                     </div>
-                    <div class="col-md-4 summary-item">
-                        <div class="summary-number count">{{ allocation_summary.last_allocation }}</div>
+                    <div class="col-md-4 col-4 summary-item">
+                        <div class="summary-number count" style="font-size: .7rem;">{{ allocation_summary.last_allocation }}</div>
                         <div class="summary-label">Last Allocation</div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Allocations by Phase -->
             {% if allocation_summary.allocations_by_phase %}
                 <div class="summary-card">
@@ -182,7 +267,7 @@
                             <div class="phase-item">
                                 <span class="phase-name">{{ phase.phase_name }}</span>
                                 <div>
-                                    <span class="text-muted me-2">{{ phase.count }} allocation(s)</span>
+                                    <span class="text-muted me-2 d-none d-sm-inline">{{ phase.count }} allocation(s)</span>
                                     <span class="phase-amount">৳ {{ phase.total|number_format(2) }}</span>
                                 </div>
                             </div>
@@ -194,7 +279,7 @@
                     </div>
                 </div>
             {% endif %}
-            
+
             <!-- Filter Bar -->
             <div class="filter-bar">
                 <div class="row g-3">
@@ -202,7 +287,7 @@
                         <select name="filter_phase" class="form-select">
                             <option value="">All Phases</option>
                             {% for phase in payment_phases %}
-                                <option value="{{ phase.phase_id }}" {{ filter_phase == phase.phase_id ? 'selected' : '' }}>{{ phase.name }}</option>
+                                <option value="{{ phase.phase_id }}">{{ phase.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -210,7 +295,7 @@
                         <select name="filter_year" class="form-select">
                             <option value="">All Years</option>
                             {% for year in available_years %}
-                                <option value="{{ year.year }}" {{ filter_year == year.year ? 'selected' : '' }}>{{ year.year }}</option>
+                                <option value="{{ year.year }}">{{ year.year }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -218,7 +303,7 @@
                         <select name="filter_month" class="form-select">
                             <option value="">All Months</option>
                             {% for month_num, month_name in months %}
-                                <option value="{{ month_num }}" {{ filter_month == month_num ? 'selected' : '' }}>{{ month_name }}</option>
+                                <option value="{{ month_num }}">{{ month_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -229,71 +314,65 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Allocations List -->
-            {% if allocations %}
-                {% for allocation in allocations %}
-                    <div class="allocation-card">
-                        <div class="allocation-header">
-                            <span class="allocation-date">
-                                <i class="fas fa-regular fa-calendar"></i> {{ allocation.created_at|date('d F Y h:i A') }}
-                            </span>
-                            <span class="allocation-phase">{{ allocation.phase_name }}</span>
-                        </div>
-                        <div class="allocation-body">
-                            <div class="allocation-detail">
-                                <span class="allocation-label">Allocated Amount</span>
-                                <span class="allocation-value amount">+ ৳ {{ allocation.allocated_amount|number_format(2) }}</span>
-                            </div>
-                            <div class="allocation-detail">
-                                <span class="allocation-label">Allocation ID</span>
-                                <span class="allocation-value">#{{ allocation.id }}</span>
-                            </div>
-                            <div class="allocation-detail">
-                                <span class="allocation-label">Recorded By</span>
-                                <span class="allocation-value">{{ allocation.created_by_name }}</span>
-                            </div>
-                            {% if allocation.notes %}
-                                <div class="allocation-notes">
-                                    <i class="fas fa-regular fa-note-sticky"></i> {{ allocation.notes }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-center text-muted py-5">
-                    <i class="fas fa-regular fa-credit-card fa-3x mb-3 d-block"></i>
-                    <h5>No payment allocations found</h5>
-                    <p>No payments have been allocated to your account yet.</p>
-                </div>
-            {% endif %}
-            
+
+            <!-- Allocations Placeholder + Wrapper -->
+            <div class="pms-empty-loader" id="allocations-placeholder">
+                <i class="fas fa-regular fa-credit-card fa-2x mb-2"></i>
+                <p class="mb-0">Click on <strong>Filter</strong> to load your <strong>Payment Allocations</strong>.</p>
+            </div>
+
+            <div id="allocations-wrapper" style="display: none;"></div>
+
             {{ content_bottom }}
         </div>
-        
+
         {{ column_right }}
     </div>
 </div>
 
 <script>
-$('#button-filter').on('click', function() {
-    var url = 'index.php?route=account/pms_my_payment_allocations&language={{ language }}&customer_token={{ customer_token }}';
-    
-    var filter_phase = $('select[name="filter_phase"]').val();
-    if (filter_phase) url += '&filter_phase=' + filter_phase;
-    
-    var filter_year = $('select[name="filter_year"]').val();
-    if (filter_year) url += '&filter_year=' + filter_year;
-    
-    var filter_month = $('select[name="filter_month"]').val();
-    if (filter_month) url += '&filter_month=' + filter_month;
-    
-    location = url;
-});
+$(document).ready(function() {
 
-$('select').on('change', function() {
-    $('#button-filter').click();
+    function loadAllocations() {
+        var query = 'index.php?route=account/pms_my_payment_allocations.loadAllocations'
+                  + '&language={{ language }}'
+                  + '&customer_token={{ customer_token }}';
+
+        var filter_phase = $('select[name="filter_phase"]').val();
+        var filter_year  = $('select[name="filter_year"]').val();
+        var filter_month = $('select[name="filter_month"]').val();
+
+        if (filter_phase) query += '&filter_phase=' + filter_phase;
+        if (filter_year)  query += '&filter_year=' + filter_year;
+        if (filter_month) query += '&filter_month=' + filter_month;
+
+        $('#allocations-placeholder').hide();
+        $('#allocations-wrapper').show().html(
+            '<div class="text-center py-4">' +
+                '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>' +
+                '<span class="text-muted">Loading allocations...</span>' +
+            '</div>'
+        );
+
+        $.ajax({
+            url: query,
+            type: 'GET',
+            dataType: 'html',
+            success: function(html) {
+                $('#allocations-wrapper').html(html);
+            },
+            error: function() {
+                $('#allocations-wrapper').html(
+                    '<div class="alert alert-danger text-center">Failed to load allocations.</div>'
+                );
+            }
+        });
+    }
+
+    $('#button-filter').on('click', loadAllocations);
+
+    $('select[name="filter_phase"], select[name="filter_year"], select[name="filter_month"]')
+        .on('change', loadAllocations);
 });
 </script>
 

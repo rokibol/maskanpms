@@ -137,103 +137,110 @@
                 </div>
             </div>
 
-            {# ==================== ROW 2: Expense Breakdown + Recent Expenses ==================== #}
-            <div class="row g-3 mb-3">
-
-                {# --- Expense Breakdown --- #}
-                <div class="col-12 col-lg-6">
-                    <div class="pms-card">
-                        <div class="pms-section-header">
-                            <h4 class="pms-section-title">
-                                <i class="fas fa-regular fa-chart-pie"></i> Expense Breakdown
-                            </h4>
-                        </div>
-                        <div class="mt-2">
-                            {% for category in expense_categories %}
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="small">{{ category.category_name }}</span>
-                                        <span class="small fw-bold">৳ {{ category.total_amount }}</span>
-                                    </div>
-                                    <div class="pms-progress">
-                                        <div class="pms-progress-bar" style="width: {{ category.percentage }}%"></div>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <p class="text-muted text-center py-3">No expense data available</p>
-                            {% endfor %}
-                        </div>
-                        <div class="text-end mt-2">
-                            <a href="{{ expense_report_link }}" class="pms-view-all">View Details <i class="fas fa-solid fa-arrow-right ms-1"></i></a>
-                        </div>
+            {# ==================== COLLAPSIBLE TOGGLE ==================== #}
+            <div class="pms-collapsible-header" id="pmsDetailsToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="pmsDetailsBody">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="pms-collapsible-icon">
+                        <i class="fas fa-regular fa-rectangle-list"></i>
+                    </div>
+                    <div>
+                        <div class="pms-collapsible-title">Project Analytics &amp; Activity</div>
+                        <div class="pms-collapsible-sub">Expense breakdown, recent expenses, top shareholders &amp; recent payments</div>
                     </div>
                 </div>
-
-                {# --- Recent Expenses --- #}
-                <div class="col-12 col-lg-6">
-                    <div class="pms-card">
-                        <div class="pms-section-header">
-                            <h4 class="pms-section-title">
-                                <i class="fas fa-regular fa-receipt"></i> Recent Expenses
-                            </h4>
-                            <a href="{{ all_expenses_link }}" class="pms-view-all">
-                                View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
-                            </a>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="pms-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Invoice #</th>
-                                        <th>Supplier</th>
-                                        <th>Payment Count</th>
-                                        <th>Paid Amount</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for expense in recent_expenses %}
-                                        <tr>
-                                            <td>{{ expense.invoice_date }}</td>
-                                            <td>{{ expense.invoice_number }}</td>
-                                            <td>{{ expense.supplier_name }}</td>
-                                            <td>{{ expense.payment_count }}</td>
-                                            <td class="text-danger">৳ {{ expense.paid_amount }}</td>
-                                            <td>
-                                                <span class="pms-status pms-status-paid">{{ expense.payment_status }}</span>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-4">
-                                                <i class="fas fa-regular fa-inbox fa-2x mb-2 d-block"></i>
-                                                No expenses recorded yet
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <button type="button" class="pms-collapsible-btn" aria-label="Toggle details">
+                    <i class="fas fa-regular fa-chevron-down pms-collapsible-chevron"></i>
+                    <span class="pms-collapsible-btn-label">Show details</span>
+                </button>
             </div>
 
-            {# ==================== ROW 3: Top Shareholders + Recent Payments ==================== #}
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="pms-card">
-                        <div class="pms-section-header">
-                            <h5 class="mb-0 pms-section-title">Top Shareholders</h5>
-                            <select id="top-shareholder-criteria" class="form-select w-auto">
-                                <option value="ownership">By Ownership %</option>
-                                <option value="paid">By Total Paid</option>
-                                <option value="due">By Outstanding Due</option>
-                            </select>
+            {# ==================== COLLAPSIBLE BODY ==================== #}
+            <div class="pms-collapsible-body" id="pmsDetailsBody">
+                {# ==================== ROW 2: Expense Breakdown + Recent Expenses ==================== #}
+                <div class="row g-3 mb-3">
+
+                    {# --- Expense Breakdown --- #}
+                    <div class="col-12 col-lg-6">
+                        <div class="pms-card">
+                            <div class="pms-section-header">
+                                <h4 class="pms-section-title">
+                                    <i class="fas fa-regular fa-chart-pie"></i> Expense Breakdown
+                                </h4>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadExpenseBreakdown()">
+                                    <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Load</span>
+                                </button>
+                            </div>
+                            <div class="mt-2" id="expense-breakdown-container">
+                                <div class="pms-empty-loader">
+                                    <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                    <p class="mb-0">Click on <strong>Load</strong> to view the <strong>Expense Breakdown</strong>.</p>
+                                </div>
+                            </div>
+                            <div class="text-end mt-2">
+                                <a href="{{ expense_report_link }}" class="pms-view-all">View Details <i class="fas fa-solid fa-arrow-right ms-1"></i></a>
+                            </div>
                         </div>
-                        <div id="top-shareholders-container">
-                            <div class="table-responsive">
+                    </div>
+
+                    {# --- Recent Expenses --- #}
+                    <div class="col-12 col-lg-6">
+                        <div class="pms-card">
+                            <div class="pms-section-header">
+                                <h4 class="pms-section-title">
+                                    <i class="fas fa-regular fa-receipt"></i> Recent Expenses
+                                </h4>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadRecentExpenses()">
+                                        <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Load</span>
+                                    </button>
+                                    <a href="{{ all_expenses_link }}" class="pms-view-all">
+                                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive" id="recent-expenses-wrapper" style="display: none;">
+                                <table class="pms-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Invoice #</th>
+                                            <th>Supplier</th>
+                                            <th>Payment Count</th>
+                                            <th>Paid Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-expenses-body"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="pms-empty-loader" id="recent-expenses-placeholder">
+                                <i class="fas fa-receipt fa-2x mb-2"></i>
+                                <p class="mb-0">Click on <strong>Load</strong> to view the <strong>Recent Expenses</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ==================== ROW 3: Top Shareholders + Recent Payments ==================== #}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="pms-card">
+                            <div class="pms-section-header flex-wrap gap-2">
+                                <h5 class="mb-0 pms-section-title">Top Shareholders</h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <select id="top-shareholder-criteria" class="form-select form-select-sm w-auto">
+                                        <option value="ownership">By Ownership %</option>
+                                        <option value="paid">By Total Paid</option>
+                                        <option value="due">By Outstanding Due</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadTopShareholders()">
+                                        <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Load</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive" id="top-shareholders-wrapper" style="display: none;">
                                 <table class="pms-table">
                                     <thead>
                                         <tr>
@@ -245,66 +252,51 @@
                                             <th>Outstanding</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {% if top_shareholders %}
-                                            {% for shareholder in top_shareholders %}
-                                                <tr>
-                                                    <td>{{ shareholder.name }}</td>
-                                                    <td>{{ shareholder.shareholder_code }}</td>
-                                                    <td class="fw-bold">{{ shareholder.percentage|round(2) }}%</td>
-                                                    <td>{{ shareholder.ownership_units }} units</td>
-                                                    <td class="text-success">৳ {{ shareholder.total_paid|number_format(2) }}</td>
-                                                    <td class="text-danger">৳ {{ shareholder.total_due|number_format(2) }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        {% else %}
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted py-3">No shareholder data available</td>
-                                            </tr>
-                                        {% endif %}
-                                    </tbody>
+                                    <tbody id="top-shareholders-body"></tbody>
                                 </table>
+                            </div>
+
+                            <div class="pms-empty-loader" id="top-shareholders-placeholder">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <p class="mb-0">Click on <strong>Load</strong> to view the <strong>Top Shareholders</strong>.</p>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-md-6">
-                    <div class="pms-card">
-                        <div class="pms-section-header">
-                            <h4 class="pms-section-title">
-                                <i class="fas fa-regular fa-clock-rotate-left"></i> Recent Payments
-                            </h4>
-                            <a href="{{ all_payments_link }}" class="pms-view-all">
-                                View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
-                            </a>
-                        </div>
+                    <div class="col-md-6">
+                        <div class="pms-card">
+                            <div class="pms-section-header">
+                                <h4 class="pms-section-title">
+                                    <i class="fas fa-regular fa-clock-rotate-left"></i> Recent Payments
+                                </h4>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadRecentPayments()">
+                                        <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Load</span>
+                                    </button>
+                                    <a href="{{ all_payments_link }}" class="pms-view-all">
+                                        View All <i class="fas fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
 
-                        <div class="table-responsive">
-                            <table class="pms-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Shareholder</th>
-                                        <th>Phase</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for payment in recent_payments %}
+                            <div class="table-responsive" id="recent-payments-wrapper" style="display: none;">
+                                <table class="pms-table">
+                                    <thead>
                                         <tr>
-                                            <td>{{ payment.payment_date }}</td>
-                                            <td>{{ payment.shareholder_name }}</td>
-                                            <td>{{ payment.phase_name }}</td>
-                                            <td class="text-success">+ ৳ {{ payment.amount }}</td>
+                                            <th>Date</th>
+                                            <th>Shareholder</th>
+                                            <th>Phase</th>
+                                            <th>Amount</th>
                                         </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">No payments recorded yet</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody id="recent-payments-body"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="pms-empty-loader" id="recent-payments-placeholder">
+                                <i class="fas fa-credit-card fa-2x mb-2"></i>
+                                <p class="mb-0">Click on <strong>Load</strong> to view the <strong>Recent Payments</strong>.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -317,37 +309,103 @@
 </div>
 
 <script>
-// Dynamic top shareholders switching
-$('#top-shareholder-criteria').on('change', function() {
-    var criteria = $(this).val();
-
+// ==================== LOADERS ====================
+function loadExpenseBreakdown() {
+    $('#expense-breakdown-container').html(
+        '<div class="text-center py-3"><i class="fas fa-spinner fa-spin text-primary"></i> Loading...</div>'
+    );
     $.ajax({
-        url: 'index.php?route=account/manager.getTopShareholders&language={{ language }}&criteria=' + criteria + '&customer_token={{ customer_token }}',
+        url: 'index.php?route=account/manager.loadExpenseBreakdown&language={{ language }}&customer_token={{ customer_token }}',
         type: 'GET',
         dataType: 'html',
-        beforeSend: function() {
-            $('#top-shareholders-container').html('<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
-        },
         success: function(html) {
-            $('#top-shareholders-container').html(html);
+            $('#expense-breakdown-container').html(html);
         },
         error: function() {
-            $('#top-shareholders-container').html('<div class="alert alert-danger">Error loading data</div>');
+            $('#expense-breakdown-container').html('<p class="text-danger text-center">Failed to load.</p>');
         }
     });
-});
-</script>
-<script>
-// ==================== COLLECTION BREAKDOWN MODAL ====================
+}
 
+function loadRecentExpenses() {
+    // Show loading inside the wrapper
+    $('#recent-expenses-wrapper').show();
+    $('#recent-expenses-placeholder').hide();
+    $('#recent-expenses-body').html(
+        '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin text-primary"></i> Loading...</td></tr>'
+    );
+
+    $.ajax({
+        url: 'index.php?route=account/manager.loadRecentExpenses&language={{ language }}&customer_token={{ customer_token }}',
+        type: 'GET',
+        dataType: 'html',
+        success: function(html) {
+            $('#recent-expenses-body').html(html);
+        },
+        error: function() {
+            $('#recent-expenses-body').html('<tr><td colspan="6" class="text-center text-danger py-3">Failed to load.</td></tr>');
+        }
+    });
+}
+
+function loadTopShareholders() {
+    var criteria = $('#top-shareholder-criteria').val();
+    $('#top-shareholders-wrapper').show();
+    $('#top-shareholders-placeholder').hide();
+    $('#top-shareholders-body').html(
+        '<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin text-primary"></i> Loading...</td></tr>'
+    );
+
+    $.ajax({
+        url: 'index.php?route=account/manager.loadTopShareholders&language={{ language }}&customer_token={{ customer_token }}&criteria=' + criteria,
+        type: 'GET',
+        dataType: 'html',
+        success: function(html) {
+            $('#top-shareholders-body').html(html);
+        },
+        error: function() {
+            $('#top-shareholders-body').html('<tr><td colspan="6" class="text-center text-danger py-3">Failed to load.</td></tr>');
+        }
+    });
+}
+
+function loadRecentPayments() {
+    $('#recent-payments-wrapper').show();
+    $('#recent-payments-placeholder').hide();
+    $('#recent-payments-body').html(
+        '<tr><td colspan="4" class="text-center py-3"><i class="fas fa-spinner fa-spin text-primary"></i> Loading...</td></tr>'
+    );
+
+    $.ajax({
+        url: 'index.php?route=account/manager.loadRecentPayments&language={{ language }}&customer_token={{ customer_token }}',
+        type: 'GET',
+        dataType: 'html',
+        success: function(html) {
+            $('#recent-payments-body').html(html);
+        },
+        error: function() {
+            $('#recent-payments-body').html('<tr><td colspan="4" class="text-center text-danger py-3">Failed to load.</td></tr>');
+        }
+    });
+}
+
+// Auto-reload top shareholders when criteria changes (only if already loaded once)
+$('#top-shareholder-criteria').on('change', function() {
+    // Only reload if the table already has data (not the initial "Click Load" placeholder)
+    if ($('#top-shareholders-body').find('tr').length && !$('#top-shareholders-body').find('.fa-info-circle').length) {
+        loadTopShareholders();
+    }
+});
+
+// ==================== COLLECTION BREAKDOWN MODAL ====================
 function openCollectionBreakdown() {
     $('#collectionBreakdownModal').modal('show');
-    $('#collection-breakdown-content').html(`
-        <div class="text-center py-4">
-            <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
-            <p class="mt-2 text-muted">Loading collection breakdown...</p>
-        </div>
-    `);
+    $('#collection-breakdown-content').html(
+        '<div class="text-center py-4">' +
+            '<i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>' +
+            '<p class="mt-2 text-muted">Loading collection breakdown...</p>' +
+        '</div>'
+    );
 
     $.ajax({
         url: 'index.php?route=account/manager.getCollectionBreakdown&language={{ language }}&customer_token={{ customer_token }}',
@@ -357,12 +415,7 @@ function openCollectionBreakdown() {
             if (data.success && data.data.length > 0) {
                 var html = '<div class="table-responsive">';
                 html += '<table class="table table-bordered table-striped">';
-                html += '<thead><tr>';
-                html += '<th>Phase</th>';
-                html += '<th>Transactions</th>';
-                html += '<th class="text-end">Total Collected</th>';
-                html += '<th class="text-end">Average per Transaction</th>';
-                html += '</tr></thead><tbody>';
+                html += '<thead><tr><th>Phase</th><th>Transactions</th><th class="text-end">Total Collected</th><th class="text-end">Average per Transaction</th></tr></thead><tbody>';
 
                 var grandTotal = 0;
                 var grandTransactions = 0;
@@ -381,32 +434,27 @@ function openCollectionBreakdown() {
                     html += '</tr>';
                 }
 
-                html += '</tbody><tfoot class="fw-bold">';
-                html += '<tr>';
+                html += '</tbody><tfoot class="fw-bold"><tr>';
                 html += '<td><strong>Grand Total</strong></td>';
                 html += '<td>' + grandTransactions + '</td>';
                 html += '<td class="text-end text-success">৳ ' + grandTotal.toFixed(2) + '</td>';
                 html += '<td class="text-end">-</td>';
-                html += '</tr>';
-                html += '</tfoot></table></div>';
+                html += '</tr></tfoot></table></div>';
 
                 $('#collection-breakdown-content').html(html);
             } else {
-                $('#collection-breakdown-content').html(`
-                    <div class="text-center py-4">
-                        <i class="fas fa-regular fa-inbox fa-2x text-muted mb-2 d-block"></i>
-                        <p class="text-muted">No collection data found</p>
-                    </div>
-                `);
+                $('#collection-breakdown-content').html(
+                    '<div class="text-center py-4">' +
+                        '<i class="fas fa-regular fa-inbox fa-2x text-muted mb-2 d-block"></i>' +
+                        '<p class="text-muted">No collection data found</p>' +
+                    '</div>'
+                );
             }
         },
         error: function() {
-            $('#collection-breakdown-content').html(`
-                <div class="alert alert-danger">
-                    <i class="fas fa-regular fa-circle-exclamation"></i>
-                    Failed to load collection breakdown. Please try again.
-                </div>
-            `);
+            $('#collection-breakdown-content').html(
+                '<div class="alert alert-danger"><i class="fas fa-regular fa-circle-exclamation"></i> Failed to load.</div>'
+            );
         }
     });
 }
@@ -434,5 +482,52 @@ function openCollectionBreakdown() {
         </div>
     </div>
 </div>
+<script>
+$(document).ready(function() {
+    var $toggle = $('#pmsDetailsToggle');
+    var $body   = $('#pmsDetailsBody');
 
+    // Start OPEN by default. If you want it CLOSED initially, uncomment the next block:
+    $toggle.addClass('collapsed').attr('aria-expanded', 'false');
+    $body.addClass('collapsed');
+    $toggle.find('.pms-collapsible-btn-label').text('Show details');
+
+    function toggleDetails() {
+        var isCollapsed = $body.hasClass('collapsed');
+
+        if (isCollapsed) {
+            // Expand
+            $body.removeClass('collapsed');
+            $toggle.removeClass('collapsed').attr('aria-expanded', 'true');
+            $toggle.find('.pms-collapsible-btn-label').text('Hide details');
+        } else {
+            // Collapse
+            $body.addClass('collapsed');
+            $toggle.addClass('collapsed').attr('aria-expanded', 'false');
+            $toggle.find('.pms-collapsible-btn-label').text('Show details');
+        }
+    }
+
+    // Click on the whole header area OR the inner button
+    $toggle.on('click', function(e) {
+        // If the click target is the button itself, avoid double toggle
+        // (button is inside header, but we handle at header level only)
+        toggleDetails();
+    });
+
+    // Prevent the inner button from triggering a second handler (if any)
+    $toggle.find('.pms-collapsible-btn').on('click', function(e) {
+        e.stopPropagation();
+        toggleDetails();
+    });
+
+    // Keyboard accessibility
+    $toggle.on('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            toggleDetails();
+        }
+    });
+});
+</script>
 {{ footer }}

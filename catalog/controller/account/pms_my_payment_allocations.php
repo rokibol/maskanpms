@@ -63,7 +63,7 @@ class PmsMyPaymentAllocations extends \Opencart\System\Engine\Controller {
             'filter_month' => $filter_month
         ];
         
-        $data['allocations'] = $this->model_pms_shareholder->getMyPaymentAllocations($shareholder['id'], $filter_data);
+        //$data['allocations'] = $this->model_pms_shareholder->getMyPaymentAllocations($shareholder['id'], $filter_data);
         
         // Filter values
         $data['filter_phase'] = $filter_phase;
@@ -78,7 +78,7 @@ class PmsMyPaymentAllocations extends \Opencart\System\Engine\Controller {
         ];
         
         // URLs
-        $data['back'] = $this->url->link('account/pms_dashboard', 'language=' . $this->config->get('config_language'));
+        $data['back'] = $this->url->link('account/shareholder', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token']);
         
         $data['customer_token'] = $this->session->data['customer_token'];
 
@@ -92,5 +92,77 @@ class PmsMyPaymentAllocations extends \Opencart\System\Engine\Controller {
 		$data['header'] = $this->load->controller('common/header');
         
         $this->response->setOutput($this->load->view('account/pms_my_payment_allocations', $data));
+    }
+
+    /**
+     * AJAX: Load allocations list for the logged-in shareholder
+     */
+    public function loadAllocations(): void {
+        if (!$this->customer->isLogged()) {
+            return;
+        }
+
+        $this->load->language('pms/my_payment_allocations');
+        $this->load->model('pms/shareholder');
+
+        $shareholder = $this->model_pms_shareholder->getShareholderByCustomerId($this->customer->getId());
+        if (!$shareholder) {
+            return;
+        }
+
+        $filter_phase = isset($this->request->get['filter_phase']) ? $this->request->get['filter_phase'] : '';
+        $filter_year  = isset($this->request->get['filter_year']) ? $this->request->get['filter_year'] : '';
+        $filter_month = isset($this->request->get['filter_month']) ? $this->request->get['filter_month'] : '';
+
+        $allocations = $this->model_pms_shareholder->getMyPaymentAllocations($shareholder['id'], [
+            'filter_phase' => $filter_phase,
+            'filter_year'  => $filter_year,
+            'filter_month' => $filter_month
+        ]);
+
+        if (!$allocations) {
+            $this->response->setOutput(
+                '<div class="text-center text-muted py-5">' .
+                    '<i class="fas fa-regular fa-credit-card fa-3x mb-3 d-block"></i>' .
+                    '<h5>No payment allocations found</h5>' .
+                    '<p>No payments have been allocated to your account yet.</p>' .
+                '</div>'
+            );
+            return;
+        }
+
+        $html = '';
+        foreach ($allocations as $allocation) {
+            $html .= '<div class="allocation-card">';
+            $html .= '<div class="allocation-header">';
+            $html .= '<span class="allocation-date"><i class="fas fa-regular fa-calendar"></i> ' . date('d F Y h:i A', strtotime($allocation['created_at'])) . '</span>';
+            $html .= '<span class="allocation-phase">' . htmlspecialchars($allocation['phase_name']) . '</span>';
+            $html .= '</div>';
+            $html .= '<div class="allocation-body">';
+
+            $html .= '<div class="allocation-detail">';
+            $html .= '<span class="allocation-label">Allocated Amount</span>';
+            $html .= '<span class="allocation-value amount">+ ৳ ' . number_format($allocation['allocated_amount'], 2) . '</span>';
+            $html .= '</div>';
+
+            $html .= '<div class="allocation-detail">';
+            $html .= '<span class="allocation-label">Allocation ID</span>';
+            $html .= '<span class="allocation-value">#' . (int)$allocation['allocation_id'] . '</span>';
+            $html .= '</div>';
+
+            $html .= '<div class="allocation-detail">';
+            $html .= '<span class="allocation-label">Recorded By</span>';
+            $html .= '<span class="allocation-value">' . htmlspecialchars($allocation['created_by_name']) . '</span>';
+            $html .= '</div>';
+
+            if (!empty($allocation['notes'])) {
+                $html .= '<div class="allocation-notes"><i class="fas fa-regular fa-note-sticky"></i> ' . htmlspecialchars($allocation['notes']) . '</div>';
+            }
+
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+
+        $this->response->setOutput($html);
     }
 }
