@@ -38,7 +38,7 @@ class Header extends \Opencart\System\Engine\Controller {
 
 		$this->load->model('tool/image');
 
-		$data['favicon'] = $this->model_tool_image->resize('cart.png', 45, 45);
+		$data['favicon'] = $this->model_tool_image->resize('catalog/log_fav.svg', 32, 32);
 
 		if (!isset($this->request->get['user_token']) || !isset($this->session->data['user_token']) || ($this->request->get['user_token'] != $this->session->data['user_token'])) {
 			$data['logged'] = false;

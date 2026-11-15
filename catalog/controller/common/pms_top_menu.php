@@ -5,6 +5,9 @@ class PmsTopMenu extends \Opencart\System\Engine\Controller {
 
     public function index(): string {
         $data = [];
+        $this->load->model('tool/image');
+
+		$data['logo'] = $this->model_tool_image->resize('catalog/log_fav.svg', 32, 32);
 
         $data['home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
         $data['features'] = $this->url->link('information/pms_features', 'language=' . $this->config->get('config_language'));

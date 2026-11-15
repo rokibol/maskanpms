@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 350" role="img" aria-labelledby="title desc">
+  <title id="title">Apartment Property Management Logo</title>
+  <desc id="desc">Geometric apartment building emblem in navy blue and green.</desc>
+  <g stroke="none">
+    <!-- Left outer building wing -->
+    <path fill="#1F8A4D" d="M95 104 L135 78 L157 109 L134 132 L133 248 L95 227 Z"/>
+    <!-- Right outer building wing -->
+    <path fill="#1F8A4D" d="M255 104 L215 78 L193 109 L216 132 L217 248 L255 227 Z"/>
+    <!-- Central navy tower -->
+    <path fill="#0B3C5D" d="M142 132 L175 101 L175 273 L142 255 Z"/>
+    <!-- White front facade -->
+    <path fill="#FFFFFF" d="M182 112 L208 132 L208 255 L182 270 Z"/>
+    <!-- Windows -->
+    <g fill="#0B3C5D">
+      <path d="M185 132 L194 137 L194 147 L185 142 Z"/>
+      <path d="M202 142 L211 147 L211 157 L202 152 Z"/>
+      <path d="M185 160 L194 165 L194 175 L185 170 Z"/>
+      <path d="M202 170 L211 175 L211 185 L202 180 Z"/>
+      <path d="M185 188 L194 193 L194 203 L185 198 Z"/>
+      <path d="M202 198 L211 203 L211 213 L202 208 Z"/>
+      <path d="M185 216 L194 221 L194 231 L185 226 Z"/>
+      <path d="M202 226 L211 231 L211 241 L202 236 Z"/>
+    </g>
+  </g>
+</svg>
