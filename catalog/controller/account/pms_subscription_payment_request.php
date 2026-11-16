@@ -113,7 +113,7 @@ class PmsSubscriptionPaymentRequest extends \Opencart\System\Engine\Controller {
             $request_id = $this->model_pms_subscription_payment_request->addRequest($request_data);
 
             $json['success'] = $this->language->get('text_request_submitted');
-            $json['redirect'] = $this->url->link('account/pms_subscription_payment_request.success', 'language=' . $this->config->get('config_language'));
+            $json['redirect'] = $this->url->link('account/pms_subscription_payment_request.success', 'language=' . $this->config->get('config_language') . '&customer_token=' . $this->session->data['customer_token'], true);
         }
 
         $this->response->addHeader('Content-Type: application/json');

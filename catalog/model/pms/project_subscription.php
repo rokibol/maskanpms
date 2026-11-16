@@ -349,9 +349,9 @@ class ProjectSubscription extends \Opencart\System\Engine\Model {
         $settings = $this->getProjectSubscriptionSettings($project_id);
         $apartment_count = $this->getProjectApartmentCount($project_id);
 
-        $rate = (float)$settings['subscription_rate_per_apartment'];
+        $rate = (int)$settings['subscription_rate_per_apartment'] <= 0 ? 20 : (int)$settings['subscription_rate_per_apartment'];
         $discount_type = $settings['subscription_discount_type'];
-        $discount_value = (float)$settings['subscription_discount_value'];
+        $discount_value = (int)$settings['subscription_discount_value'];
         $discount_reason = $settings['subscription_discount_reason'] ?? '';
         
         $base_monthly = $apartment_count * $rate;

@@ -182,6 +182,7 @@ class SubscriptionCheck {
     }
 
     private function checkSubscription($db, $session, int $project_id): bool {
+        
         $cache_key = 'pms_sub_active_' . $project_id;
         
         if (isset($session->data['pms_cache'][$cache_key])) {

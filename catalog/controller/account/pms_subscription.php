@@ -26,6 +26,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         $data['project_id'] = $project['project_id'];
         $data['project_name'] = $project['name'];
         $data['subscription'] = $this->model_pms_project_subscription->getSubscriptionByProject($project['project_id']);
+
         $data['is_active'] = $this->model_pms_project_subscription->isSubscriptionActiveOptimized($project['project_id']);
         $data['expiry_days'] = $this->model_pms_project_subscription->getExpiryDays($project['project_id']);
 
