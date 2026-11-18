@@ -28,7 +28,7 @@ class Settings extends \Opencart\System\Engine\Model {
         $query = $this->db->query("
             SELECT value 
             FROM `" . DB_PREFIX . "setting`
-            WHERE key = '" . $this->db->escape($key) . "'
+            WHERE `key` = '" . $this->db->escape($key) . "'
         ");
         
         return $query->row['value'] ?? '';
@@ -41,7 +41,7 @@ class Settings extends \Opencart\System\Engine\Model {
         $exists = $this->db->query("
             SELECT COUNT(*) as total 
             FROM `" . DB_PREFIX . "setting` 
-            WHERE key = '" . $this->db->escape($key) . "'
+            WHERE `key` = '" . $this->db->escape($key) . "'
         ");
         
         if ($exists->row['total'] > 0) {
@@ -49,12 +49,12 @@ class Settings extends \Opencart\System\Engine\Model {
                 UPDATE `" . DB_PREFIX . "setting` 
                 SET value = '" . $this->db->escape($value) . "',
                     updated_at = NOW()
-                WHERE key = '" . $this->db->escape($key) . "'
+                WHERE `key` = '" . $this->db->escape($key) . "'
             ");
         } else {
             $this->db->query("
                 INSERT INTO `" . DB_PREFIX . "setting` 
-                SET key = '" . $this->db->escape($key) . "',
+                SET `key` = '" . $this->db->escape($key) . "',
                     value = '" . $this->db->escape($value) . "'
             ");
         }

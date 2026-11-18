@@ -28,6 +28,8 @@ class Logout extends \Opencart\System\Engine\Controller {
 			unset($this->session->data['coupon']);
 			unset($this->session->data['reward']);
 			unset($this->session->data['pms_cache']);
+			unset($this->session->data['pms_model_cache']);
+			unset($this->session->data['pms_settings_cache']);
 
 			//$this->response->redirect($this->url->link('account/logout', 'language=' . $this->config->get('config_language'), true));
 			$this->response->redirect($this->url->link('account/pms_logout', 'language=' . $this->config->get('config_language'), true));

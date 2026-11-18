@@ -2954,3 +2954,91 @@
         padding: 3px 8px;
     }
 }
+/* ============================================================
+   APARTMENTS PAGE — STATS GRID (4 / 2 / 2)
+   ============================================================ */
+.pms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.pms-stats-grid .stat-box {
+    padding: 15px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 0;
+    background: #fff;
+    min-width: 0;
+}
+.pms-stats-grid .stat-box:last-child {
+    border-right: none;
+}
+.pms-stats-grid .stat-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0B3C5D;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pms-stats-grid .stat-label {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tablet: 2 × 2 */
+@media (max-width: 991.98px) {
+    .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pms-stats-grid .stat-box {
+        border-right: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .pms-stats-grid .stat-box:nth-child(2n) {
+        border-right: none;
+    }
+    .pms-stats-grid .stat-box:nth-last-child(-n + 2) {
+        border-bottom: none;
+    }
+}
+
+/* Phone: still 2 × 2, tighter */
+@media (max-width: 575.98px) {
+    .pms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin-bottom: 1rem;
+    }
+    .pms-stats-grid .stat-box {
+        padding: 0.6rem 0.5rem;
+    }
+    .pms-stats-grid .stat-number {
+        font-size: 1rem;
+        line-height: 1.15;
+    }
+    .pms-stats-grid .stat-label {
+        font-size: 0.6rem;
+        margin-top: 1px;
+    }
+}
+
+/* Very small (<380px) */
+@media (max-width: 379.98px) {
+    .pms-stats-grid .stat-number {
+        font-size: 0.88rem;
+    }
+    .pms-stats-grid .stat-label {
+        font-size: 0.55rem;
+    }
+}

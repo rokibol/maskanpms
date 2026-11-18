@@ -7,91 +7,53 @@
         border-radius: 8px;
         margin-bottom: 20px;
     }
-    .stats-card {
-        background: white;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .stat-box {
-        text-align: center;
-        padding: 10px;
-        border-right: 1px solid #e0e0e0;
-    }
-    .stat-box:last-child {
-        border-right: none;
-    }
-    .stat-number {
-        font-size: 24px;
-        font-weight: bold;
-        color: #0B3C5D;
-    }
-    .stat-label {
-        font-size: 12px;
-        color: #6c757d;
-    }
     
     /* ========== FIX DROPDOWN OVERFLOW ========== */
+        /* ============================================================
+       APARTMENTS TABLE — HORIZONTAL SCROLL ON MOBILE
+       Dropdown menus still work correctly (Bootstrap handles
+       their positioning internally via Popper).
+       ============================================================ */
     .table-responsive {
-        overflow-x: auto;
+        overflow-x: auto !important;
         overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
-    
-    .table {
-        overflow: visible !important;
+    .table-responsive > .table {
+        min-width: 1000px;   /* ensures scroll instead of squashing */
     }
-    
-    .table tbody,
-    .table tr,
+
+    /* Allow dropdown menus to escape the scroll container */
     .table td {
         overflow: visible !important;
     }
-    
-    .dropdown {
-        position: static !important;
-    }
-    
-    .dropdown-menu {
-        position: absolute !important;
-        z-index: 9999 !important;
-        inset: auto auto 0 auto !important;
-        min-width: 180px;
-    }
-    
-    /* For the action column - make it position relative */
     .table td:last-child {
         position: relative;
         overflow: visible !important;
     }
-    
-    /* Ensure parent containers don't clip */
-    #content,
-    .card-body,
-    .table-responsive {
-        overflow: visible !important;
-    }
-    
-    /* Fix for the dropdown button container */
     .action-dropdown {
         position: relative !important;
         display: inline-block !important;
     }
-    
     .action-dropdown .dropdown-menu {
         position: absolute !important;
         top: 100% !important;
         right: 0 !important;
         left: auto !important;
-        bottom: auto !important;
         margin-top: 5px !important;
-        transform: translateY(0) !important;
+        z-index: 1055;            /* above other rows but below modal */
     }
-    
-    /* Ensure dropdown appears above modal backdrop if any */
     .dropdown-menu.show {
         display: block;
-        z-index: 1060;
+        z-index: 1055;
+    }
+
+    /* Remove the global overflow: visible on parents that was
+       preventing horizontal scrolling */
+    #content,
+    .card-body {
+        overflow: visible !important;
     }
 </style>
 
@@ -123,24 +85,22 @@
             </div>
             
             <!-- Statistics Cards -->
-            <div class="stats-card">
-                <div class="row">
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.total }}</div>
-                        <div class="stat-label">Total Apartments</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.assigned }}</div>
-                        <div class="stat-label">Assigned</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.available }}</div>
-                        <div class="stat-label">Available</div>
-                    </div>
-                    <div class="col-md-3 stat-box">
-                        <div class="stat-number">{{ stats.monthly_maintenance|number_format(0) }} ৳</div>
-                        <div class="stat-label">Monthly Maintenance</div>
-                    </div>
+            <div class="stats-card pms-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.total }}</div>
+                    <div class="stat-label">Total Apartments</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.assigned }}</div>
+                    <div class="stat-label">Assigned</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.available }}</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.monthly_maintenance|number_format(0) }} ৳</div>
+                    <div class="stat-label">Monthly Maintenance</div>
                 </div>
             </div>
             

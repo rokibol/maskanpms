@@ -40,19 +40,19 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         if (empty($route)) {
             return;
         }
-        
+
         // Skip AJAX requests
         if (!empty($this->request->server['HTTP_X_REQUESTED_WITH'])) {
             return;
         }
-        
+
         // Check if route is public
         foreach ($this->public_routes as $public) {
             if (strpos($route, $public) === 0) {
                 return;
             }
         }
-        
+
         // Get user role
         $this->load->model('pms/settings');
         $customer_group_id = $this->customer->getGroupId();
@@ -65,7 +65,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         
         $manager_group_id = $this->model_pms_settings->getManagerGroupId();
         $accountant_group_id = $this->model_pms_settings->getAccountantGroupId();
-        
+
         // Only check for Manager and Accountant
         if ($customer_group_id != $manager_group_id && $customer_group_id != $accountant_group_id) {
             return;
@@ -74,7 +74,7 @@ class PmsSubscription extends \Opencart\System\Engine\Controller {
         // Get project
         $this->load->model('pms/project');
         $project = $this->model_pms_project->getProjectByCustomerId($this->customer->getId());
-        
+
         if (!$project) {
             return;
         }
